@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+pet_env/
+dist/
+.DS_Store
+Thumbs.db
+*.log
+*.sqlite3*
+companion.lock
+voice-cache/
+attachments/
