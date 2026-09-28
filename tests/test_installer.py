@@ -18,7 +18,8 @@ with tempfile.TemporaryDirectory(prefix='yun jin test ') as tmp:
   bundle=i.mac_shortcut(exe,program,root)
   info=plistlib.loads((bundle/'Contents/Info.plist').read_bytes())
   assert info['CFBundleIdentifier']=='pianoth.yunjin.desktoppet.v1'
-  assert (home/'Desktop/Yun Jin Companion.app').resolve()==bundle
+  # Resolve both paths: macOS temporary directories can pass through /var -> /private/var.
+  assert (home/'Desktop/Yun Jin Companion.app').resolve()==bundle.resolve()
   launcher=bundle/'Contents/MacOS/YunJin';assert launcher.stat().st_mode&0o111
   subprocess.run(['sh','-n',str(launcher)],check=True)
  print('PASS installer: deployment preserves personal files, removes old program files, installs guide, creates valid Mac app bundle and executable desktop alias.')
