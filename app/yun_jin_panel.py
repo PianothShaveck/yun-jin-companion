@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Companion tools with compact navigation and contextual controls."""
 import time
+import sys
 from pathlib import Path
 from datetime import datetime
 from PyQt6.QtCore import Qt, QDateTime, QTimer, QUrl, QSize
@@ -228,6 +229,15 @@ class Panel(QDialog):
         _,character=card(layout)
         extras=QCheckBox('Animazioni aggiuntive'); extras.setChecked(self.pet.use_extra_animations)
         extras.toggled.connect(self.pet.set_extra_animations); character.addWidget(extras)
+        if sys.platform=='darwin':
+            from yun_jin_macos import LABEL
+            self.mac_fullscreen=QCheckBox(LABEL)
+            character.addWidget(self.mac_fullscreen)
+            self.mac_fullscreen_help=plain_label('', 'muted')
+            self.mac_fullscreen_help.setWordWrap(True)
+            character.addWidget(self.mac_fullscreen_help)
+            self.sync_mac_overlay()
+            self.mac_fullscreen.toggled.connect(self.pet.set_mac_overlay)
         _,data=card(layout)
         row=QHBoxLayout(); button('Backup…',self.backup,row,glyph='export')
         button('Cartella dati',lambda:QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.pet.store.root))),row,glyph='folder')
@@ -239,6 +249,19 @@ class Panel(QDialog):
 
     def show_shortcuts(self):
         QMessageBox.information(self,'Scorciatoie',shortcut_help())
+
+    def sync_mac_overlay(self):
+        if not hasattr(self,'mac_fullscreen'):
+            return
+        controller=self.pet.mac_overlay
+        self.mac_fullscreen.blockSignals(True)
+        self.mac_fullscreen.setChecked(bool(controller and controller.enabled))
+        self.mac_fullscreen.setEnabled(controller is not None)
+        self.mac_fullscreen.blockSignals(False)
+        text='Attiva di default. L’icona nel Dock scompare; restano Yun Jin e il menu nella barra in alto. Disattivala per ripristinare il Dock.'
+        if controller is None or controller.error:
+            text='Modalità overlay non disponibile. '+(controller.error if controller else 'Riavvia l’app e controlla il log nella cartella dati.')
+        self.mac_fullscreen_help.setText(text)
 
     def build_voice(self):
         tab=QWidget(); layout=QVBoxLayout(tab); layout.setContentsMargins(0,0,4,0); layout.setSpacing(14)

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.0.1: desktop companion and practice tools."""
+"""Yun Jin Companion 1.0.2: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -172,6 +172,7 @@ class Companion(YunJinPet):
         self.due_count=0
         self.closing=False
         self.reminder_dialog=None
+        self.mac_overlay=None
         super().__init__()
         icon=QIcon(str(BASE/'favicon.png'))
         if not icon.isNull():
@@ -380,7 +381,30 @@ class Companion(YunJinPet):
         self.panel.refresh_reminders()
         self.panel.show()
         self.panel.raise_()
-        self.panel.activateWindow()
+        self.focus_tool(self.panel)
+
+    def focus_tool(self, widget):
+        if self.mac_overlay and self.mac_overlay.enabled:
+            try:
+                self.mac_overlay.native.focus(widget)
+            except Exception as exc:
+                self.mac_overlay.fail(exc)
+                widget.activateWindow()
+        else:
+            widget.activateWindow()
+
+    def set_mac_overlay(self, enabled):
+        from yun_jin_macos import PREFERENCE
+        if self.mac_overlay is None:
+            return False
+        success=self.mac_overlay.set_enabled(enabled)
+        if success:
+            self.store.set_preference(PREFERENCE,bool(enabled))
+        if not self.mac_overlay.enabled:
+            mac_dock_icon(BASE/'favicon.icns')
+        if self.panel:
+            self.panel.sync_mac_overlay()
+        return success
 
     def panel_closed(self):
         self.last_tick=time.monotonic()
@@ -389,7 +413,7 @@ class Companion(YunJinPet):
     def new_reminder(self, checked=False, existing=None):
         if self.reminder_dialog is not None:
             self.reminder_dialog.raise_()
-            self.reminder_dialog.activateWindow()
+            self.focus_tool(self.reminder_dialog)
             return
         self.reminder_dialog=ReminderDialog(self,existing)
         try:
@@ -624,6 +648,9 @@ def main():
     root=data_directory()
     logging.basicConfig(filename=str(root/'yun-jin.log'),level=logging.WARNING,
                         format='%(asctime)s %(levelname)s %(message)s')
+    if sys.platform=='darwin':
+        # Qt-owned file dialogs can follow the same fullscreen/layer rules.
+        QApplication.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeDialogs)
     app=QApplication(sys.argv)
     app.setApplicationName('Yun Jin')
     app.setQuitOnLastWindowClosed(False)
@@ -643,10 +670,18 @@ def main():
     try:
         store=Store(root)
         pet=Companion(store)
+        if sys.platform=='darwin' and app.platformName()=='cocoa':
+            from yun_jin_macos import MacOverlay, PREFERENCE
+            try:
+                pet.mac_overlay=MacOverlay(app,pet)
+            except Exception:
+                logging.exception('Unable to initialize macOS overlay')
         if sys.platform=='win32':
             app._yun_jin_taskbar_icons.apply(pet)
         pet.show()
         mac_all_spaces(pet)
+        if pet.mac_overlay:
+            pet.mac_overlay.set_enabled(store.preference(PREFERENCE,True))
         mac_dock_icon(BASE/'favicon.icns')
         QTimer.singleShot(0,lambda:mac_dock_icon(BASE/'favicon.icns'))
         app.aboutToQuit.connect(pet.save_settings)

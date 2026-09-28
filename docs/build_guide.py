@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the final 1.0.1 manual. Screenshots come from render_guide_assets.py."""
+"""Build the final 1.0.2 manual. Screenshots come from render_guide_assets.py."""
 from pathlib import Path
 from reportlab.platypus import (BaseDocTemplate,PageTemplate,Frame,Paragraph,
     Spacer,PageBreak,Table,TableStyle,Image)
@@ -60,7 +60,7 @@ def cover(c):
     c.setFillColor(blue);c.setFont('Bold',9)
     c.drawString(48,H-62,'GUIDA ILLUSTRATA')
     c.setFillColor(cream);c.setFont('Text',9)
-    c.drawRightString(W-48,H-62,'VERSIONE 1.0.1')
+    c.drawRightString(W-48,H-62,'VERSIONE 1.0.2')
     c.setStrokeColor(HexColor('#665371'));c.line(48,H-82,W-48,H-82)
     c.setFillColor(cream);c.setFont('Bold',55)
     c.drawCentredString(W/2,681,'YUN JIN')
@@ -123,9 +123,9 @@ def page(c,doc):
     tag,title=PAGES[n-1] if n<=len(PAGES) else ('GUIDA','Continua')
     c.setFillColor(TEAL);c.setFont('Bold',9);c.drawString(44,792,tag)
     c.setFillColor(INK);c.setFont('Bold',27);c.drawString(44,756,title)
-    c.setFillColor(PURPLE);c.setFont('Text',9);c.drawRightString(W-44,791,'YUN JIN COMPANION  1.0.1')
+    c.setFillColor(PURPLE);c.setFont('Text',9);c.drawRightString(W-44,791,'YUN JIN COMPANION  1.0.2')
     c.setStrokeColor(LINE);c.line(44,734,W-44,734);c.line(44,42,W-44,42)
-    c.setFont('Text',8);c.setFillColor(PURPLE);c.drawString(44,25,'Guida · versione 1.0.1')
+    c.setFont('Text',8);c.setFillColor(PURPLE);c.drawString(44,25,'Guida · versione 1.0.2')
     c.drawRightString(W-44,25,f'{n:02d} / {len(PAGES):02d}')
     if n in (6,7):
         art='conduct16.png' if n==6 else 'stopwatch16.png'
@@ -136,13 +136,14 @@ story=[Spacer(1,1),PageBreak()]
 # 1
 story += [p('Una compagna per appunti, promemoria, concentrazione e musica.'),
     call('<b>Windows 10/11, 64 bit.</b> Estrai tutto lo ZIP prima di avviare l’app.'),
-    h('Installa'),p('<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai <b>Yun-Jin-Companion-1.0.1.zip</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento.'),
+    h('Installa'),p('<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai <b>Yun-Jin-Companion-1.0.2.zip</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento.'),
     p('L’avviatore cerca Python. Se manca, scarica Python ufficiale e verifica il file. Installa l’app nel tuo profilo, con un ambiente separato, e crea i collegamenti su Desktop e nel menu Start.'),
     h('Dopo l’installazione'),p('Apri <b>Yun Jin Companion</b> dal collegamento. Un doppio clic sul personaggio apre il pannello; il clic destro apre il menu. Scegli uno strumento dalla barra laterale.'),
     picture('appunti.png',390),Spacer(1,9),
     p('Se nella barra delle applicazioni resta la vecchia icona Python, rimuovi quel collegamento fissato e fissa <b>Yun Jin Companion</b> dal menu Start, dopo aver eseguito il nuovo Windows.cmd.','small'),PageBreak()]
 # 2
 story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, estrai lo ZIP e apri <b>Mac.command</b>. Se Python manca, l’avviatore propone l’installer ufficiale: completalo quando richiesto. In seguito usa <b>Yun Jin Companion.app</b>, sulla Scrivania o in <b>/Applications</b>. L’aggiornamento trasferisce qui la precedente copia da ~/Applications. Se necessario, macOS richiede l’autorizzazione per la copia.'),
+    p('Yun Jin appare anche sopra le app a schermo intero. In questa modalità l’icona nel Dock scompare: usa il personaggio o il menu nella barra in alto. In <b>Impostazioni</b> puoi disattivare <b>Mostra anche sopra le app a schermo intero</b> e ripristinare il Dock. La scelta viene salvata.','small'),
     h('Linux'),p('Servono un desktop grafico, Python a 64 bit e il modulo venv. Dalla cartella estratta esegui <b>bash Linux.sh</b>; poi usa il menu applicazioni. Su Wayland la posizione del personaggio dipende dal compositor; X11 offre maggiore compatibilità.'),
     h('Muovi e controlla Yun Jin'),table(['Comando','Azione'],[
         ['Trascina il personaggio','Sposta Yun Jin sullo schermo.'],
@@ -150,8 +151,10 @@ story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, 
         ['Comportamento','Pausa, ripresa, passeggiata, esibizione e carattere. Seguimi parte dopo 2 secondi e dura 9 secondi.'],
         ['Animazioni','Esegui una sequenza oppure ripetila. Riprendi termina la posa mantenuta.'],
         ['Aspetto','Dimensioni, opacità, monitor e recupero del pet fuori schermo.']]),
-    h('Scorciatoie Windows'),table(['Tasti','Azione'],[
-        ['Ctrl+Alt+J','Pannello'],['Ctrl+Alt+R','Nuovo promemoria'],['Ctrl+Alt+L','Leggi testo copiato'],['Ctrl+Alt+S','Interrompi voce']]),Spacer(1,10),
+    h('Scorciatoie Windows'),table(['Tasti','Azione','Tasti','Azione'],[
+        ['Ctrl+Alt+J','Pannello','Ctrl+Alt+L','Leggi testo copiato'],
+        ['Ctrl+Alt+R','Nuovo promemoria','Ctrl+Alt+S','Interrompi voce']],
+        [86,BW/2-86,86,BW/2-86]),Spacer(1,10),
     p('I comandi sono disponibili anche dal menu dell’icona nell’area di notifica. Aprire il pannello non mette in pausa le animazioni. Chiuderlo lascia Yun Jin aperta; <b>Chiudi</b> nel menu termina l’app.','small'),PageBreak()]
 # 3
 story += [picture('appunti.png'),Spacer(1,12),
@@ -205,6 +208,7 @@ story += [h('Dove sono i dati'),p('In <b>Impostazioni → Cartella dati</b> trov
 # 9
 story += [table(['Problema','Controllo'],[
     ['Yun Jin non si vede','Menu dell’area di notifica → Aspetto → Riporta sullo schermo.'],
+    ['Mac: icona Dock assente','È normale con la modalità sopra le app a schermo intero. Puoi disattivarla in Impostazioni.'],
     ['La voce non parte','Controlla Internet, volume e uscita audio. In Voce prova l’altro servizio o svuota la cache.'],
     ['Promemoria senza voce','Attiva Voce e Leggi promemoria; termina il silenzio dal menu Voce o ferma il metronomo.'],
     ['Il metronomo non suona','Controlla l’uscita audio del sistema. Dopo aver cambiato dispositivo, premi Ferma e Avvia.'],
@@ -216,7 +220,7 @@ story += [table(['Problema','Controllo'],[
     p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts e gTTS mantengono le rispettive licenze. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
     h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small')]
 
-doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion 1.0.1 - Guida',author='Yun Jin Companion',pageCompression=1)
+doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion 1.0.2 - Guida',author='Yun Jin Companion',pageCompression=1)
 frame=Frame(44,53,BW,666,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)
 doc.addPageTemplates(PageTemplate(id='guide',frames=[frame],onPage=page));doc.build(story)
 print(OUT)

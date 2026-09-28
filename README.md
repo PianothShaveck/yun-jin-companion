@@ -1,6 +1,6 @@
 # Yun Jin Companion
 
-Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Versione **1.0.1**.
+Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Versione **1.0.2**.
 
 ## Avvio
 
@@ -16,7 +16,20 @@ Gli avviatori Windows e macOS cercano Python; se manca, scaricano l'installer uf
 
 La guida unica e completa è [Guida.pdf](Guida.pdf), disponibile anche dal pulsante **Guida** nell'app. Include installazione, funzioni, comandi per ogni sistema, backup e aiuto.
 
-## Novità della 1.0.1
+## Novità della 1.0.2
+
+Su macOS la modalità **Mostra anche sopra le app a schermo intero** è attiva
+per impostazione predefinita, anche aggiornando da una versione precedente.
+Yun Jin usa una finestra overlay non attivante: trascinarla non deve sottrarre
+il focus all’app in uso. Menu, pannelli e dialoghi vengono disposti su livelli
+superiori a quello del personaggio.
+
+L’icona nel Dock scompare in questa modalità. Restano il personaggio e il menu
+nella barra in alto. Puoi disattivare l’opzione in **Impostazioni** per ripristinare
+l’icona nel Dock; la scelta viene salvata e non richiede un riavvio.
+Su Windows e Linux il comportamento delle finestre resta invariato.
+
+## Correzioni incluse dalla 1.0.1
 
 - Su macOS l’app viene installata in `/Applications`. L’aggiornamento riconosce
   la precedente copia in `~/Applications`, aggiorna il collegamento sulla
@@ -31,8 +44,9 @@ Per aggiornare dalla 1.0, chiudi Yun Jin e avvia `Mac.command` dal nuovo ZIP
 L’app in `/Applications` continua a usare l’ambiente Python e i dati del tuo
 profilo; non è un’installazione condivisa fra utenti diversi del Mac.
 
-Su macOS la presenza sopra le app a schermo intero resta limitata: questa
-versione conserva l’icona nel Dock e non introduce una modalità overlay dedicata.
+La modalità overlay è basata sulle API pubbliche AppKit e richiede macOS 13 o successivo.
+I test di logica possono essere eseguiti senza desktop; la presenza sopra app a schermo
+intero e la gestione del focus vanno provate in una sessione macOS reale.
 
 ## Icona nella barra delle applicazioni Windows
 
@@ -52,7 +66,8 @@ Il clic destro e il menu dell’area di notifica condividono nove voci principal
 **Aspetto** raccolgono i controlli del pet. Pannello, preferenze, guida e chiusura
 restano direttamente accessibili.
 
-Su macOS l’app imposta anche l’icona del processo nel Dock tramite AppKit.
+Su macOS l’app imposta anche l’icona del processo tramite AppKit; nel Dock
+è visibile quando la modalità sopra le app a schermo intero è disattivata.
 Per aggiornare, chiudi Yun Jin, estrai il pacchetto aggiornato e avvia
 `Mac.command` (oppure `Windows.cmd` su Windows). I dati personali sono conservati.
 
@@ -129,6 +144,10 @@ Python 3.10–3.14 a 64 bit. Installa `installer/requirements.txt` in un ambient
 `python tests/test_windows_identity.py` controlla ordine di avvio e identità,
 e su Windows verifica le icone native di finestre e dialoghi.
 
+`python tests/test_macos_overlay.py` verifica preferenze, ripristino e livelli delle finestre.
+Su un Mac, `QT_QPA_PLATFORM=cocoa python tests/test_macos_overlay.py` esegue anche
+il controllo nativo di creazione del pannello e attivazione/disattivazione.
+
 `python tests/test_release.py` controlla pianificazione dei battiti, PCM, pause e parziali, comportamento del pannello, voce e animazioni. L'uscita audio fisica e i dialoghi nativi di installazione richiedono un dispositivo reale.
 
 `python tools/render_guide_assets.py` rigenera le schermate con dati fittizi e gli estratti delle animazioni definitive.
@@ -136,23 +155,23 @@ e su Windows verifica le icone native di finestre e dialoghi.
 
 `python tools/package_release.py` crea lo ZIP di distribuzione in `dist/`; aggiungi `--source` per produrre anche lo ZIP del repository. Sono escluse cache, revisioni precedenti, archivi e dati personali. `Mac.command` e `Linux.sh` mantengono il permesso eseguibile.
 
-## Pubblicazione 1.0.1
+## Pubblicazione 1.0.2
 
-1. Estrai **Yun-Jin-Companion-1.0.1-Sorgenti.zip**. Carica nella radice del repository
+1. Estrai **Yun-Jin-Companion-1.0.2-Sorgenti.zip**. Carica nella radice del repository
    il contenuto della cartella estratta, comprese `.github` e `.gitignore`.
    `README.md`, `Windows.cmd` e `app/` devono trovarsi direttamente nella radice.
 2. Attendi i controlli nella scheda **Actions**. Verifica su Windows l’installazione,
    il collegamento aggiornato e l’icona nella barra; verifica anche l’uscita audio.
-3. Crea la release con tag **v1.0.1** e titolo **Yun Jin Companion 1.0.1**.
-   Allega **Yun-Jin-Companion-1.0.1.zip**, il pacchetto da scaricare e installare.
+3. Crea la release con tag **v1.0.2** e titolo **Yun Jin Companion 1.0.2**.
+   Allega **Yun-Jin-Companion-1.0.2.zip**, il pacchetto da scaricare e installare.
    GitHub fornisce automaticamente anche l’archivio dei sorgenti.
 
 Descrizione del repository: **Compagna desktop con appunti, promemoria vocali,
 focus, cronometro e metronomo.**
 
-Note per la release: vedi [docs/RELEASE-1.0.1.md](docs/RELEASE-1.0.1.md).
+Note per la release: vedi [docs/RELEASE-1.0.2.md](docs/RELEASE-1.0.2.md).
 
-Gli ZIP contengono solo la versione definitiva 1.0.1. Il pacchetto di distribuzione
+Gli ZIP contengono solo la versione definitiva 1.0.2. Il pacchetto di distribuzione
 include app, risorse, avviatori e guida; i sorgenti aggiungono documentazione,
 strumenti di sviluppo e test. Anteprime di controllo, revisioni precedenti,
 ambienti Python e dati personali sono esclusi.

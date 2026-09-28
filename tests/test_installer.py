@@ -55,7 +55,7 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(self.desktop.resolve(), bundle.resolve())
             info = plistlib.loads((bundle / 'Contents/Info.plist').read_bytes())
             self.assertEqual(info['CFBundleIdentifier'], i.MAC_BUNDLE_ID)
-            self.assertEqual(info['CFBundleShortVersionString'], '1.0.1')
+            self.assertEqual(info['CFBundleShortVersionString'], '1.0.2')
             launcher = bundle / 'Contents/MacOS/YunJin'
             self.assertTrue(launcher.stat().st_mode & 0o111)
             subprocess.run(['sh', '-n', str(launcher)], check=True)

@@ -257,7 +257,11 @@ class YunJinPet(QWidget):
         self.sheet = SpriteSheet(BASE / 'spritesheet-yun-jin-v2.png')
         self.settings = settings or QSettings('YunJinPet', 'DesktopCompanion')
         self.setWindowTitle('Yun Jin')
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        flags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint
+        if sys.platform == 'darwin':
+            flags |= Qt.WindowType.Tool  # Qt creates an NSPanel for fullscreen overlays.
+            self.setAttribute(Qt.WidgetAttribute.WA_MacAlwaysShowToolWindow)
+        self.setWindowFlags(flags)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setMouseTracking(True)
