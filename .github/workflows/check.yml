@@ -41,6 +41,7 @@ jobs:
         run: |
           bash -n Mac.command
           sh -n Linux.sh
+          sh -n installer/install-mac-bundle.sh
       - name: Check installer data preservation and Mac bundle layout
         if: runner.os != 'Windows'
         run: python tests/test_installer.py
