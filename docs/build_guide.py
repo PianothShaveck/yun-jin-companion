@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""Build the final 1.0 manual. Screenshots come from render_guide_assets.py."""
+from pathlib import Path
+from reportlab.platypus import (BaseDocTemplate,PageTemplate,Frame,Paragraph,
+    Spacer,PageBreak,Table,TableStyle,Image)
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.colors import HexColor,white
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from PIL import Image as PILImage
+
+ROOT=Path(__file__).resolve().parents[1];ART=ROOT/'docs/art';OUT=ROOT/'Guida.pdf'
+for name,file in [('Text','DejaVuSans.ttf'),('Bold','DejaVuSans-Bold.ttf')]:
+    pdfmetrics.registerFont(TTFont(name,'/usr/share/fonts/truetype/dejavu/'+file))
+pdfmetrics.registerFontFamily('Text',normal='Text',bold='Bold',italic='Text',boldItalic='Bold')
+W,H=595.276,841.89;BW=W-88
+INK=HexColor('#302a3f');PURPLE=HexColor('#715583');TEAL=HexColor('#3e777e')
+LINE=HexColor('#dfd6e6');PAPER=HexColor('#fcfaf8')
+S={
+    'p':ParagraphStyle('p',fontName='Text',fontSize=10,leading=15,textColor=INK,spaceAfter=9),
+    'small':ParagraphStyle('small',fontName='Text',fontSize=8.7,leading=12.5,textColor=INK,spaceAfter=8),
+    'h':ParagraphStyle('h',fontName='Bold',fontSize=12,leading=16,textColor=PURPLE,spaceBefore=12,spaceAfter=7,keepWithNext=True),
+    'cell':ParagraphStyle('cell',fontName='Text',fontSize=9,leading=13,textColor=INK),
+    'th':ParagraphStyle('th',fontName='Bold',fontSize=9,leading=13,textColor=white),
+    'call':ParagraphStyle('call',fontName='Text',fontSize=10,leading=15,textColor=INK),
+}
+PAGES=[('INIZIA QUI','Windows'),('SUL DESKTOP','macOS, Linux e comandi'),('CONSERVA','Appunti'),
+       ('RICORDA','Promemoria'),('ASCOLTA','Voce e suoni'),('ESERCITATI','Metronomo'),
+       ('MISURA','Cronometro e focus'),('CONSERVA I DATI','Backup e aggiornamenti'),('AIUTO','Problemi e crediti')]
+
+def p(text,style='p'):return Paragraph(text,S[style])
+def h(text):return p(text,'h')
+def table(headers,rows,widths=None):
+    t=Table([[p(v,'th') for v in headers]]+[[p(str(v),'cell') for v in row] for row in rows],
+        colWidths=widths or [150,BW-150],hAlign='LEFT',repeatRows=1)
+    t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),PURPLE),('ROWBACKGROUNDS',(0,1),(-1,-1),[white,HexColor('#f1ecf5')]),
+        ('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),10),('RIGHTPADDING',(0,0),(-1,-1),10),
+        ('TOPPADDING',(0,0),(-1,-1),8),('BOTTOMPADDING',(0,0),(-1,-1),8)]));return t
+
+def call(text):
+    t=Table([[p(text,'call')]],colWidths=[BW]);t.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,-1),HexColor('#eae4f0')),('BOX',(0,0),(-1,-1),.5,LINE),
+        ('LEFTPADDING',(0,0),(-1,-1),12),('RIGHTPADDING',(0,0),(-1,-1),12),
+        ('TOPPADDING',(0,0),(-1,-1),10),('BOTTOMPADDING',(0,0),(-1,-1),10)]));return t
+
+def picture(name,width=BW):
+    with PILImage.open(ART/name) as im:height=width*im.height/im.width
+    return Image(str(ART/name),width=width,height=height,hAlign='CENTER')
+
+def page(c,doc):
+    n=doc.page;c.saveState();c.setFillColor(PAPER);c.rect(0,0,W,H,fill=1,stroke=0)
+    c.setFillColor(PURPLE);c.rect(0,H-8,W,8,fill=1,stroke=0)
+    tag,title=PAGES[n-1] if n<=len(PAGES) else ('GUIDA','Continua')
+    c.setFillColor(TEAL);c.setFont('Bold',9);c.drawString(44,792,tag)
+    c.setFillColor(INK);c.setFont('Bold',27);c.drawString(44,756,title)
+    c.setFillColor(PURPLE);c.setFont('Text',9);c.drawRightString(W-44,791,'YUN JIN COMPANION  1.0')
+    c.setStrokeColor(LINE);c.line(44,734,W-44,734);c.line(44,42,W-44,42)
+    c.setFont('Text',8);c.setFillColor(PURPLE);c.drawString(44,25,'Guida · versione 1.0')
+    c.drawRightString(W-44,25,f'{n:02d} / {len(PAGES):02d}')
+    if n in (6,7):
+        art='conduct16.png' if n==6 else 'stopwatch16.png'
+        c.drawImage(str(ART/art),W-91,742,40,47,mask='auto',preserveAspectRatio=True,anchor='c')
+    c.restoreState()
+
+story=[]
+# 1
+story += [p('Una compagna per appunti, promemoria, concentrazione e musica.'),
+    call('<b>Windows 10/11, 64 bit.</b> Estrai tutto lo ZIP prima di avviare l’app.'),
+    h('Installa'),p('<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai <b>Yun-Jin-Companion-1.0.zip</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento.'),
+    p('L’avviatore cerca Python. Se manca, scarica Python ufficiale e verifica il file. Installa l’app nel tuo profilo, con un ambiente separato, e crea i collegamenti su Desktop e nel menu Start.'),
+    h('Dopo l’installazione'),p('Apri <b>Yun Jin Companion</b> dal collegamento. Un doppio clic sul personaggio apre il pannello; il clic destro apre il menu. Scegli uno strumento dalla barra laterale.'),
+    picture('appunti.png',390),Spacer(1,9),
+    p('Se nella barra delle applicazioni resta la vecchia icona Python, rimuovi quel collegamento fissato e fissa <b>Yun Jin Companion</b> dal menu Start, dopo aver eseguito il nuovo Windows.cmd.','small'),PageBreak()]
+# 2
+story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, estrai lo ZIP e apri <b>Mac.command</b>. Se Python manca, l’avviatore propone l’installer ufficiale: completalo quando richiesto. In seguito usa <b>Yun Jin Companion.app</b>, sulla Scrivania o in <b>~/Applications</b>.'),
+    h('Linux'),p('Servono un desktop grafico, Python a 64 bit e il modulo venv. Dalla cartella estratta esegui <b>bash Linux.sh</b>; poi usa il menu applicazioni. Su Wayland la posizione del personaggio dipende dal compositor; X11 offre maggiore compatibilità.'),
+    h('Muovi e controlla Yun Jin'),table(['Comando','Azione'],[
+        ['Trascina il personaggio','Sposta Yun Jin sullo schermo.'],
+        ['Doppio clic','Apre il pannello.'],['Clic destro / Ctrl-clic su Mac','Apre strumenti, comportamento, animazioni e aspetto.'],
+        ['Comportamento','Pausa, ripresa, passeggiata, esibizione e carattere. Seguimi parte dopo 2 secondi e dura 9 secondi.'],
+        ['Animazioni','Esegui una sequenza oppure ripetila. Riprendi termina la posa mantenuta.'],
+        ['Aspetto','Dimensioni, opacità, monitor e recupero del pet fuori schermo.']]),
+    h('Scorciatoie Windows'),table(['Tasti','Azione'],[
+        ['Ctrl+Alt+J','Pannello'],['Ctrl+Alt+R','Nuovo promemoria'],['Ctrl+Alt+L','Leggi testo copiato'],['Ctrl+Alt+S','Interrompi voce']]),Spacer(1,10),
+    p('I comandi sono disponibili anche dal menu dell’icona nell’area di notifica. Chiudere il pannello lascia Yun Jin aperta; <b>Chiudi</b> nel menu termina l’app.','small'),PageBreak()]
+# 3
+story += [picture('appunti.png'),Spacer(1,12),
+    table(['Controllo','Uso'],[['Nuovo','Crea un appunto. Titolo e testo si salvano automaticamente.'],
+        ['Importa','Aggiunge il contenuto copiato, un file o una cartella. Puoi anche trascinarli nel pannello o sul pet.'],
+        ['Leggi','Pronuncia la selezione, oppure l’intero appunto.'],
+        ['Menu ⋯','Salvataggio esplicito o eliminazione.'],
+        ['ChatGPT','Mostra tipo di richiesta e istruzioni facoltative. Copia e apri prepara il testo e apre ChatGPT.']]),Spacer(1,10),
+    p('<b>In ChatGPT incolla la richiesta.</b> Eventuali immagini o file vanno allegati manualmente: il pet non li invia.'),
+    p('Le immagini incollate vengono conservate. File e cartelle restano collegamenti agli originali: se li sposti, aggiorna il riferimento. Eliminare l’appunto non elimina il file collegato.','small'),PageBreak()]
+# 4
+pair=Table([[picture('promemoria.png',270),picture('avviso.png',214)]],colWidths=[283,BW-283])
+pair.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),0),('RIGHTPADDING',(0,0),(-1,-1),0)]))
+story += [pair,Spacer(1,16),h('Crea un promemoria'),
+    p('Apri <b>Promemoria → Nuovo</b>. Scrivi il contenuto, scegli <b>Tra</b> per un intervallo o <b>Data e ora</b> per una scadenza. I valori rapidi impostano 5, 15, 25 o 60 minuti. Premi <b>Salva</b>.'),
+    table(['Quando arriva','Cosa fare'],[['Fatto','Completa il promemoria.'],['Tra 10 min','Rimanda dalla notifica. Nel pannello puoi scegliere un intervallo diverso.'],
+        ['Icona elenco','Apre tutti i promemoria.'],['×','Nasconde la notifica; il promemoria resta da gestire.']]),
+    h('Gestisci l’elenco'),p('Seleziona una riga per completarla o rimandarla. Il menu <b>⋯</b> contiene <b>Modifica</b> ed <b>Elimina</b>; il doppio clic modifica. Attiva <b>Completati</b> per vedere anche gli avvisi già gestiti.'),
+    call('<b>Yun Jin deve essere aperta per avvisarti.</b> Dopo una sospensione o al successivo avvio recupera le scadenze passate.'),Spacer(1,12),
+    p('Il numero sul pet e nella barra laterale indica gli avvisi da gestire. Il silenzio temporaneo sospende voce e campanelli; gli avvisi visivi rimangono attivi. Durante il metronomo i promemoria sono silenziosi.','small'),PageBreak()]
+# 5
+story += [picture('voce.png',460),Spacer(1,12),
+    p('In <b>Voce</b>, attiva la lettura e scegli se pronunciare i promemoria. <b>Ascolta</b> legge il campo di testo; <b>Leggi testo copiato</b> usa gli appunti del sistema. <b>Stop</b> compare durante la lettura o la preparazione.'),
+    table(['Servizio','Regolazioni'],[['Microsoft Edge','Voce, velocità, intonazione e volume.'],['Google Translate','Lingua, lettura lenta e volume; la voce è scelta dal servizio.']]),Spacer(1,10),
+    p('Il menu <b>⋯</b> svuota la cache o ripristina Elsa: italiano, +20% di velocità, +15 Hz, volume 70%. La lettura accetta fino a 3.000 caratteri; seleziona un passaggio per testi più lunghi.'),
+    p('<b>La sintesi vocale usa Internet e invia il testo al servizio scelto.</b> Non servono chiavi API. Edge e gTTS sono accessi non ufficiali: disponibilità e limiti dipendono dai servizi. Gli audio già letti restano nella cache locale.','small'),
+    p('I volumi sono separati: voce in <b>Voce</b>, campanelli in <b>Impostazioni</b>, click nel <b>Metronomo</b>. Una lettura manuale ferma il metronomo.','small'),PageBreak()]
+# 6
+story += [picture('metronomo.png',450),Spacer(1,12),
+    table(['Controllo','Uso'],[['BPM / Tap tempo','Da 20 a 400. I clic ripetuti su Tap tempo impostano la velocità.'],
+        ['Accento','Evidenzia il primo battito di gruppi da 1 a 32. Disattivalo per click uniformi.'],
+        ['Scalata','Arrivo è il BPM finale; Passo è la variazione. Ogni sceglie l’intervallo in battiti o secondi.'],
+        ['Al termine','Continua al BPM finale o ferma dopo un ultimo intervallo completo.']]),Spacer(1,10),
+    p('<b>Esempio:</b> 80 → 120 BPM, passo 4, ogni 16 battiti. La scalata può anche scendere; il cambio avviene sul primo battito alla soglia o dopo di essa, senza saltare il tempo finale.'),
+    p('Premi <b>Avvia</b>; per cambiare i parametri premi <b>Ferma</b>. Il volume resta regolabile. Chiudere il pannello lascia suonare il metronomo; la sospensione del computer lo ferma. Cuffie Bluetooth possono ritardare l’audio rispetto al gesto.','small'),PageBreak()]
+# 7
+story += [picture('cronometro.png',400),Spacer(1,10),
+    p('<b>Avvia / Riprendi</b> continua il conteggio; <b>Pausa</b> lo sospende. <b>Parziale</b> registra il tempo dall’ultimo passaggio e il totale. L’icona con la freccia circolare azzera tempo e parziali.'),
+    p('<b>Copia</b> trasferisce la tabella negli appunti; <b>CSV</b> esporta durate e totali in secondi. Il cronometro prosegue a pannello chiuso. Chiudendo Yun Jin viene salvato e messo in pausa.'),
+    h('Focus'),picture('focus.png',370),Spacer(1,10),
+    p('Imposta da 1 a 180 minuti e premi <b>Avvia</b>. Yun Jin sospende passeggiate ed esibizioni spontanee; i comandi manuali e i promemoria continuano a funzionare.'),
+    p('Alla fine arriva l’avviso di pausa e lo stiracchiamento, quando voce e pannello lo consentono. La sessione non riparte da sola. <b>Interrompi</b> annulla il conto alla rovescia; una scadenza passata viene recuperata al riavvio.','small'),PageBreak()]
+# 8
+story += [h('Dove sono i dati'),p('In <b>Impostazioni → Cartella dati</b> trovi appunti, immagini, promemoria e preferenze. Gli strumenti musicali e i dati personali funzionano localmente.'),
+    table(['Sistema','Cartella'],[['Windows','%LOCALAPPDATA%\\YunJinPet'],['macOS','~/Library/Application Support/YunJinPet'],['Linux','~/.local/share/YunJinPet<br/>(oppure XDG_DATA_HOME)']]),
+    h('Backup'),p('Scegli <b>Impostazioni → Backup</b> e salva lo ZIP. Include il database, le immagini incollate e una copia leggibile degli appunti e dei promemoria. I file esterni collegati non vengono duplicati. Posizione, carattere e dimensione del pet sono impostazioni del sistema e non fanno parte del backup.'),
+    h('Ripristino manuale'),p('<b>1.</b> Chiudi Yun Jin e copia la cartella dati in un luogo sicuro.<br/><b>2.</b> Sposta dalla cartella dati <b>companion.sqlite3</b> e gli eventuali file <b>companion.sqlite3-wal</b> e <b>companion.sqlite3-shm</b>.<br/><b>3.</b> Inserisci il database e la cartella <b>attachments</b> del backup.<br/><b>4.</b> Riapri Yun Jin. Se hai cambiato computer, aggiorna i collegamenti ai file esterni.'),
+    h('Aggiorna o ripara'),p('Chiudi Yun Jin, estrai il nuovo pacchetto e avvia <b>Windows.cmd</b>, <b>Mac.command</b> o <b>Linux.sh</b>. L’installer sostituisce il programma e aggiorna le dipendenze conservando i dati. Ripeti l’avvio se il collegamento smette di funzionare dopo aver rimosso Python.'),
+    h('Disinstalla'),p('Chiudi l’app e rimuovi i collegamenti. Sul Mac elimina anche l’app in <b>~/Applications</b>. Nella cartella dati rimuovi <b>program</b> e <b>runtime</b>; su Windows anche l’eventuale <b>python-3.13</b>. Conserva database e attachments per riusarli, oppure esporta un backup prima di eliminare tutta la cartella.'),
+    call('Per condividere l’app invia lo <b>ZIP di distribuzione</b>. La tua cartella dati contiene appunti personali e non va inclusa.'),PageBreak()]
+# 9
+story += [table(['Problema','Controllo'],[
+    ['Yun Jin non si vede','Menu dell’area di notifica → Aspetto → Riporta sullo schermo.'],
+    ['La voce non parte','Controlla Internet, volume e uscita audio. In Voce prova l’altro servizio o svuota la cache.'],
+    ['Promemoria senza voce','Attiva Voce e Leggi promemoria; termina il silenzio dal menu Voce o ferma il metronomo.'],
+    ['Il metronomo non suona','Controlla l’uscita audio del sistema. Dopo aver cambiato dispositivo, premi Ferma e Avvia.'],
+    ['Il pet resta fermo','Chiudi il pannello. In Comportamento togli Pausa completa e scegli Riprendi. Controlla Focus e il carattere Tranquilla.'],
+    ['Avvio bloccato','Controlla la provenienza del pacchetto e le autorizzazioni del sistema. Su dispositivi gestiti rivolgiti all’amministratore.'],
+    ['Installazione interrotta','Conserva il messaggio, verifica connessione e spazio libero, poi ripeti l’avvio. Il log è yun-jin.log nella cartella dati.']]),
+    h('Requisiti e accesso alla rete'),p('Prima installazione e voce richiedono Internet. Appunti, promemoria, focus, cronometro e metronomo funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
+    h('Crediti e licenze'),p('Progetto fan non ufficiale. Yun Jin è un personaggio di Genshin Impact; personaggio e marchi appartengono ai rispettivi titolari. Lo sprite originale fornito dall’utente è conservato. Le animazioni aggiuntive sono generate da riferimenti e revisionate. Le immagini della guida provengono dai file definitivi dell’app.','small'),
+    p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts e gTTS mantengono le rispettive licenze. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
+    h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small')]
+
+doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion 1.0 - Guida',author='Yun Jin Companion',pageCompression=1)
+frame=Frame(44,53,BW,666,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)
+doc.addPageTemplates(PageTemplate(id='guide',frames=[frame],onPage=page));doc.build(story)
+print(OUT)

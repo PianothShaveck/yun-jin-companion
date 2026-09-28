@@ -1,0 +1,107 @@
+[
+  {
+    "name": "talking16",
+    "frames": 16,
+    "height_range": [
+      218,
+      221
+    ],
+    "reference_height": 219.0,
+    "neighbor_intersections": 0
+  },
+  {
+    "name": "reminder16",
+    "frames": 16,
+    "height_range": [
+      301,
+      311
+    ],
+    "reference_height": 306.0,
+    "neighbor_intersections": 0,
+    "packed_anchors_preserved": true
+  },
+  {
+    "name": "writing16",
+    "frames": 16,
+    "height_range": [
+      247,
+      255
+    ],
+    "reference_height": 248.0,
+    "neighbor_intersections": 0
+  },
+  {
+    "name": "celebrate16",
+    "frames": 16,
+    "height_range": [
+      236,
+      316
+    ],
+    "reference_height": 306.0,
+    "neighbor_intersections": 0,
+    "packed_anchors_preserved": true
+  },
+  {
+    "name": "waiting16",
+    "frames": 16,
+    "height_range": [
+      277,
+      281
+    ],
+    "reference_height": 278.0,
+    "neighbor_intersections": 0
+  },
+  {
+    "name": "pirouette16",
+    "frames": 16,
+    "height_range": [
+      272,
+      294
+    ],
+    "reference_height": 284.0,
+    "neighbor_intersections": 0,
+    "packed_anchors_preserved": true
+  },
+  {
+    "name": "stretch16",
+    "frames": 16,
+    "height_range": [
+      225,
+      231
+    ],
+    "reference_height": 229.0,
+    "neighbor_intersections": 0
+  },
+  {
+    "name": "conduct16",
+    "frames": 16,
+    "height_range": [
+      290,
+      292
+    ],
+    "reference_height": 291.0,
+    "neighbor_intersections": 0
+  },
+  {
+    "name": "stopwatch16",
+    "frames": 16,
+    "height_range": [
+      267,
+      274
+    ],
+    "reference_height": 271.0,
+    "neighbor_intersections": 0,
+    "packed_anchors_preserved": true
+  },
+  {
+    "name": "dance16",
+    "frames": 16,
+    "height_range": [
+      262,
+      297
+    ],
+    "reference_height": 294.0,
+    "neighbor_intersections": 0,
+    "packed_anchors_preserved": true
+  }
+]
