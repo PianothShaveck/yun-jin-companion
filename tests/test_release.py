@@ -237,4 +237,50 @@ class GuiTests(unittest.TestCase):
    self.assertFalse(self.pet.metronome.start(MetroConfig()))
    self.assertIn('Nessuna uscita',self.pet.metronome.status)
 
+ def test_panel_does_not_freeze_animation_or_override_pause(self):
+  pet=self.pet;pet.panel.close();pet.paused=False
+  pet.sequence([('dance16',3)])
+  pet.open_panel(tab=0)
+  before=pet.frame
+  for _ in range(5):
+   pet.last_tick=time.monotonic()-.1
+   pet.tick()
+  self.assertFalse(pet.paused)
+  self.assertNotEqual(pet.frame,before)
+  pet.set_paused(True)
+  pet.open_panel(tab=2);pet.panel.close()
+  self.assertTrue(pet.paused)
+  pet.paused=False;pet.idle()
+
+ def test_voice_and_music_end_with_panel_visible(self):
+  pet=self.pet;pet.open_panel()
+  for animate in (pet.voice_animation,pet.music_animation):
+   for paused in (False,True):
+    pet.paused=paused
+    animate(True);animate(False)
+    self.assertEqual(pet.paused,paused)
+  pet.paused=False;pet.panel.close()
+
+ def test_menu_releases_pause_before_tool_dialog(self):
+  from PyQt6.QtWidgets import QMenu,QDialog
+  from PyQt6.QtCore import QTimer,QPoint
+  from PyQt6.QtGui import QContextMenuEvent
+  pet=self.pet;pet.paused=False;pet.drag_anchor=QPoint(3,4)
+  observations=[]
+  def choose_tool():
+   menu=QApplication.activePopupWidget()
+   observations.append(isinstance(menu,QMenu) and pet.menu_open)
+   menu.close()
+   # A tool action can enter a modal event loop before QMenu.exec returns.
+   dialog=QDialog()
+   def inspect():
+    observations.append(not pet.menu_open and pet.drag_anchor is None)
+    dialog.accept()
+   QTimer.singleShot(0,inspect)
+   dialog.exec()
+  QTimer.singleShot(0,choose_tool)
+  pet.contextMenuEvent(QContextMenuEvent(QContextMenuEvent.Reason.Mouse,QPoint(),QPoint()))
+  self.assertEqual(observations,[True,True])
+  self.assertFalse(pet.menu_open)
+
 if __name__=='__main__':unittest.main(verbosity=2)
