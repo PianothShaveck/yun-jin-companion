@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the final 1.0 manual. Screenshots come from render_guide_assets.py."""
+"""Build the final 1.0.1 manual. Screenshots come from render_guide_assets.py."""
 from pathlib import Path
 from reportlab.platypus import (BaseDocTemplate,PageTemplate,Frame,Paragraph,
     Spacer,PageBreak,Table,TableStyle,Image)
@@ -47,32 +47,102 @@ def picture(name,width=BW):
     with PILImage.open(ART/name) as im:height=width*im.height/im.width
     return Image(str(ART/name),width=width,height=height,hAlign='CENTER')
 
+def cover(c):
+    """Vector cover composed around the approved character artwork."""
+    import math
+    c.saveState()
+    plum=HexColor('#292238');muted=HexColor('#c3b4cf')
+    rose=HexColor('#eab8cf');blue=HexColor('#a2d0da');cream=HexColor('#fcf6f2')
+    c.setFillColor(plum);c.rect(0,0,W,H,stroke=0,fill=1)
+    # Fine inset rule and small editorial labels.
+    c.setStrokeColor(HexColor('#665371'));c.setLineWidth(.6)
+    c.rect(24,24,W-48,H-48,stroke=1,fill=0)
+    c.setFillColor(blue);c.setFont('Bold',9)
+    c.drawString(48,H-62,'GUIDA ILLUSTRATA')
+    c.setFillColor(cream);c.setFont('Text',9)
+    c.drawRightString(W-48,H-62,'VERSIONE 1.0.1')
+    c.setStrokeColor(HexColor('#665371'));c.line(48,H-82,W-48,H-82)
+    c.setFillColor(cream);c.setFont('Bold',55)
+    c.drawCentredString(W/2,681,'YUN JIN')
+    c.setFillColor(rose);c.setFont('Text',27)
+    c.drawCentredString(W/2,644,'Companion')
+    c.setFillColor(muted);c.setFont('Text',11)
+    c.drawCentredString(W/2,613,'Una piccola compagna per il tuo desktop')
+    # A stage-like medallion, with thin orbit lines and musical details.
+    cx,cy=W/2,397
+    c.setStrokeColor(HexColor('#6d587e'));c.setLineWidth(.6)
+    c.circle(cx,cy,171,stroke=1,fill=0)
+    c.setFillColor(HexColor('#393047'));c.circle(cx,cy,157,stroke=0,fill=1)
+    c.setFillColor(HexColor('#d8c3dd'));c.circle(cx,cy,137,stroke=0,fill=1)
+    c.setFillColor(cream);c.circle(cx,cy,126,stroke=0,fill=1)
+    for angle,color in [(26,blue),(146,rose),(236,blue),(310,rose)]:
+        x=cx+171*math.cos(math.radians(angle));y=cy+171*math.sin(math.radians(angle))
+        c.setFillColor(color);c.circle(x,y,3,stroke=0,fill=1)
+    c.setFillColor(HexColor('#e7dce8'));c.ellipse(cx-65,cy-100,cx+65,cy-88,fill=1,stroke=0)
+    # Place the approved atlas directly, retaining its full source resolution.
+    import json
+    atlas=ROOT/'app/assets'
+    spec=next(a for a in json.loads((atlas/'animations.json').read_text())['animations']
+              if a['name']=='conduct16')
+    frame=6;sx,sy,sw,sh=spec['frame_rects'][frame];scale=215/sh
+    left,bottom=cx-sw*scale/2,cy-95
+    with PILImage.open(atlas/spec['file']) as im:iw,ih=im.size
+    c.saveState();clip=c.beginPath()
+    for row,x,width in spec['frame_clip_rows'][frame]:
+        clip.rect(left+x*scale,bottom+(sh-row-1)*scale,width*scale,scale)
+    c.clipPath(clip,stroke=0,fill=0)
+    c.drawImage(str(atlas/spec['file']),left-sx*scale,bottom-(ih-sy-sh)*scale,
+                iw*scale,ih*scale,mask='auto')
+    c.restoreState()
+    # Musical notes echo the app's metronome without adding interface clutter.
+    for x,y,color in [(105,465,blue),(476,330,rose)]:
+        c.setStrokeColor(color);c.setFillColor(color);c.setLineWidth(1.5)
+        c.ellipse(x-9,y-4,x+3,y+3,stroke=0,fill=1)
+        c.line(x+3,y,x+3,y+29);c.line(x+3,y+29,x+15,y+25)
+    for x,y in [(121,319),(469,494)]:
+        c.setStrokeColor(rose);c.setLineWidth(.7)
+        c.line(x-5,y,x+5,y);c.line(x,y-5,x,y+5)
+    c.setFillColor(blue);c.setFont('Bold',9)
+    c.drawCentredString(W/2,183,'APPUNTI   /   TEMPO   /   MUSICA')
+    c.setFillColor(cream);c.setFont('Text',11)
+    c.drawCentredString(W/2,156,'Installa, personalizza e porta Yun Jin con te.')
+    c.setStrokeColor(HexColor('#665371'));c.line(48,110,W-48,110)
+    c.setFillColor(muted);c.setFont('Text',9)
+    c.drawString(48,85,'Windows · macOS · Linux')
+    c.drawRightString(W-48,85,'SETTEMBRE 2026')
+    c.setFont('Text',7);c.drawString(48,62,'Progetto fan indipendente · Personaggio di Genshin Impact')
+    c.restoreState()
+
 def page(c,doc):
-    n=doc.page;c.saveState();c.setFillColor(PAPER);c.rect(0,0,W,H,fill=1,stroke=0)
+    n=doc.page-1
+    if n==0:
+        cover(c)
+        return
+    c.saveState();c.setFillColor(PAPER);c.rect(0,0,W,H,fill=1,stroke=0)
     c.setFillColor(PURPLE);c.rect(0,H-8,W,8,fill=1,stroke=0)
     tag,title=PAGES[n-1] if n<=len(PAGES) else ('GUIDA','Continua')
     c.setFillColor(TEAL);c.setFont('Bold',9);c.drawString(44,792,tag)
     c.setFillColor(INK);c.setFont('Bold',27);c.drawString(44,756,title)
-    c.setFillColor(PURPLE);c.setFont('Text',9);c.drawRightString(W-44,791,'YUN JIN COMPANION  1.0')
+    c.setFillColor(PURPLE);c.setFont('Text',9);c.drawRightString(W-44,791,'YUN JIN COMPANION  1.0.1')
     c.setStrokeColor(LINE);c.line(44,734,W-44,734);c.line(44,42,W-44,42)
-    c.setFont('Text',8);c.setFillColor(PURPLE);c.drawString(44,25,'Guida · versione 1.0')
+    c.setFont('Text',8);c.setFillColor(PURPLE);c.drawString(44,25,'Guida · versione 1.0.1')
     c.drawRightString(W-44,25,f'{n:02d} / {len(PAGES):02d}')
     if n in (6,7):
         art='conduct16.png' if n==6 else 'stopwatch16.png'
         c.drawImage(str(ART/art),W-91,742,40,47,mask='auto',preserveAspectRatio=True,anchor='c')
     c.restoreState()
 
-story=[]
+story=[Spacer(1,1),PageBreak()]
 # 1
 story += [p('Una compagna per appunti, promemoria, concentrazione e musica.'),
     call('<b>Windows 10/11, 64 bit.</b> Estrai tutto lo ZIP prima di avviare l’app.'),
-    h('Installa'),p('<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai <b>Yun-Jin-Companion-1.0.zip</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento.'),
+    h('Installa'),p('<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai <b>Yun-Jin-Companion-1.0.1.zip</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento.'),
     p('L’avviatore cerca Python. Se manca, scarica Python ufficiale e verifica il file. Installa l’app nel tuo profilo, con un ambiente separato, e crea i collegamenti su Desktop e nel menu Start.'),
     h('Dopo l’installazione'),p('Apri <b>Yun Jin Companion</b> dal collegamento. Un doppio clic sul personaggio apre il pannello; il clic destro apre il menu. Scegli uno strumento dalla barra laterale.'),
     picture('appunti.png',390),Spacer(1,9),
     p('Se nella barra delle applicazioni resta la vecchia icona Python, rimuovi quel collegamento fissato e fissa <b>Yun Jin Companion</b> dal menu Start, dopo aver eseguito il nuovo Windows.cmd.','small'),PageBreak()]
 # 2
-story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, estrai lo ZIP e apri <b>Mac.command</b>. Se Python manca, l’avviatore propone l’installer ufficiale: completalo quando richiesto. In seguito usa <b>Yun Jin Companion.app</b>, sulla Scrivania o in <b>~/Applications</b>.'),
+story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, estrai lo ZIP e apri <b>Mac.command</b>. Se Python manca, l’avviatore propone l’installer ufficiale: completalo quando richiesto. In seguito usa <b>Yun Jin Companion.app</b>, sulla Scrivania o in <b>/Applications</b>. L’aggiornamento trasferisce qui la precedente copia da ~/Applications. Se necessario, macOS richiede l’autorizzazione per la copia.'),
     h('Linux'),p('Servono un desktop grafico, Python a 64 bit e il modulo venv. Dalla cartella estratta esegui <b>bash Linux.sh</b>; poi usa il menu applicazioni. Su Wayland la posizione del personaggio dipende dal compositor; X11 offre maggiore compatibilità.'),
     h('Muovi e controlla Yun Jin'),table(['Comando','Azione'],[
         ['Trascina il personaggio','Sposta Yun Jin sullo schermo.'],
@@ -82,7 +152,7 @@ story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, 
         ['Aspetto','Dimensioni, opacità, monitor e recupero del pet fuori schermo.']]),
     h('Scorciatoie Windows'),table(['Tasti','Azione'],[
         ['Ctrl+Alt+J','Pannello'],['Ctrl+Alt+R','Nuovo promemoria'],['Ctrl+Alt+L','Leggi testo copiato'],['Ctrl+Alt+S','Interrompi voce']]),Spacer(1,10),
-    p('I comandi sono disponibili anche dal menu dell’icona nell’area di notifica. Chiudere il pannello lascia Yun Jin aperta; <b>Chiudi</b> nel menu termina l’app.','small'),PageBreak()]
+    p('I comandi sono disponibili anche dal menu dell’icona nell’area di notifica. Aprire il pannello non mette in pausa le animazioni. Chiuderlo lascia Yun Jin aperta; <b>Chiudi</b> nel menu termina l’app.','small'),PageBreak()]
 # 3
 story += [picture('appunti.png'),Spacer(1,12),
     table(['Controllo','Uso'],[['Nuovo','Crea un appunto. Titolo e testo si salvano automaticamente.'],
@@ -130,7 +200,7 @@ story += [h('Dove sono i dati'),p('In <b>Impostazioni → Cartella dati</b> trov
     h('Backup'),p('Scegli <b>Impostazioni → Backup</b> e salva lo ZIP. Include il database, le immagini incollate e una copia leggibile degli appunti e dei promemoria. I file esterni collegati non vengono duplicati. Posizione, carattere e dimensione del pet sono impostazioni del sistema e non fanno parte del backup.'),
     h('Ripristino manuale'),p('<b>1.</b> Chiudi Yun Jin e copia la cartella dati in un luogo sicuro.<br/><b>2.</b> Sposta dalla cartella dati <b>companion.sqlite3</b> e gli eventuali file <b>companion.sqlite3-wal</b> e <b>companion.sqlite3-shm</b>.<br/><b>3.</b> Inserisci il database e la cartella <b>attachments</b> del backup.<br/><b>4.</b> Riapri Yun Jin. Se hai cambiato computer, aggiorna i collegamenti ai file esterni.'),
     h('Aggiorna o ripara'),p('Chiudi Yun Jin, estrai il nuovo pacchetto e avvia <b>Windows.cmd</b>, <b>Mac.command</b> o <b>Linux.sh</b>. L’installer sostituisce il programma e aggiorna le dipendenze conservando i dati. Ripeti l’avvio se il collegamento smette di funzionare dopo aver rimosso Python.'),
-    h('Disinstalla'),p('Chiudi l’app e rimuovi i collegamenti. Sul Mac elimina anche l’app in <b>~/Applications</b>. Nella cartella dati rimuovi <b>program</b> e <b>runtime</b>; su Windows anche l’eventuale <b>python-3.13</b>. Conserva database e attachments per riusarli, oppure esporta un backup prima di eliminare tutta la cartella.'),
+    h('Disinstalla'),p('Chiudi l’app e rimuovi i collegamenti. Sul Mac elimina anche l’app in <b>/Applications</b>. Nella cartella dati rimuovi <b>program</b> e <b>runtime</b>; su Windows anche l’eventuale <b>python-3.13</b>. Conserva database e attachments per riusarli, oppure esporta un backup prima di eliminare tutta la cartella.'),
     call('Per condividere l’app invia lo <b>ZIP di distribuzione</b>. La tua cartella dati contiene appunti personali e non va inclusa.'),PageBreak()]
 # 9
 story += [table(['Problema','Controllo'],[
@@ -138,7 +208,7 @@ story += [table(['Problema','Controllo'],[
     ['La voce non parte','Controlla Internet, volume e uscita audio. In Voce prova l’altro servizio o svuota la cache.'],
     ['Promemoria senza voce','Attiva Voce e Leggi promemoria; termina il silenzio dal menu Voce o ferma il metronomo.'],
     ['Il metronomo non suona','Controlla l’uscita audio del sistema. Dopo aver cambiato dispositivo, premi Ferma e Avvia.'],
-    ['Il pet resta fermo','Chiudi il pannello. In Comportamento togli Pausa completa e scegli Riprendi. Controlla Focus e il carattere Tranquilla.'],
+    ['Il pet resta fermo','In Comportamento togli Pausa completa e scegli Riprendi. Controlla Focus e il carattere Tranquilla.'],
     ['Avvio bloccato','Controlla la provenienza del pacchetto e le autorizzazioni del sistema. Su dispositivi gestiti rivolgiti all’amministratore.'],
     ['Installazione interrotta','Conserva il messaggio, verifica connessione e spazio libero, poi ripeti l’avvio. Il log è yun-jin.log nella cartella dati.']]),
     h('Requisiti e accesso alla rete'),p('Prima installazione e voce richiedono Internet. Appunti, promemoria, focus, cronometro e metronomo funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
@@ -146,7 +216,7 @@ story += [table(['Problema','Controllo'],[
     p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts e gTTS mantengono le rispettive licenze. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
     h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small')]
 
-doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion 1.0 - Guida',author='Yun Jin Companion',pageCompression=1)
+doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion 1.0.1 - Guida',author='Yun Jin Companion',pageCompression=1)
 frame=Frame(44,53,BW,666,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)
 doc.addPageTemplates(PageTemplate(id='guide',frames=[frame],onPage=page));doc.build(story)
 print(OUT)
