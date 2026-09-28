@@ -1,6 +1,6 @@
 # Yun Jin Companion
 
-Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Prima release pubblica **1.0.0**.
+Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Versione **1.0.1**.
 
 ## Avvio
 
@@ -9,12 +9,30 @@ Scarica ed estrai il pacchetto completo. Chiudi eventuali versioni precedenti.
 | Sistema | Primo avvio | Avvii successivi |
 | --- | --- | --- |
 | Windows 10/11 x64 | Doppio clic su `Windows.cmd` | Collegamento **Yun Jin Companion** sul desktop |
-| macOS 13+, Intel / Apple Silicon | Doppio clic su `Mac.command` | **Yun Jin Companion.app** in Scrivania o `~/Applications` |
+| macOS 13+, Intel / Apple Silicon | Doppio clic su `Mac.command` | **Yun Jin Companion.app** in Scrivania o `/Applications` |
 | Linux desktop x64 | `bash Linux.sh` con Python e venv installati | Menu applicazioni |
 
 Gli avviatori Windows e macOS cercano Python; se manca, scaricano l'installer ufficiale e ne verificano SHA-256. Le dipendenze sono installate in un ambiente privato. Sul Mac completa l'installer di Python quando richiesto. Serve Internet per la prima installazione e per la sintesi vocale.
 
 La guida unica e completa è [Guida.pdf](Guida.pdf), disponibile anche dal pulsante **Guida** nell'app. Include installazione, funzioni, comandi per ogni sistema, backup e aiuto.
+
+## Novità della 1.0.1
+
+- Su macOS l’app viene installata in `/Applications`. L’aggiornamento riconosce
+  la precedente copia in `~/Applications`, aggiorna il collegamento sulla
+  Scrivania e rimuove la vecchia copia solo dopo la verifica della nuova.
+  macOS può richiedere l’autorizzazione di un amministratore per la copia.
+- Aprire il pannello o un dialogo dal menu lascia riprendere le animazioni.
+  La Pausa completa scelta dall’utente resta attiva finché non viene disattivata.
+- Guida aggiornata, con una nuova copertina.
+
+Per aggiornare dalla 1.0, chiudi Yun Jin e avvia `Mac.command` dal nuovo ZIP
+(o l’avviatore del tuo sistema). Appunti, allegati e impostazioni sono conservati.
+L’app in `/Applications` continua a usare l’ambiente Python e i dati del tuo
+profilo; non è un’installazione condivisa fra utenti diversi del Mac.
+
+Su macOS la presenza sopra le app a schermo intero resta limitata: questa
+versione conserva l’icona nel Dock e non introduce una modalità overlay dedicata.
 
 ## Icona nella barra delle applicazioni Windows
 
@@ -118,24 +136,23 @@ e su Windows verifica le icone native di finestre e dialoghi.
 
 `python tools/package_release.py` crea lo ZIP di distribuzione in `dist/`; aggiungi `--source` per produrre anche lo ZIP del repository. Sono escluse cache, revisioni precedenti, archivi e dati personali. `Mac.command` e `Linux.sh` mantengono il permesso eseguibile.
 
-## Pubblicazione 1.0
+## Pubblicazione 1.0.1
 
-1. Estrai **Yun-Jin-Companion-1.0-Sorgenti.zip**. Carica nella radice del repository
+1. Estrai **Yun-Jin-Companion-1.0.1-Sorgenti.zip**. Carica nella radice del repository
    il contenuto della cartella estratta, comprese `.github` e `.gitignore`.
    `README.md`, `Windows.cmd` e `app/` devono trovarsi direttamente nella radice.
 2. Attendi i controlli nella scheda **Actions**. Verifica su Windows l’installazione,
    il collegamento aggiornato e l’icona nella barra; verifica anche l’uscita audio.
-3. Crea la release con tag **v1.0.0** e titolo **Yun Jin Companion 1.0**.
-   Allega **Yun-Jin-Companion-1.0.zip**, il pacchetto da scaricare e installare.
+3. Crea la release con tag **v1.0.1** e titolo **Yun Jin Companion 1.0.1**.
+   Allega **Yun-Jin-Companion-1.0.1.zip**, il pacchetto da scaricare e installare.
    GitHub fornisce automaticamente anche l’archivio dei sorgenti.
 
 Descrizione del repository: **Compagna desktop con appunti, promemoria vocali,
 focus, cronometro e metronomo.**
 
-Note per la release: **Prima versione pubblica. Interfaccia compatta, dieci
-animazioni aggiuntive e guida illustrata. Supporta Windows, macOS e Linux.**
+Note per la release: vedi [docs/RELEASE-1.0.1.md](docs/RELEASE-1.0.1.md).
 
-Gli ZIP contengono solo la versione definitiva 1.0. Il pacchetto di distribuzione
+Gli ZIP contengono solo la versione definitiva 1.0.1. Il pacchetto di distribuzione
 include app, risorse, avviatori e guida; i sorgenti aggiungono documentazione,
 strumenti di sviluppo e test. Anteprime di controllo, revisioni precedenti,
 ambienti Python e dati personali sono esclusi.

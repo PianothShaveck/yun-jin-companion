@@ -27,4 +27,4 @@ if ! PYTHON_EXE="$(find_python)"; then
     PYTHON_EXE="$(find_python)" || { printf 'Python non trovato. Completa la sua installazione e riapri Mac.command.\n'; exit 1; }
 fi
 "$PYTHON_EXE" "$PROJECT_DIR/installer/install.py"
-printf '\nPuoi chiudere questa finestra. Dal prossimo avvio usa Yun Jin Companion nella Scrivania.\n'
+printf '\nPuoi chiudere questa finestra. Dal prossimo avvio usa Yun Jin Companion in /Applications o sulla Scrivania.\n'
