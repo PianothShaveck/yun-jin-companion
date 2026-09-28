@@ -711,16 +711,26 @@ class YunJinPet(QWidget):
 
     def contextMenuEvent(self, event):
         self.click_timer.stop()
+        # Ctrl-click on macOS can begin a left-button drag before opening
+        # the context menu; the corresponding release may go to the popup.
+        self.drag_anchor = None
+        self.dragged = False
         self.menu_open = True
         opened = time.monotonic()
         menu = QMenu(self)
         self.populate_context_menu(menu)
+        def resume_after_menu():
+            if self.menu_open:
+                self.follow_until += time.monotonic() - opened
+                self.last_tick = time.monotonic()
+                self.menu_open = False
+        # exec() may not return until an action's modal dialog closes.
+        # Resume when the popup actually hides, before that dialog opens.
+        menu.aboutToHide.connect(resume_after_menu)
         try:
             menu.exec(event.globalPos())
         finally:
-            self.follow_until += time.monotonic() - opened
-            self.last_tick = time.monotonic()
-            self.menu_open = False
+            resume_after_menu()
             menu.deleteLater()
 
     def open_panel(self):

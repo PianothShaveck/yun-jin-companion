@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.0: desktop companion and practice tools."""
+"""Yun Jin Companion 1.0.1: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -171,7 +171,6 @@ class Companion(YunJinPet):
         self.announced=set()
         self.due_count=0
         self.closing=False
-        self.panel_was_paused=False
         self.reminder_dialog=None
         super().__init__()
         icon=QIcon(str(BASE/'favicon.png'))
@@ -294,7 +293,7 @@ class Companion(YunJinPet):
     def music_animation(self,active):
         if active:
             if self.music_restore is None:
-                self.music_restore=((self.panel_was_paused if self.panel and self.panel.isVisible() else self.paused),self.locked,self.animation)
+                self.music_restore=(self.paused,self.locked,self.animation)
             self.cancel();self.paused=False;self.state='conducting'
             self.play(self.event_animation('conducting','work'))
         elif self.music_restore is not None:
@@ -302,7 +301,7 @@ class Companion(YunJinPet):
             if self.state=='conducting':
                 if locked:self.hold_pose(animation)
                 else:self.idle()
-                self.paused=paused or bool(self.panel and self.panel.isVisible())
+                self.paused=paused
 
     def animate(self,dt):
         if self.state=='conducting' and self.metronome and self.metronome.running:
@@ -351,7 +350,7 @@ class Companion(YunJinPet):
             if self.metronome.running:
                 self.metronome.stop()
             if self.voice_restore is None:
-                self.voice_restore=((self.panel_was_paused if self.panel and self.panel.isVisible() else self.paused),self.locked,self.animation)
+                self.voice_restore=(self.paused,self.locked,self.animation)
             elif self.state==('voice_wait' if preparing else 'voice'):
                 return
             self.cancel()
@@ -366,7 +365,7 @@ class Companion(YunJinPet):
                     self.hold_pose(animation)
                 else:
                     self.idle()
-                self.paused=paused or bool(self.panel and self.panel.isVisible())
+                self.paused=paused
 
     def greet(self):
         super().greet()
@@ -376,12 +375,7 @@ class Companion(YunJinPet):
     def open_panel(self, checked=False, tab=0, subtab=None):
         if self.panel is None:
             self.panel=Panel(self)
-        if not self.panel.isVisible():
-            restore=self.voice_restore or self.music_restore
-            self.panel_was_paused=restore[0] if restore else self.paused
-        # Freeze only the pet while editing; reminder timer remains independent.
-        if self.state not in ('voice','voice_wait','conducting'):
-            self.paused=True
+        # Opening a tool must not change the user's explicit pause setting.
         self.panel.show_page(tab,subtab)
         self.panel.refresh_reminders()
         self.panel.show()
@@ -389,7 +383,6 @@ class Companion(YunJinPet):
         self.panel.activateWindow()
 
     def panel_closed(self):
-        self.paused=False if self.state in ('voice','voice_wait','conducting') else self.panel_was_paused
         self.last_tick=time.monotonic()
         self.flush_feedback()
 
@@ -410,9 +403,8 @@ class Companion(YunJinPet):
         self.queue_feedback('saved','review')
 
     def queue_feedback(self,event,fallback):
-        # A panel pauses roaming. Show the reaction on closing it, without
-        # interrupting speech, dragging, or an explicitly held pose.
-        if self.locked or (self.paused and not (self.panel and self.panel.isVisible())):
+        # Defer feedback while editing, without interrupting explicit pauses.
+        if self.locked or self.paused:
             return
         self.pending_feedback=(event,fallback)
         self.flush_feedback()
