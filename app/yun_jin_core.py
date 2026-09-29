@@ -881,7 +881,8 @@ def main():
     try:
         pet = YunJinPet()
     except Exception as exc:
-        QMessageBox.critical(None, 'Yun Jin · avvio non riuscito', str(exc))
+        from yun_jin_dialogs import Messages
+        Messages.critical(None, 'Yun Jin · avvio non riuscito', str(exc))
         return 1
     pet.show()
     mac_all_spaces(pet)

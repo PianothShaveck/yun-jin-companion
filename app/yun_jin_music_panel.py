@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import (QWidget,QVBoxLayout,QHBoxLayout,QFormLayout,QTabWid
     QSpinBox,QCheckBox,QComboBox,QSlider,QTreeWidget,QTreeWidgetItem,QHeaderView,
     QFileDialog,QApplication,QMessageBox)
 from yun_jin_ui import plain_label,button,stepper,card,scroll_page,BeatIndicator,icon_button
+from yun_jin_dialogs import Messages, choose_files
 from yun_jin_music import MetroConfig,format_elapsed
 
 
@@ -26,17 +27,17 @@ class MusicPanel(QWidget):
         self.bpm=spin(20,400,config.bpm); self.bpm.setObjectName('tempo'); self.bpm.setSuffix(' BPM')
         self.bpm.setAccessibleName('Tempo in BPM'); self.bpm.setMinimumWidth(240)
         self.bpm_controls=stepper(self.bpm)
-        row=QHBoxLayout(); row.addStretch(); row.addWidget(self.bpm_controls); row.addStretch(); display.addLayout(row)
+        row=QHBoxLayout(); row.setSpacing(12); row.addStretch(); row.addWidget(self.bpm_controls); row.addStretch(); display.addLayout(row)
         self.beat_display=plain_label('', 'metric'); self.beat_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
         display.addWidget(self.beat_display)
         self.beats=BeatIndicator(); self.beats.set_beat(-1,config.accent); display.addWidget(self.beats)
         self.beat_count=plain_label('', 'muted'); self.beat_count.setAlignment(Qt.AlignmentFlag.AlignCenter); display.addWidget(self.beat_count)
-        row=QHBoxLayout(); row.addStretch()
+        row=QHBoxLayout(); row.setSpacing(12); row.addStretch()
         self.start=button('Avvia',self.start_metro,row,glyph='play',role='primary')
         self.stop=button('Ferma',lambda:self.metro.stop(),row,glyph='stop',role='primary')
         self.tap=button('Tap tempo',self.tap_tempo,row); self.tap_times=[]; row.addStretch(); display.addLayout(row)
         self.configuration,parameters=card(layout)
-        row=QHBoxLayout()
+        row=QHBoxLayout(); row.setSpacing(12)
         self.accent_on=QCheckBox('Accento'); self.accent_on.setChecked(config.accent>0); self.controls.append(self.accent_on)
         row.addWidget(self.accent_on)
         self.accent=spin(1,32,config.accent or 4); self.accent.setSuffix(' battiti'); self.accent.setAccessibleName('Battiti per accento')
@@ -52,10 +53,10 @@ class MusicPanel(QWidget):
         self.finish.setCurrentIndex(max(0,self.finish.findData(config.finish))); self.controls.append(self.finish)
         self.ramp_box=QWidget(); rf=QFormLayout(self.ramp_box); rf.setContentsMargins(0,0,0,0); rf.setVerticalSpacing(10)
         rf.addRow('Arrivo',stepper(self.target)); rf.addRow('Passo',stepper(self.step))
-        row=QHBoxLayout(); row.addWidget(stepper(self.every),1); row.addWidget(self.unit); rf.addRow('Ogni',row)
+        row=QHBoxLayout(); row.setSpacing(12); row.addWidget(stepper(self.every),1); row.addWidget(self.unit); rf.addRow('Ogni',row)
         rf.addRow('Al termine',self.finish); parameters.addWidget(self.ramp_box)
         self.ramp.toggled.connect(self.ramp_box.setVisible); self.ramp_box.setVisible(config.ramp)
-        vol=QHBoxLayout(); vol.addWidget(plain_label('Volume'))
+        vol=QHBoxLayout(); vol.setSpacing(12); vol.addWidget(plain_label('Volume'))
         self.volume=QSlider(Qt.Orientation.Horizontal); self.volume.setRange(0,100); self.volume.setValue(self.metro.volume)
         self.volume.setAccessibleName('Volume metronomo'); self.volume.valueChanged.connect(self.metro.set_volume)
         self.volume_label=plain_label(f'{self.metro.volume}%'); self.volume_label.setMinimumWidth(38)
@@ -69,7 +70,7 @@ class MusicPanel(QWidget):
         page=QWidget(); layout=QVBoxLayout(page); layout.setContentsMargins(0,0,0,0); layout.setSpacing(14)
         hero,display=card(layout,hero=True)
         self.clock=plain_label('', 'metric'); self.clock.setAlignment(Qt.AlignmentFlag.AlignCenter); display.addWidget(self.clock)
-        row=QHBoxLayout(); row.addStretch()
+        row=QHBoxLayout(); row.setSpacing(12); row.addStretch()
         self.watch_start=button('Avvia',self.start_watch,row,glyph='play',role='primary')
         self.watch_pause=button('Pausa',self.watch.pause,row,glyph='pause',role='primary')
         self.watch_lap=button('Parziale',self.lap_watch,row,glyph='plus')
@@ -78,7 +79,7 @@ class MusicPanel(QWidget):
         self.laps.header().setSectionResizeMode(0,QHeaderView.ResizeMode.ResizeToContents)
         for column in (1,2):self.laps.header().setSectionResizeMode(column,QHeaderView.ResizeMode.Stretch)
         layout.addWidget(self.laps,1)
-        row=QHBoxLayout(); row.addStretch()
+        row=QHBoxLayout(); row.setSpacing(12); row.addStretch()
         self.copy=button('Copia',self.copy_laps,row,glyph='copy'); self.export=button('CSV…',self.export_laps,row,glyph='export')
         layout.addLayout(row); self.tabs.addTab(page,'Cronometro')
         self.watch.changed.connect(self.refresh_watch); self.refresh_watch()
@@ -141,10 +142,12 @@ class MusicPanel(QWidget):
         QApplication.clipboard().setText('\n'.join(rows))
 
     def export_laps(self):
-        path,_=QFileDialog.getSaveFileName(self,'Esporta parziali','parziali-yun-jin.csv','CSV (*.csv)')
+        files=choose_files(self,'Esporta parziali',mode='save',
+            filename='parziali-yun-jin.csv',name_filter='CSV (*.csv)')
+        path=files[0] if files else ''
         if not path:return
         try:
             with open(path,'w',encoding='utf-8-sig',newline='') as f:
                 writer=csv.writer(f); writer.writerow(['Parziale','Durata secondi','Totale secondi'])
                 for i,lap in enumerate(self.watch.laps,1):writer.writerow([i,round(lap['split'],3),round(lap['total'],3)])
-        except OSError as exc:QMessageBox.warning(self,'Esportazione non riuscita',str(exc))
+        except OSError as exc:Messages.warning(self,'Esportazione non riuscita',str(exc))

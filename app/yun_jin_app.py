@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.1.1: desktop companion and practice tools."""
+"""Yun Jin Companion 1.1.2: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QHBoxLayout, QP
                             QMenu, QMessageBox, QSystemTrayIcon)
 from yun_jin_core import YunJinPet, BASE, mac_all_spaces
 from yun_jin_data import Store, data_directory
+from yun_jin_dialogs import Messages, exec_dialog, show_dialog
 from yun_jin_panel import Panel, ReminderDialog, STYLE, plain_label, button
 from yun_jin_ui import icon_button, icon
 from yun_jin_speech import Speech
@@ -123,12 +124,12 @@ class ReminderCard(QDialog):
         self.setWindowIcon(pet.windowIcon())
         self.setFixedWidth(380)
         layout=QVBoxLayout(self); layout.setContentsMargins(18,14,18,16); layout.setSpacing(12)
-        head=QHBoxLayout()
+        head=QHBoxLayout(); head.setSpacing(12)
         self.heading=plain_label('Promemoria'); self.heading.setObjectName('section'); head.addWidget(self.heading,1)
         icon_button('note','Elenco promemoria',lambda:pet.open_panel(tab=1),head)
         icon_button('close','Nascondi',self.hide,head); layout.addLayout(head)
         self.title=plain_label(); self.title.setStyleSheet('font-size: 17px;'); layout.addWidget(self.title)
-        row=QHBoxLayout()
+        row=QHBoxLayout(); row.setSpacing(12)
         button('Fatto',self.complete,row,glyph='check',role='primary')
         button('Tra 10 min',self.snooze,row,glyph='clock'); row.addStretch(); layout.addLayout(row)
 
@@ -392,9 +393,7 @@ class Companion(YunJinPet):
         # Opening a tool must not change the user's explicit pause setting.
         self.panel.show_page(tab,subtab)
         self.panel.refresh_reminders()
-        self.panel.show()
-        self.panel.raise_()
-        self.focus_tool(self.panel)
+        show_dialog(self.panel, self)
 
     def focus_tool(self, widget):
         if self.mac_overlay and self.mac_overlay.enabled:
@@ -430,7 +429,7 @@ class Companion(YunJinPet):
             return
         self.reminder_dialog=ReminderDialog(self,existing)
         try:
-            self.reminder_dialog.exec()
+            exec_dialog(self.reminder_dialog, self)
         finally:
             self.reminder_dialog.deleteLater()
             self.reminder_dialog=None
@@ -458,6 +457,8 @@ class Companion(YunJinPet):
         self.sequence([(self.event_animation(event,fallback),1)])
 
     def poll_reminders(self):
+        if self.closing:
+            return
         try:
             rows=self.store.mark_due()
             self.due_count=len(rows)
@@ -486,7 +487,7 @@ class Companion(YunJinPet):
         except Exception:
             logging.exception('Reminder poll failed')
             self.reminder_timer.stop()
-            QMessageBox.critical(self,'Promemoria non disponibili','Non riesco a leggere o salvare i promemoria. Riavvia il pet dopo aver controllato il log nella cartella dati.')
+            Messages.critical(self,'Promemoria non disponibili','Non riesco a leggere o salvare i promemoria. Riavvia il pet dopo aver controllato il log nella cartella dati.')
 
     def refresh_reminders(self):
         rows=self.store.mark_due()
@@ -637,7 +638,7 @@ class Companion(YunJinPet):
             try:
                 self.panel.save_note()
             except Exception as exc:
-                QMessageBox.warning(self,'Appunto non salvato',str(exc))
+                Messages.warning(self,'Appunto non salvato',str(exc))
                 event.ignore()
                 return
         self.closing=True
@@ -677,12 +678,12 @@ def main():
     lock=QLockFile(str(root/'companion.lock'))
     lock.setStaleLockTime(0)
     if not lock.tryLock(50):
-        QMessageBox.information(None,'Yun Jin è già aperta',shortcut_help())
+        Messages.information(None,'Yun Jin è già aperta',shortcut_help())
         return 0
-    store=None
+    store=None; pet=None
     def exception_hook(kind,value,tb):
         logging.error('Unhandled exception',exc_info=(kind,value,tb))
-        QMessageBox.critical(None,'Yun Jin · errore',str(value)+'\n\nI dettagli sono in '+str(root/'yun-jin.log'))
+        Messages.critical(pet,'Yun Jin · errore',str(value)+'\n\nI dettagli sono in '+str(root/'yun-jin.log'))
     sys.excepthook=exception_hook
     try:
         store=Store(root)
@@ -712,7 +713,7 @@ def main():
         return app.exec()
     except Exception as exc:
         logging.exception('Startup failed')
-        QMessageBox.critical(None,'Yun Jin · avvio non riuscito',str(exc)+'\n\nCartella dati: '+str(root))
+        Messages.critical(pet,'Yun Jin · avvio non riuscito',str(exc)+'\n\nCartella dati: '+str(root))
         return 1
     finally:
         if store:

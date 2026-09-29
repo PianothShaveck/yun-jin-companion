@@ -13,10 +13,11 @@ import uuid
 from PyQt6.QtCore import QObject, QTimer, Qt, QUrl, pyqtSignal
 from PyQt6.QtGui import QDesktopServices, QTextDocument
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser,
-                            QPushButton, QProgressBar, QMessageBox)
+                            QPushButton, QProgressBar, QMessageBox, QApplication)
 from yun_jin_platform import VERSION
 from yun_jin_core import BASE
 from yun_jin_ui import STYLE
+from yun_jin_dialogs import message, owner_window, show_dialog
 import yun_jin_update as engine
 
 
@@ -29,7 +30,7 @@ class LocalNotes(QTextBrowser):
 
 class UpdateDialog(QDialog):
     def __init__(self, manager):
-        super().__init__(manager.pet, Qt.WindowType.Tool)
+        super().__init__(owner_window(manager.pet), Qt.WindowType.Tool)
         self.manager = manager
         self.setWindowTitle('Yun Jin · Aggiornamento')
         self.setStyleSheet(STYLE)
@@ -116,41 +117,7 @@ class Updates(QObject):
 
     def message(self, icon, title, text, buttons=QMessageBox.StandardButton.Ok,
                 default=QMessageBox.StandardButton.Ok, parent=None):
-        if parent is None:
-            panel = self.pet.panel
-            parent = panel if panel is not None and panel.isVisible() else self.pet
-        box = QMessageBox(parent)
-        if sys.platform == 'darwin':
-            # Native NSAlert windows bypass the Qt overlay's window levels.
-            # Set this before showing or configuring the message box.
-            box.setOption(QMessageBox.Option.DontUseNativeDialog, True)
-        # QMessageBox may select Qt.Sheet here. Set modality before the Mac
-        # overlay prepares the Qt.Tool/NSPanel flags, never after preparation.
-        box.setWindowModality(Qt.WindowModality.WindowModal)
-        box.setWindowTitle(title)
-        box.setWindowIcon(self.pet.windowIcon())
-        box.setIcon(icon)
-        box.setTextFormat(Qt.TextFormat.PlainText)
-        box.setText(text)
-        box.setStandardButtons(buttons)
-        box.setDefaultButton(default)
-        if self.pet.mac_overlay is not None:
-            self.pet.mac_overlay.prepare(box)
-        # Focus only after Qt has shown the window and the overlay has given
-        # this modal dialog its level above the settings/update panel.
-        focus = QTimer(box)
-        focus.setSingleShot(True)
-        def bring_forward():
-            if box.isVisible():
-                box.raise_()
-                self.pet.focus_tool(box)
-        focus.timeout.connect(bring_forward)
-        try:
-            focus.start(0)
-            return QMessageBox.StandardButton(box.exec())
-        finally:
-            focus.stop()
-            box.deleteLater()
+        return message(parent if parent is not None else self.pet, icon, title, text, buttons, default)
 
     def set_enabled(self, enabled):
         self.enabled = bool(enabled)
@@ -199,7 +166,7 @@ class Updates(QObject):
 
     def activities_running(self):
         p = self.pet
-        return (p.speech.busy or p.metronome.running or p.stopwatch.running or p.focus_active()
+        return (QApplication.activeModalWidget() is not None or p.speech.busy or p.metronome.running or p.stopwatch.running or p.focus_active()
                 or p.menu_open or p.drag_anchor is not None or p.reminder_dialog is not None)
 
     def skip_version(self):
@@ -226,11 +193,11 @@ class Updates(QObject):
             self.check(manual=True); return
         if self.dialog is None:
             self.dialog = UpdateDialog(self)
+        owner = owner_window(self.pet)
+        if self.dialog.parentWidget() is not owner:
+            self.dialog.setParent(owner, self.dialog.windowFlags())
         self.dialog.refresh()
-        self.dialog.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, quiet)
-        self.dialog.show()
-        if not quiet:
-            self.dialog.raise_(); self.pet.focus_tool(self.dialog)
+        show_dialog(self.dialog, self.pet, quiet=quiet)
 
     def install(self):
         if self.busy or not self.release or not self.release['automatic']:

@@ -116,7 +116,7 @@ class UpdateUiTests(unittest.TestCase):
   return result,observed
 
  def test_manual_results_above_settings_with_mac_overlay_on_and_off(self):
-  import yun_jin_updates_ui as ui
+  import yun_jin_dialogs as ui
   from yun_jin_macos import MacOverlay
   levels={};native=Mock()
   native.snapshot.side_effect=lambda widget:(int(widget.winId()),levels.get(widget,0),0)

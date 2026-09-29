@@ -26,6 +26,7 @@ jobs:
       - run: python tests/test_release.py
       - run: python tests/test_macos_overlay.py
       - run: python tests/test_behavior_updates.py
+      - run: python tests/test_dialogs_settings.py
       - run: python tests/test_updater.py
       - run: python tests/test_windows_encoding.py
       - run: python tests/test_windows_identity.py

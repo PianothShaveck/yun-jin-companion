@@ -30,7 +30,7 @@ def main():
         pet.stopwatch.laps=[{'total':42.1,'split':42.1},{'total':83.7,'split':41.6},{'total':125.8,'split':42.1}]
         panel.music.refresh_watch()
         for name,page,sub in [('appunti',0,None),('voce',3,None),('metronomo',5,0),('cronometro',5,1)]:
-            panel.resize(990,690) if name=='appunti' else panel.resize(760,550)
+            panel.resize(990,690) if name in ('appunti','voce') else panel.resize(760,550)
             panel.show_page(page,sub)
             if name=='metronomo':panel.music.ramp.setChecked(True)
             app.processEvents();panel.grab().save(str(out/(name+'.png')))

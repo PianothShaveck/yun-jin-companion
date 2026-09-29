@@ -5,7 +5,7 @@ import logging
 import weakref
 from PyQt6 import sip
 from PyQt6.QtCore import QObject, QEvent, QTimer, Qt
-from PyQt6.QtWidgets import QApplication, QWidget, QDialog, QMenu
+from PyQt6.QtWidgets import QApplication, QWidget, QDialog, QMenu, QMessageBox, QFileDialog
 
 PREFERENCE = 'mac_fullscreen_overlay'
 LABEL = 'Mostra anche sopra le app a schermo intero'
@@ -105,8 +105,11 @@ class MacOverlay(QObject):
     def prepare(self, widget):
         # Force NSPanel creation before the first show, including Qt file
         # dialogs and message boxes, so text input remains available fullscreen.
-        if isinstance(widget, QDialog) and not getattr(widget, '_overlay_prepared', False):
-            widget._overlay_prepared = True
+        if isinstance(widget, QMessageBox):
+            widget.setOption(QMessageBox.Option.DontUseNativeDialog, True)
+        elif isinstance(widget, QFileDialog):
+            widget.setOption(QFileDialog.Option.DontUseNativeDialog, True)
+        if isinstance(widget, QDialog) and widget.windowType() != Qt.WindowType.Tool:
             # Window types are mutually exclusive values, not independent
             # flags: Sheet | Tool becomes SplashScreen, not an NSPanel.
             flags = widget.windowFlags() & ~Qt.WindowType.WindowType_Mask
@@ -122,18 +125,28 @@ class MacOverlay(QObject):
             saved = self.snapshots.get(widget)
             if saved is None or saved[0] != current[0]:
                 self.snapshots[widget] = current
-            level = 1000
-            if widget.windowType() == Qt.WindowType.Popup or isinstance(widget, QMenu):
-                # QComboBox uses a private QFrame popup, not a QMenu. Giving it
-                # the pet's level leaves the entire list behind its own dialog.
-                level = 1003
-            elif isinstance(widget, QDialog):
-                level = 1002 if widget.isModal() else 1001
-            elif widget.windowType() == Qt.WindowType.ToolTip:
-                level = 1004
+            level = self.window_level(widget)
             self.native.configure(widget, level)
         finally:
             self.applying = False
+
+    def window_level(self, widget, seen=None):
+        # Every nested window must be above its owner, including a message
+        # opened by a modal reminder editor or a popup inside that message.
+        seen = set() if seen is None else seen
+        if widget in seen:
+            return 1000
+        seen.add(widget)
+        parent = widget.parentWidget()
+        owner = parent.window() if parent is not None else None
+        parent_level = self.window_level(owner, seen) if owner is not None else 1000
+        if widget.windowType() == Qt.WindowType.ToolTip:
+            return max(1004, parent_level + 1)
+        if widget.windowType() == Qt.WindowType.Popup or isinstance(widget, QMenu):
+            return max(1003, parent_level + 1)
+        if isinstance(widget, QDialog):
+            return max(1002 if widget.isModal() else 1001, parent_level + 1)
+        return 1000
 
     def set_enabled(self, enabled):
         self.error = ''

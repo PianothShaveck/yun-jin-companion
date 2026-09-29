@@ -22,6 +22,10 @@ class Speech(QObject):
     def __init__(self,pet):
         super().__init__(pet)
         self.pet=pet
+        # Migrate the two old switches to one automatic-reading preference.
+        # A previous opt-out must never enable unsolicited speech on update.
+        if self.pref('auto_reminders',None) is None:
+            self.pet.store.set_preference('tts_auto_reminders',bool(self.pref('enabled',True) and self.pref('reminders',True)))
         self.process=None
         self.player=None
         self.output=None
@@ -51,7 +55,7 @@ class Speech(QObject):
 
     def set_pref(self,key,value):
         self.pet.store.set_preference('tts_'+key,value)
-        if key=='enabled' and not value:
+        if key=='auto_reminders' and not value and self.category=='reminder':
             self.stop()
         if key=='volume' and self.output:
             self.output.setVolume(value/100)
@@ -68,13 +72,10 @@ class Speech(QObject):
         if len(text)>3000:
             self.report('Massimo 3000 caratteri. Seleziona un passaggio.')
             return False
-        if not preview and not self.pref('enabled',True):
-            self.report('Attiva la voce.')
-            return False
         if not preview and time.time()<self.pet.sound.quiet_until:
             self.report('Silenzio attivo. Riattiva i suoni dal menu.')
             return False
-        if category=='reminder' and (self.busy or (getattr(self.pet,'metronome',None) and self.pet.metronome.running) or not self.pref('reminders',True)):
+        if category=='reminder' and (self.busy or (getattr(self.pet,'metronome',None) and self.pet.metronome.running) or not self.pref('auto_reminders',True)):
             return False
         if self.player is None:
             self.report('Qt Multimedia non è disponibile: reinstalla le dipendenze.')

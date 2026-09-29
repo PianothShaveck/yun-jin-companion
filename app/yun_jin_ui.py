@@ -66,7 +66,9 @@ QListWidget::item:selected, QTreeWidget::item:selected { background: #534263; co
 QListWidget::item:hover, QTreeWidget::item:hover { background: #3b334a; }
 QHeaderView::section { background: #2c283b; color: #bfb6cd; padding: 8px;
     border: none; border-bottom: 1px solid #4b435a; }
-QCheckBox { spacing: 9px; padding: 4px 0; }
+QCheckBox { spacing: 10px; padding: 6px 0; }
+QCheckBox:disabled { color: #8e849c; }
+QLabel:disabled { color: #8e849c; }
 QCheckBox::indicator { width: 17px; height: 17px; }
 QCheckBox::indicator:unchecked { border: 1px solid #8a7d9c; border-radius: 5px; background: #211f2e; }
 QCheckBox::indicator:checked { image: url("ASSET_DIR/check.svg"); border: 1px solid #b5a4c4; border-radius: 5px; background: #706184; }
