@@ -120,10 +120,12 @@ class MacOverlay(QObject):
             if saved is None or saved[0] != current[0]:
                 self.snapshots[widget] = current
             level = 1000
-            if isinstance(widget, QDialog):
-                level = 1002 if widget.isModal() else 1001
-            elif isinstance(widget, QMenu):
+            if widget.windowType() == Qt.WindowType.Popup or isinstance(widget, QMenu):
+                # QComboBox uses a private QFrame popup, not a QMenu. Giving it
+                # the pet's level leaves the entire list behind its own dialog.
                 level = 1003
+            elif isinstance(widget, QDialog):
+                level = 1002 if widget.isModal() else 1001
             elif widget.windowType() == Qt.WindowType.ToolTip:
                 level = 1004
             self.native.configure(widget, level)

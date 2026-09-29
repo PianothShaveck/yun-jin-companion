@@ -25,6 +25,8 @@ jobs:
           python -m pip install --only-binary=:all: -r installer/requirements.txt
       - run: python tests/test_release.py
       - run: python tests/test_macos_overlay.py
+      - run: python tests/test_behavior_updates.py
+      - run: python tests/test_updater.py
       - run: python tests/test_windows_encoding.py
       - run: python tests/test_windows_identity.py
       - name: Parse Windows installers

@@ -34,6 +34,7 @@ ANIMATIONS = {
     'review': (8, 6, [0.40, 0.48, 0.45, 0.52, 0.44, 0.48]),
 }
 BUILTIN_ANIMATIONS = frozenset(ANIMATIONS)
+SLEEP_ANIMATIONS = ('sleep_in', 'sleep_loop', 'sleep_out')
 LABELS = {
     'idle': 'Riposo', 'wave': 'Saluto', 'jump': 'Salto',
     'failed': 'Capitombolo', 'wait': 'In attesa',
@@ -268,7 +269,7 @@ class YunJinPet(QWidget):
         self.setWindowIcon(QIcon(self.sheet.frames[0, 0]))
         self.setToolTip('Doppio clic: pannello · Clic destro: menu')
         self.mode = self.settings.value('mode', 'normal')
-        if self.mode not in ('normal', 'lively', 'quiet'):
+        if self.mode not in ('normal', 'lively', 'quiet', 'asleep'):
             self.mode = 'normal'
         self.allow_walk = self.settings.value('walk', True, type=bool)
         self.allow_gaze = self.settings.value('gaze', True, type=bool)
@@ -287,6 +288,10 @@ class YunJinPet(QWidget):
         self.target = None
         self.follow_until = 0.0
         self.following = False
+        self.sleep_cycles = None
+        self.sleep_after = None
+        self.wake_requested = False
+        self.next_sleep = time.monotonic() + random.uniform(600, 1200)
         self.arrival = None
         self.look = None
         self.previous_action = None
@@ -359,6 +364,8 @@ class YunJinPet(QWidget):
         self.target = None
         self.following = False
         self.follow_until = 0.
+        self.sleep_after = None
+        self.wake_requested = False
         self.arrival = None
         self.locked = False
         self.look = None
@@ -371,9 +378,63 @@ class YunJinPet(QWidget):
         self.following = False
         self.play('idle')
         self.next_decision = time.monotonic() + random.uniform(5, 10)
+        if self.mode == 'asleep':
+            self.next_decision = time.monotonic() + 1
+
+    def is_sleeping(self):
+        return self.state in ('sleep_enter', 'sleep_loop', 'sleep_exit')
+
+    def start_sleep(self, cycles=None):
+        if not all(name in ANIMATIONS for name in SLEEP_ANIMATIONS):
+            return False
+        self.cancel()
+        self.paused = False
+        self.sleep_cycles = cycles
+        self.state = 'sleep_enter'
+        self.play('sleep_in')
+        return True
+
+    def wake_up(self, after=None, leave_mode=False):
+        if leave_mode and self.mode == 'asleep':
+            self.mode = 'normal'
+            self.save_settings()
+        if not self.is_sleeping():
+            if after:
+                after()
+            return
+        self.sleep_after = after
+        self.wake_requested = True
+        self.paused = False
+        # Finish lowering herself before reversing the seated pose. Never cut
+        # between unrelated standing/seated frames midway through a transition.
+        if self.state == 'sleep_loop':
+            self.state = 'sleep_exit'
+            self.play('sleep_out')
+
+    def next_sleep_phase(self):
+        if self.state == 'sleep_enter':
+            self.state = 'sleep_exit' if self.wake_requested else 'sleep_loop'
+            self.play('sleep_out' if self.wake_requested else 'sleep_loop')
+        elif self.state == 'sleep_loop':
+            if self.sleep_cycles is not None:
+                self.sleep_cycles -= 1
+                if self.sleep_cycles <= 0:
+                    self.wake_up()
+        elif self.state == 'sleep_exit':
+            after = self.sleep_after
+            self.sleep_after = None
+            self.wake_requested = False
+            self.next_sleep = time.monotonic() + random.uniform(900, 1800)
+            self.idle()
+            if after:
+                after()
 
     def sequence(self, steps):
         """(animation, complete cycles), with no delayed callbacks from old actions."""
+        if self.is_sleeping():
+            steps = list(steps)
+            self.wake_up(lambda: self.sequence(steps), leave_mode=True)
+            return
         self.cancel()
         self.paused = False
         self.queue.extend(steps)
@@ -388,6 +449,9 @@ class YunJinPet(QWidget):
         self.play(name)
 
     def hold_pose(self, name):
+        if self.is_sleeping():
+            self.wake_up(lambda: self.hold_pose(name), leave_mode=True)
+            return
         self.paused = False
         self.cancel()
         self.locked = True
@@ -402,6 +466,9 @@ class YunJinPet(QWidget):
             self.frame += 1
             if self.frame == len(durations):
                 self.frame = 0
+                if self.is_sleeping():
+                    self.next_sleep_phase()
+                    break
                 if self.state == 'action':
                     self.loops -= 1
                     if self.loops <= 0:
@@ -442,6 +509,13 @@ class YunJinPet(QWidget):
         self.update()
 
     def decide(self, now):
+        if self.mode == 'asleep':
+            if not self.start_sleep():
+                self.next_decision = now + 10
+            return
+        if getattr(self, 'use_extra_animations', True) and now >= self.next_sleep and random.random() < .025:
+            if self.start_sleep(random.randint(5, 10)):
+                return
         if now - self.last_cursor_motion > 90:
             self.away = True
             self.sequence([('wait', 2), ('idle', 4)])
@@ -473,6 +547,9 @@ class YunJinPet(QWidget):
             self.sequence([(action, random.randint(1, 2))])
 
     def start_move(self, point, arrival='review'):
+        if self.is_sleeping():
+            self.wake_up(lambda: self.start_move(point, arrival), leave_mode=True)
+            return
         self.paused = False
         self.cancel()
         rect = self.current_screen().availableGeometry()
@@ -507,15 +584,22 @@ class YunJinPet(QWidget):
 
     def begin_follow(self):
         point = self.cursor_target()
-        if point is None:
-            self.sequence([('review', 1)])
-            return
-        self.start_move(point, 'wave')
+        self.start_move(point if point is not None else QPointF(self.pos()), 'wave')
         self.following = True
         self.follow_until = time.monotonic() + 9
 
     def call_later(self):
+        if self.is_sleeping():
+            self.wake_up(self.call_later, leave_mode=True)
+            return
+        if self.mode == 'asleep':
+            self.mode = 'normal'
+            self.save_settings()
         self.cancel()
+        self.paused = False
+        # The two seconds let the user move away from the menu. This is an
+        # explicit state: an expired idle decision must not cancel this timer.
+        self.state = 'follow_pending'
         self.call_timer.start(2000)
 
     def move_step(self, dt, now):
@@ -525,9 +609,10 @@ class YunJinPet(QWidget):
                 return
             point = self.cursor_target()
             if point is None:
-                self.sequence([('review', 1)])
-                return
-            self.target = point
+                # Wait on this monitor; resume if the pointer comes back.
+                self.target = QPointF(self.pos())
+            else:
+                self.target = point
         if self.target is None:
             self.idle()
             return
@@ -569,7 +654,10 @@ class YunJinPet(QWidget):
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.click_timer.stop()
-            self.cancel()
+            if self.is_sleeping():
+                self.wake_up(leave_mode=True)
+            else:
+                self.cancel()
             self.drag_anchor = event.globalPosition().toPoint() - self.pos()
             self.press_point = event.globalPosition().toPoint()
             self.dragged = False
@@ -583,7 +671,7 @@ class YunJinPet(QWidget):
         if self.dragged:
             self.xy = QPointF(point - self.drag_anchor)
             self.move(self.xy.toPoint())
-            if self.animation != 'wait':
+            if not self.is_sleeping() and self.animation != 'wait':
                 self.play('wait')
 
     def mouseReleaseEvent(self, event):
@@ -606,8 +694,19 @@ class YunJinPet(QWidget):
             self.open_panel()
 
     def set_mode(self, mode):
+        if mode not in ('asleep', 'quiet', 'normal', 'lively'):
+            return
         self.mode = mode
-        self.cancel()
+        if mode == 'asleep':
+            if not self.is_sleeping():
+                self.start_sleep()
+            else:
+                self.sleep_cycles = None
+                self.sleep_after = None
+        elif self.is_sleeping():
+            self.wake_up()
+        else:
+            self.cancel()
         self.save_settings()
 
     def set_size(self, size):
@@ -670,7 +769,7 @@ class YunJinPet(QWidget):
         behavior.addAction('Esibizione', self.performance)
         modes = behavior.addMenu('Carattere')
         group = QActionGroup(modes)
-        for key, label in [('quiet', 'Tranquilla'), ('normal', 'Normale'), ('lively', 'Vivace')]:
+        for key, label in [('asleep', 'Addormentata'), ('quiet', 'Tranquilla'), ('normal', 'Normale'), ('lively', 'Vivace')]:
             action = modes.addAction(label)
             action.setCheckable(True)
             action.setChecked(self.mode == key)
@@ -686,8 +785,12 @@ class YunJinPet(QWidget):
         once = animations.addMenu('Esegui')
         fixed = animations.addMenu('Ripeti')
         for name, label in LABELS.items():
+            if name in SLEEP_ANIMATIONS:
+                continue
             once.addAction(label, lambda checked=False, n=name: self.sequence([(n, 1)]))
             fixed.addAction(label, lambda checked=False, n=name: self.hold_pose(n))
+        once.addAction('Sonnellino', lambda: self.start_sleep(6))
+        fixed.addAction('Sonno', lambda: self.set_mode('asleep'))
         once.addAction('Riposo → salto → riposo', lambda: self.sequence([('idle', 1), ('jump', 1), ('idle', 1)]))
         fixed.addAction('Direzioni dello sguardo', self.gaze_demo)
         appearance = menu.addMenu('Aspetto')
@@ -741,6 +844,12 @@ class YunJinPet(QWidget):
         self.sequence([('jump', 1), ('wave', 2), ('jump', 1)])
 
     def resume(self):
+        if self.is_sleeping():
+            self.wake_up(leave_mode=True)
+            return
+        if self.mode == 'asleep':
+            self.mode = 'normal'
+            self.save_settings()
         self.paused = False
         self.cancel()
         self.next_decision = time.monotonic() + 5

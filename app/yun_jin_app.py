@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.0.2: desktop companion and practice tools."""
+"""Yun Jin Companion 1.1.0: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -53,7 +53,7 @@ class Sounds(QObject):
     def play(self, name, preview=False):
         now = time.monotonic()
         if not preview:
-            if getattr(self.pet,'metronome',None) and self.pet.metronome.running:
+            if name!='reminder' and getattr(self.pet,'metronome',None) and self.pet.metronome.running:
                 return
             if not self.enabled or time.time()<self.quiet_until:
                 return
@@ -173,6 +173,7 @@ class Companion(YunJinPet):
         self.closing=False
         self.reminder_dialog=None
         self.mac_overlay=None
+        self.updates=None
         super().__init__()
         icon=QIcon(str(BASE/'favicon.png'))
         if not icon.isNull():
@@ -207,6 +208,8 @@ class Companion(YunJinPet):
         self.reminder_timer.timeout.connect(self.poll_reminders)
         self.reminder_timer.start(1000)
         QTimer.singleShot(1500,self.poll_reminders)
+        from yun_jin_updates_ui import Updates
+        self.updates=Updates(self)
 
     def tray_activated(self, reason):
         if reason in (QSystemTrayIcon.ActivationReason.Trigger,QSystemTrayIcon.ActivationReason.DoubleClick):
@@ -254,6 +257,9 @@ class Companion(YunJinPet):
         if self.focus_active() or (self.metronome and self.metronome.running):
             self.next_decision=now+5
             return
+        if self.mode=='asleep':
+            super().decide(now)
+            return
         from yun_jin_core import ANIMATIONS
         dances=[name for name in ('dance16','pirouette16')
                 if name in ANIMATIONS and name!=self.previous_action]
@@ -292,6 +298,9 @@ class Companion(YunJinPet):
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(BASE.parent/'Guida.pdf')))
 
     def music_animation(self,active):
+        if active and self.is_sleeping():
+            self.wake_up(lambda:self.music_animation(True) if self.metronome.running else None)
+            return
         if active:
             if self.music_restore is None:
                 self.music_restore=(self.paused,self.locked,self.animation)
@@ -347,6 +356,10 @@ class Companion(YunJinPet):
             self.voice_animation(False)
 
     def voice_animation(self,active,preparing=False):
+        if active and self.is_sleeping():
+            self.wake_up(lambda:self.voice_animation(True,preparing=self.speech.process is not None)
+                         if self.speech.busy else None)
+            return
         if active:
             if self.metronome.running:
                 self.metronome.stop()
@@ -436,6 +449,8 @@ class Companion(YunJinPet):
     def flush_feedback(self):
         if (self.pending_feedback is None or self.paused or self.locked
                 or self.menu_open or self.drag_anchor is not None
+                or self.following or self.state=='follow_pending'
+                or self.is_sleeping() or self.mode=='asleep'
                 or self.speech.busy or self.metronome.running or (self.panel and self.panel.isVisible())):
             return
         event,fallback=self.pending_feedback
@@ -458,7 +473,7 @@ class Companion(YunJinPet):
                 self.speech.speak(message,category='reminder',tag=new[0]['id'])
                 if focus_due:
                     self.queue_feedback('break','wave')
-                elif not self.paused and not self.menu_open and self.drag_anchor is None and not self.locked and self.state not in ('voice','voice_wait','conducting'):
+                elif not self.paused and not self.menu_open and self.drag_anchor is None and not self.locked and not self.following and not self.is_sleeping() and self.state not in ('voice','voice_wait','conducting','follow_pending'):
                     self.sequence([(self.event_animation('reminder','wave'),2),('wait',1)])
                 if self.tray.isVisible():
                     message=new[0]['title'][:200]+(f' (+{len(new)-1} altri)' if len(new)>1 else '')
@@ -626,6 +641,8 @@ class Companion(YunJinPet):
                 event.ignore()
                 return
         self.closing=True
+        if self.updates:
+            self.updates.shutdown()
         self.save_settings()
         self.timer.stop()
         self.reminder_timer.stop()
@@ -684,6 +701,12 @@ def main():
             pet.mac_overlay.set_enabled(store.preference(PREFERENCE,True))
         mac_dock_icon(BASE/'favicon.icns')
         QTimer.singleShot(0,lambda:mac_dock_icon(BASE/'favicon.icns'))
+        # The update helper only commits the successful restart after the GUI
+        # has reached its event loop with the new code and loaded all sprites.
+        ready=os.environ.pop('YUN_JIN_UPDATE_READY','')
+        token=os.environ.pop('YUN_JIN_UPDATE_TOKEN','')
+        if ready and token:
+            QTimer.singleShot(0,lambda:Path(ready).write_text(token,encoding='utf-8'))
         app.aboutToQuit.connect(pet.save_settings)
         app.aboutToQuit.connect(lambda: pet.panel.save_note() if pet.panel else None)
         return app.exec()

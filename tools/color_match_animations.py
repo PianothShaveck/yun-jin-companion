@@ -50,8 +50,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source-assets',type=Path,required=True,help='Pristine, ungraded assets directory')
     parser.add_argument('--output-assets',type=Path,default=ROOT/'app/assets')
+    parser.add_argument('--config',type=Path,default=ROOT/'docs/palette-calibration.json')
     args=parser.parse_args()
-    config=json.loads((ROOT/'docs/palette-calibration.json').read_text())
+    config=json.loads(args.config.read_text())
     sources=[]
     # Check every input before writing any output.
     for name,digest in config['source_assets_sha256'].items():

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the final 1.0.2 manual. Screenshots come from render_guide_assets.py."""
+"""Build the final 1.1.0 manual. Screenshots come from render_guide_assets.py."""
 from pathlib import Path
 from reportlab.platypus import (BaseDocTemplate,PageTemplate,Frame,Paragraph,
     Spacer,PageBreak,Table,TableStyle,Image)
@@ -26,7 +26,8 @@ S={
 }
 PAGES=[('INIZIA QUI','Windows'),('SUL DESKTOP','macOS, Linux e comandi'),('CONSERVA','Appunti'),
        ('RICORDA','Promemoria'),('ASCOLTA','Voce e suoni'),('ESERCITATI','Metronomo'),
-       ('MISURA','Cronometro e focus'),('CONSERVA I DATI','Backup e aggiornamenti'),('AIUTO','Problemi e crediti')]
+       ('MISURA','Cronometro e focus'),('CONSERVA I DATI','Backup e manutenzione'),('SEMPRE AGGIORNATA','Aggiornamenti'),
+       ('RIPOSA','Il sonno di Yun Jin'),('AIUTO','Problemi e crediti')]
 
 def p(text,style='p'):return Paragraph(text,S[style])
 def h(text):return p(text,'h')
@@ -60,7 +61,7 @@ def cover(c):
     c.setFillColor(blue);c.setFont('Bold',9)
     c.drawString(48,H-62,'GUIDA ILLUSTRATA')
     c.setFillColor(cream);c.setFont('Text',9)
-    c.drawRightString(W-48,H-62,'VERSIONE 1.0.2')
+    c.drawRightString(W-48,H-62,'VERSIONE 1.1.0')
     c.setStrokeColor(HexColor('#665371'));c.line(48,H-82,W-48,H-82)
     c.setFillColor(cream);c.setFont('Bold',55)
     c.drawCentredString(W/2,681,'YUN JIN')
@@ -123,9 +124,9 @@ def page(c,doc):
     tag,title=PAGES[n-1] if n<=len(PAGES) else ('GUIDA','Continua')
     c.setFillColor(TEAL);c.setFont('Bold',9);c.drawString(44,792,tag)
     c.setFillColor(INK);c.setFont('Bold',27);c.drawString(44,756,title)
-    c.setFillColor(PURPLE);c.setFont('Text',9);c.drawRightString(W-44,791,'YUN JIN COMPANION  1.0.2')
+    c.setFillColor(PURPLE);c.setFont('Text',9);c.drawRightString(W-44,791,'YUN JIN COMPANION  1.1.0')
     c.setStrokeColor(LINE);c.line(44,734,W-44,734);c.line(44,42,W-44,42)
-    c.setFont('Text',8);c.setFillColor(PURPLE);c.drawString(44,25,'Guida · versione 1.0.2')
+    c.setFont('Text',8);c.setFillColor(PURPLE);c.drawString(44,25,'Guida · versione 1.1.0')
     c.drawRightString(W-44,25,f'{n:02d} / {len(PAGES):02d}')
     if n in (6,7):
         art='conduct16.png' if n==6 else 'stopwatch16.png'
@@ -136,13 +137,14 @@ story=[Spacer(1,1),PageBreak()]
 # 1
 story += [p('Una compagna per appunti, promemoria, concentrazione e musica.'),
     call('<b>Windows 10/11, 64 bit.</b> Estrai tutto lo ZIP prima di avviare l’app.'),
-    h('Installa'),p('<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai <b>Yun-Jin-Companion-1.0.2.zip</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento.'),
+    h('Installa'),p('<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai <b>Yun-Jin-Companion-1.1.0.zip</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento.'),
     p('L’avviatore cerca Python. Se manca, scarica Python ufficiale e verifica il file. Installa l’app nel tuo profilo, con un ambiente separato, e crea i collegamenti su Desktop e nel menu Start.'),
     h('Dopo l’installazione'),p('Apri <b>Yun Jin Companion</b> dal collegamento. Un doppio clic sul personaggio apre il pannello; il clic destro apre il menu. Scegli uno strumento dalla barra laterale.'),
     picture('appunti.png',390),Spacer(1,9),
     p('Se nella barra delle applicazioni resta la vecchia icona Python, rimuovi quel collegamento fissato e fissa <b>Yun Jin Companion</b> dal menu Start, dopo aver eseguito il nuovo Windows.cmd.','small'),PageBreak()]
 # 2
-story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, estrai lo ZIP e apri <b>Mac.command</b>. Se Python manca, l’avviatore propone l’installer ufficiale: completalo quando richiesto. In seguito usa <b>Yun Jin Companion.app</b>, sulla Scrivania o in <b>/Applications</b>. L’aggiornamento trasferisce qui la precedente copia da ~/Applications. Se necessario, macOS richiede l’autorizzazione per la copia.'),
+story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, estrai lo ZIP e apri <b>Mac.command</b>. Se Python manca, completa l’installer ufficiale proposto. In seguito usa <b>Yun Jin Companion.app</b> in <b>/Applications</b> o sulla Scrivania. La precedente copia in ~/Applications viene trasferita; macOS può chiedere il permesso per la copia.'),
+    p('<b>Se macOS blocca l’apertura perché lo sviluppatore non è verificato:</b> dopo il tentativo vai in <b>Impostazioni di Sistema → Privacy e Sicurezza → Apri comunque</b>, quindi conferma <b>Apri</b>. Autorizza solo il pacchetto ottenuto dalla release ufficiale. Il doppio clic, da solo, può non bastare.','small'),
     p('Yun Jin appare anche sopra le app a schermo intero. In questa modalità l’icona nel Dock scompare: usa il personaggio o il menu nella barra in alto. In <b>Impostazioni</b> puoi disattivare <b>Mostra anche sopra le app a schermo intero</b> e ripristinare il Dock. La scelta viene salvata.','small'),
     h('Linux'),p('Servono un desktop grafico, Python a 64 bit e il modulo venv. Dalla cartella estratta esegui <b>bash Linux.sh</b>; poi usa il menu applicazioni. Su Wayland la posizione del personaggio dipende dal compositor; X11 offre maggiore compatibilità.'),
     h('Muovi e controlla Yun Jin'),table(['Comando','Azione'],[
@@ -174,7 +176,7 @@ story += [pair,Spacer(1,16),h('Crea un promemoria'),
         ['Icona elenco','Apre tutti i promemoria.'],['×','Nasconde la notifica; il promemoria resta da gestire.']]),
     h('Gestisci l’elenco'),p('Seleziona una riga per completarla o rimandarla. Il menu <b>⋯</b> contiene <b>Modifica</b> ed <b>Elimina</b>; il doppio clic modifica. Attiva <b>Completati</b> per vedere anche gli avvisi già gestiti.'),
     call('<b>Yun Jin deve essere aperta per avvisarti.</b> Dopo una sospensione o al successivo avvio recupera le scadenze passate.'),Spacer(1,12),
-    p('Il numero sul pet e nella barra laterale indica gli avvisi da gestire. Il silenzio temporaneo sospende voce e campanelli; gli avvisi visivi rimangono attivi. Durante il metronomo i promemoria sono silenziosi.','small'),PageBreak()]
+    p('Il numero sul pet e nella barra laterale indica gli avvisi da gestire. Il silenzio temporaneo sospende voce e campanelli; gli avvisi visivi rimangono attivi. Durante il metronomo il campanello dei promemoria suona; la lettura vocale resta sospesa, senza interrompere il ritmo.','small'),PageBreak()]
 # 5
 story += [picture('voce.png',460),Spacer(1,12),
     p('In <b>Voce</b>, attiva la lettura e scegli se pronunciare i promemoria. <b>Ascolta</b> legge il campo di testo; <b>Leggi testo copiato</b> usa gli appunti del sistema. <b>Stop</b> compare durante la lettura o la preparazione.'),
@@ -202,25 +204,50 @@ story += [h('Dove sono i dati'),p('In <b>Impostazioni → Cartella dati</b> trov
     table(['Sistema','Cartella'],[['Windows','%LOCALAPPDATA%\\YunJinPet'],['macOS','~/Library/Application Support/YunJinPet'],['Linux','~/.local/share/YunJinPet<br/>(oppure XDG_DATA_HOME)']]),
     h('Backup'),p('Scegli <b>Impostazioni → Backup</b> e salva lo ZIP. Include il database, le immagini incollate e una copia leggibile degli appunti e dei promemoria. I file esterni collegati non vengono duplicati. Posizione, carattere e dimensione del pet sono impostazioni del sistema e non fanno parte del backup.'),
     h('Ripristino manuale'),p('<b>1.</b> Chiudi Yun Jin e copia la cartella dati in un luogo sicuro.<br/><b>2.</b> Sposta dalla cartella dati <b>companion.sqlite3</b> e gli eventuali file <b>companion.sqlite3-wal</b> e <b>companion.sqlite3-shm</b>.<br/><b>3.</b> Inserisci il database e la cartella <b>attachments</b> del backup.<br/><b>4.</b> Riapri Yun Jin. Se hai cambiato computer, aggiorna i collegamenti ai file esterni.'),
-    h('Aggiorna o ripara'),p('Chiudi Yun Jin, estrai il nuovo pacchetto e avvia <b>Windows.cmd</b>, <b>Mac.command</b> o <b>Linux.sh</b>. L’installer sostituisce il programma e aggiorna le dipendenze conservando i dati. Ripeti l’avvio se il collegamento smette di funzionare dopo aver rimosso Python.'),
+    h('Installazione manuale e riparazione'),p('Per passare dalla 1.0.x alla 1.1.0, chiudi Yun Jin, estrai il nuovo pacchetto e avvia <b>Windows.cmd</b>, <b>Mac.command</b> o <b>Linux.sh</b>. L’installer sostituisce il programma e aggiorna le dipendenze conservando i dati. Ripeti l’avvio se il collegamento smette di funzionare dopo aver rimosso Python.'),
     h('Disinstalla'),p('Chiudi l’app e rimuovi i collegamenti. Sul Mac elimina anche l’app in <b>/Applications</b>. Nella cartella dati rimuovi <b>program</b> e <b>runtime</b>; su Windows anche l’eventuale <b>python-3.13</b>. Conserva database e attachments per riusarli, oppure esporta un backup prima di eliminare tutta la cartella.'),
     call('Per condividere l’app invia lo <b>ZIP di distribuzione</b>. La tua cartella dati contiene appunti personali e non va inclusa.'),PageBreak()]
 # 9
+story += [picture('aggiornamento-1.1.png',330),Spacer(1,8),
+    p('Esempio di avviso con note dimostrative. Le note effettive vengono dalla release pubblicata su GitHub.','small'),
+    p('Il controllo è attivo di default: circa 30 secondi dopo l’avvio e poi ogni <b>2 ore</b>, finché Yun Jin è aperta. L’avviso automatico attende la fine di voce, metronomo, cronometro o focus.'),
+    table(['Scelta','Risultato'],[
+        ['Aggiorna e riavvia','Scarica e verifica lo ZIP, salva gli appunti, aggiorna e riapre Yun Jin.'],
+        ['Più tardi','Rimanda la proposta di circa due ore.'],
+        ['Salta questa versione','Non propone più questa release. Continuerà a cercare quelle successive.']]),Spacer(1,9),
+    p('In <b>Impostazioni</b> puoi disattivare il controllo, usare <b>Controlla ora</b> o riaprire le note. Un controllo manuale mostra anche una versione saltata.','small'),
+    p('I file vengono aggiornati nella <b>cartella effettivamente in uso</b>, anche se spostata. Dati personali e file aggiunti da te restano al loro posto. In caso di errore nella copia o nel nuovo avvio viene ripristinato il programma precedente.','small'),
+    p('Serve Internet. Se una release richiede un nuovo Python o nuove dipendenze, l’app lo segnala e rimanda all’installer. Gli aggiornamenti integrati usano il Python già installato senza aprire Mac.command. La prima installazione della 1.1.0 resta manuale.','small'),PageBreak()]
+# 10
+story += [h('Tre fasi, un movimento continuo'),
+    p('Yun Jin sbadiglia, si siede e appoggia la testa sulle mani. Il sonno è un ciclo lento di respiro; al risveglio si rialza gradualmente e torna al comportamento normale.'),
+    picture('sonno-fasi.png',BW),Spacer(1,15),
+    table(['Comando','Comportamento'],[
+        ['Comportamento → Carattere → Addormentata','Resta addormentata finché scegli un altro carattere o le chiedi di riprendere. La scelta viene ricordata.'],
+        ['Animazioni → Esegui → Sonnellino','Un breve episodio: addormentamento, circa mezzo minuto di sonno e risveglio.'],
+        ['Comportamento → Riprendi','La sveglia e ripristina il carattere Normale.'],
+        ['Seguimi, passeggiata o animazione manuale','Completa il risveglio prima di eseguire il comando.']]),Spacer(1,13),
+    h('Un comportamento occasionale'),
+    p('Con le animazioni aggiuntive attive può addormentarsi spontaneamente. Il primo episodio non arriva nei primi 10 minuti; dopo ogni risveglio attende almeno 15 minuti prima di poterlo fare ancora. Gli episodi spontanei durano circa 30-55 secondi di sonno.'),
+    h('Strumenti e promemoria'),
+    p('Il sonno non spegne i promemoria: gli avvisi e i suoni restano attivi. Voce e metronomo possono farla svegliare per la propria animazione. Focus e metronomo impediscono nuovi sonnellini spontanei.'),
+    call('La modalità <b>Addormentata</b> è sopra <b>Tranquilla</b> nel menu Carattere. Non è la Pausa completa: il respiro continua ad animarsi.'),PageBreak()]
+# 11
 story += [table(['Problema','Controllo'],[
     ['Yun Jin non si vede','Menu dell’area di notifica → Aspetto → Riporta sullo schermo.'],
     ['Mac: icona Dock assente','È normale con la modalità sopra le app a schermo intero. Puoi disattivarla in Impostazioni.'],
     ['La voce non parte','Controlla Internet, volume e uscita audio. In Voce prova l’altro servizio o svuota la cache.'],
     ['Promemoria senza voce','Attiva Voce e Leggi promemoria; termina il silenzio dal menu Voce o ferma il metronomo.'],
     ['Il metronomo non suona','Controlla l’uscita audio del sistema. Dopo aver cambiato dispositivo, premi Ferma e Avvia.'],
-    ['Il pet resta fermo','In Comportamento togli Pausa completa e scegli Riprendi. Controlla Focus e il carattere Tranquilla.'],
+    ['Il pet resta fermo','In Comportamento togli Pausa completa e scegli Riprendi. Controlla Focus e il carattere scelto, incluso Addormentata.'],
     ['Avvio bloccato','Controlla la provenienza del pacchetto e le autorizzazioni del sistema. Su dispositivi gestiti rivolgiti all’amministratore.'],
     ['Installazione interrotta','Conserva il messaggio, verifica connessione e spazio libero, poi ripeti l’avvio. Il log è yun-jin.log nella cartella dati.']]),
-    h('Requisiti e accesso alla rete'),p('Prima installazione e voce richiedono Internet. Appunti, promemoria, focus, cronometro e metronomo funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
+    h('Requisiti e accesso alla rete'),p('Prima installazione, voce e controllo aggiornamenti richiedono Internet. Appunti, promemoria, focus, cronometro e metronomo funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
     h('Crediti e licenze'),p('Progetto fan non ufficiale. Yun Jin è un personaggio di Genshin Impact; personaggio e marchi appartengono ai rispettivi titolari. Lo sprite originale fornito dall’utente è conservato. Le animazioni aggiuntive sono generate da riferimenti e revisionate. Le immagini della guida provengono dai file definitivi dell’app.','small'),
     p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts e gTTS mantengono le rispettive licenze. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
     h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small')]
 
-doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion 1.0.2 - Guida',author='Yun Jin Companion',pageCompression=1)
+doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion 1.1.0 - Guida',author='Yun Jin Companion',pageCompression=1)
 frame=Frame(44,53,BW,666,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)
 doc.addPageTemplates(PageTemplate(id='guide',frames=[frame],onPage=page));doc.build(story)
 print(OUT)

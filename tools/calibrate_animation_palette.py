@@ -15,6 +15,7 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--review',type=Path,required=True,help='Output directory from render_animation_review.py before grading')
 parser.add_argument('--source-assets',type=Path,required=True,help='Clean, ungraded animation PNG directory')
 parser.add_argument('--names',nargs='+',help='Only recalibrate these animation names; all others remain unchanged')
+parser.add_argument('--output',type=Path,default=ROOT/'docs/palette-calibration.json')
 args=parser.parse_args()
 sys.path.insert(0,str(ROOT/'tools'))
 from color_match_animations import lab,rgb,transfer
@@ -31,7 +32,7 @@ specs=json.loads((ROOT/'app/assets/animations.json').read_text())['animations']
 if args.names:
  specs=[s for s in specs if s['name'] in args.names]
  if set(s['name'] for s in specs)!=set(args.names):raise ValueError('Unknown animation name')
-spix=lab(np.concatenate([pixels(Image.open(frames/f'{s["name"]}-{i:02}.png').convert('RGBA')) for s in specs for i in range(16)]))
+spix=lab(np.concatenate([pixels(Image.open(frames/f'{s["name"]}-{i:02}.png').convert('RGBA')) for s in specs for i in range(s['count'])]))
 rng=np.random.default_rng(71)
 if len(spix)>120000:spix=spix[rng.choice(len(spix),120000,replace=False)]
 def clusters(a):
@@ -58,7 +59,7 @@ report={
  'distance_before':before,'distance_after':after,
  'method':f'One restrained smooth CIELAB transform shared by {len(specs)} selected sequences, applied only after art/anatomy/motion review. No quantization.',
  'metric':'Symmetric nearest-centroid Euclidean CIELAB distance; 24 k-means colors, square-root-frequency weights. Descriptive palette score, not a guarantee of perceptual equivalence.',
- 'reference':f'Opaque interiors of 12 original idle/run/jump/fall poses; {16*len(specs)} selected playback frames at actual runtime resolution.',
+ 'reference':f'Opaque interiors of 12 original idle/run/jump/fall poses; {sum(s["count"] for s in specs)} selected playback frames at actual runtime resolution.',
  'reference_poses_column_row':reference_poses,
  'animation_names':[s['name'] for s in specs],
  'original_spritesheet_sha256':hashlib.sha256((ROOT/'app/spritesheet-yun-jin-v2.png').read_bytes()).hexdigest(),
@@ -68,5 +69,5 @@ report={
  'optimizer':{'seeds':[14,29,73],'evaluations':sum(t.nfev for t in trials),'bounds':bounds},
  'reference_palette':[{'rgb':np.rint(rgb(c)*255).astype(int).tolist(),'weight':float(w)} for c,w in zip(r,rw)],
  'new_palette':[{'rgb':np.rint(rgb(c)*255).astype(int).tolist(),'weight':float(w)} for c,w in zip(s,sw)]}
-(ROOT/'docs/palette-calibration.json').write_text(json.dumps(report,indent=2)+'\n')
+args.output.write_text(json.dumps(report,indent=2)+'\n')
 print('distance',before,after,'parameters',p,flush=True)

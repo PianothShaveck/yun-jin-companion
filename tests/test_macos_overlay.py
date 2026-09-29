@@ -9,7 +9,7 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'app'))
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QWidget, QDialog, QMenu
+from PyQt6.QtWidgets import QApplication, QWidget, QDialog, QMenu, QComboBox
 from yun_jin_macos import (MacOverlay, AppKit, PREFERENCE, overlay_behavior,
     MOVE_TO_ACTIVE_SPACE, FULLSCREEN_PRIMARY, FULLSCREEN_NONE, PRIMARY, AUXILIARY,
     JOIN_SPACES, FULLSCREEN_AUXILIARY, JOIN_APPLICATIONS)
@@ -105,6 +105,17 @@ class OverlayTests(unittest.TestCase):
         self.assertFalse(self.controller.enabled)
         self.assertIn('native failure', self.controller.error)
         self.assertEqual(self.native.snapshot(self.pet), before)
+
+    def test_combobox_popup_above_settings_and_modal_dialog(self):
+        self.controller.set_enabled(True)
+        dialog=QDialog(self.pet);self.windows.append(dialog)
+        dialog.setModal(True);combo=QComboBox(dialog);combo.addItems(['Microsoft Edge','Google Translate'])
+        dialog.show();app.processEvents();combo.showPopup();app.processEvents()
+        popup=combo.view().window()
+        self.assertEqual(popup.windowType(),Qt.WindowType.Popup)
+        self.assertTrue(popup.isVisible())
+        self.assertGreater(self.native.snapshot(popup)[1],self.native.snapshot(dialog)[1])
+        combo.hidePopup()
 
     def test_native_bridge_refuses_non_panel(self):
         bridge = object.__new__(AppKit)

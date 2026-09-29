@@ -9,6 +9,14 @@ try:
 except ImportError:
     pass
 try:
+    from pathlib import Path
+    from yun_jin_data import data_directory
+    from yun_jin_update import recover_pending
+    recovery = recover_pending(Path(__file__).resolve().parent, data_directory())
+    if recovery == 'busy':
+        raise SystemExit('Aggiornamento in corso. Attendi il riavvio di Yun Jin.')
+    if recovery == 'restart':
+        os.execv(sys.executable, [sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]])
     from yun_jin_windows import set_process_identity
     set_process_identity()
     from yun_jin_app import main
