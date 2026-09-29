@@ -47,7 +47,8 @@ def build(source=False):
         with zipfile.ZipFile(temporary) as archive:
             if archive.testzip() is not None:
                 raise ValueError('Archive CRC validation failed')
-        with open(temporary,'rb') as stream:os.fsync(stream.fileno())
+        # Windows fsync/_commit requires a writable file descriptor.
+        with open(temporary,'r+b') as stream:os.fsync(stream.fileno())
         os.replace(temporary,output)
     finally:
         Path(temporary).unlink(missing_ok=True)
