@@ -56,12 +56,19 @@ class UpdateTests(unittest.TestCase):
    data=release();data['assets'][0]['browser_download_url']=url
    with self.assertRaises(ValueError):u.release_from_json(data,'1.1.0')
  def test_path_traversal_duplicates_links_and_bombs_rejected(self):
-  for name,mode in [('../escape',0),('release/../../escape',0),('release/evil\\escape',0),('/absolute',0),
+  # ZipInfo replaces backslashes with forward slashes on Windows. Check the
+  # raw separator at the validator, and use ZIP paths that remain unsafe
+  # after that normalization so this fixture has the same meaning on all OSes.
+  with self.assertRaisesRegex(ValueError,'Percorso non sicuro'):
+   u.safe_relative('release/evil\\escape')
+  for name,mode in [('../escape',0),('release/../../escape',0),('release/evil\\../escape',0),('/absolute',0),
                     ('release/shortcut',stat.S_IFLNK|0o777)]:
-   raw=io.BytesIO()
-   with zipfile.ZipFile(raw,'w') as z:
-    info=zipfile.ZipInfo(name);info.external_attr=mode<<16;z.writestr(info,'target')
-   with self.assertRaises(ValueError):u.unpack_verified(io.BytesIO(raw.getvalue()),self.root/'out','1.2.0')
+   with self.subTest(name=name,mode=mode):
+    raw=io.BytesIO()
+    with zipfile.ZipFile(raw,'w') as z:
+     info=zipfile.ZipInfo(name);info.external_attr=mode<<16;z.writestr(info,'target')
+    with self.assertRaises(ValueError):u.unpack_verified(io.BytesIO(raw.getvalue()),self.root/'out','1.2.0')
+    self.assertFalse((self.root/'out').exists())
   raw=io.BytesIO()
   with zipfile.ZipFile(raw,'w') as z:
    z.writestr('release/a','a');z.writestr('release/A','b')
