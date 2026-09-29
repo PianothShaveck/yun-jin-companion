@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'app'))
+from PyQt6 import sip
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtCore import QPointF, QSettings, QTimer, Qt
 from yun_jin_core import YunJinPet, ANIMATIONS
@@ -93,27 +94,57 @@ class UpdateUiTests(unittest.TestCase):
   self.manager=self.pet.updates;self.manager.initial.stop();self.manager.timer.stop()
  def tearDown(self):
   self.pet.close();self.pet.deleteLater();self.store.close();self.tmp.cleanup()
- def capture_message(self, action, button=QMessageBox.StandardButton.Ok):
-  observed={};timer=QTimer();timer.setSingleShot(True)
+ def capture_message(self, action, button=QMessageBox.StandardButton.Ok, timeout=5):
+  observed={};focused=set();timer=QTimer();deadline=time.monotonic()+timeout
+  original_focus=self.pet.focus_tool
+  def record_focus(widget):
+   original_focus(widget)
+   focused.add(widget)
   def inspect_and_close():
    box=app.activeModalWidget()
-   if not isinstance(box,QMessageBox):
-    observed['error']='No active QMessageBox'
-    if box is not None:box.reject()
-    return
    try:
+    if time.monotonic()>=deadline:
+     observed.setdefault('error','Dialog timeout: no focused message box')
+    if 'error' in observed:
+     if box is not None:box.reject()
+     return
+    # Wait for the actual focus callback, not a duration measured before Qt
+    # has built the message. Font/model initialization can exceed 25 ms on CI.
+    if not isinstance(box,QMessageBox) or not box.isVisible() or box not in focused:
+     return
     observed.update(box=box,parent=box.parentWidget(),modality=box.windowModality(),
       window_type=box.windowType(),qt_dialog=box.testOption(QMessageBox.Option.DontUseNativeDialog),
       text=box.text(),default=box.standardButton(box.defaultButton()))
     box.button(button).click()
    except Exception as exc:
-    observed['error']=str(exc);box.reject()
-  timer.timeout.connect(inspect_and_close);timer.start(25)
-  try:result=action()
+    observed['error']=str(exc)
+    if box is not None and not sip.isdeleted(box):box.reject()
+  timer.timeout.connect(inspect_and_close);timer.start(10)
+  try:
+   with patch.object(self.pet,'focus_tool',side_effect=record_focus):
+    result=action()
   finally:timer.stop()
   self.assertNotIn('error',observed);self.assertIn('box',observed)
   self.assertIsNone(app.activeModalWidget())
   return result,observed
+
+ def test_capture_waits_for_slow_focus_callback(self):
+  import yun_jin_dialogs as ui
+  actual=ui.bring_forward;completed=[]
+  def delayed(widget,pet):
+   def finish():
+    if not sip.isdeleted(widget):
+     actual(widget,pet);completed.append(widget)
+   QTimer.singleShot(100,finish)
+  with patch.object(ui,'bring_forward',side_effect=delayed):
+   _,box=self.capture_message(lambda:self.manager.on_checked(None,'',True))
+  self.assertIn(box['box'],completed)
+
+ def test_capture_missing_focus_fails_without_hanging(self):
+  with patch('yun_jin_dialogs.bring_forward'):
+   with self.assertRaisesRegex(AssertionError,'Dialog timeout'):
+    self.capture_message(lambda:self.manager.on_checked(None,'',True),timeout=.1)
+  self.assertIsNone(app.activeModalWidget())
 
  def test_manual_results_above_settings_with_mac_overlay_on_and_off(self):
   import yun_jin_dialogs as ui
