@@ -140,7 +140,11 @@ class DialogSettingsTests(unittest.TestCase):
             self.assert_above_owner(dialog, self.panel)
             def inspect_warning(box):
                 self.assert_above_owner(box, editor)
-                self.assertEqual(box.windowTitle(), 'Data passata')
+                # QMessageBox intentionally ignores window titles on macOS.
+                # Identify the warning by the content and actions instead.
+                self.assertEqual(box.text(), 'Scegli una data futura.')
+                self.assertEqual(box.icon(), QMessageBox.Icon.Information)
+                self.assertEqual(box.standardButtons(), QMessageBox.StandardButton.Ok)
                 combo = QComboBox(box); combo.addItems(['Uno', 'Due']); combo.show()
                 combo.showPopup(); app.processEvents()
                 self.assertGreater(self.levels[combo.view().window()], self.levels[box])
@@ -215,7 +219,11 @@ class DialogSettingsTests(unittest.TestCase):
             elif isinstance(dialog, QMessageBox):
                 self.assertEqual(stages, ['selected'])
                 self.assert_above_owner(dialog, self.panel)
-                self.assertEqual(dialog.windowTitle(), 'Sostituisci file')
+                self.assertEqual(dialog.text(), 'Il file esiste già. Sostituirlo?')
+                self.assertEqual(dialog.icon(), QMessageBox.Icon.Question)
+                self.assertEqual(dialog.standardButtons(),
+                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                self.assertEqual(dialog.standardButton(dialog.defaultButton()), QMessageBox.StandardButton.No)
                 stages.append('declined'); dialog.button(QMessageBox.StandardButton.No).click()
             else:
                 self.fail('Unexpected dialog: ' + type(dialog).__name__)
