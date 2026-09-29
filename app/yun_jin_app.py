@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.1.0: desktop companion and practice tools."""
+"""Yun Jin Companion 1.1.1: desktop companion and practice tools."""
 import ctypes
 import logging
 import os

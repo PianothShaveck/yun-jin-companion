@@ -114,6 +114,44 @@ class Updates(QObject):
     def set_status(self, text):
         self.status = text; self.status_changed.emit(text)
 
+    def message(self, icon, title, text, buttons=QMessageBox.StandardButton.Ok,
+                default=QMessageBox.StandardButton.Ok, parent=None):
+        if parent is None:
+            panel = self.pet.panel
+            parent = panel if panel is not None and panel.isVisible() else self.pet
+        box = QMessageBox(parent)
+        if sys.platform == 'darwin':
+            # Native NSAlert windows bypass the Qt overlay's window levels.
+            # Set this before showing or configuring the message box.
+            box.setOption(QMessageBox.Option.DontUseNativeDialog, True)
+        # QMessageBox may select Qt.Sheet here. Set modality before the Mac
+        # overlay prepares the Qt.Tool/NSPanel flags, never after preparation.
+        box.setWindowModality(Qt.WindowModality.WindowModal)
+        box.setWindowTitle(title)
+        box.setWindowIcon(self.pet.windowIcon())
+        box.setIcon(icon)
+        box.setTextFormat(Qt.TextFormat.PlainText)
+        box.setText(text)
+        box.setStandardButtons(buttons)
+        box.setDefaultButton(default)
+        if self.pet.mac_overlay is not None:
+            self.pet.mac_overlay.prepare(box)
+        # Focus only after Qt has shown the window and the overlay has given
+        # this modal dialog its level above the settings/update panel.
+        focus = QTimer(box)
+        focus.setSingleShot(True)
+        def bring_forward():
+            if box.isVisible():
+                box.raise_()
+                self.pet.focus_tool(box)
+        focus.timeout.connect(bring_forward)
+        try:
+            focus.start(0)
+            return QMessageBox.StandardButton(box.exec())
+        finally:
+            focus.stop()
+            box.deleteLater()
+
     def set_enabled(self, enabled):
         self.enabled = bool(enabled)
         self.pet.store.set_preference('updates_enabled', self.enabled)
@@ -145,11 +183,11 @@ class Updates(QObject):
             logging.warning('Update check: %s', error)
             self.set_status('Controllo non riuscito. Riprova quando la connessione è disponibile.')
             if manual:
-                QMessageBox.information(self.pet, 'Aggiornamenti', self.status + '\n\n' + error)
+                self.message(QMessageBox.Icon.Information, 'Aggiornamenti', self.status + '\n\n' + error)
         elif release is None:
             self.set_status('Yun Jin ' + VERSION + ' è aggiornata. Ultimo controllo: ' + time.strftime('%H:%M'))
             if manual:
-                QMessageBox.information(self.pet, 'Aggiornamenti', self.status)
+                self.message(QMessageBox.Icon.Information, 'Aggiornamenti', self.status)
         else:
             self.release = release
             self.set_status('Disponibile la versione ' + release['version'] + '. Leggi le novità prima di aggiornare.')
@@ -198,10 +236,10 @@ class Updates(QObject):
         if self.busy or not self.release or not self.release['automatic']:
             return
         if self.activities_running():
-            answer = QMessageBox.question(self.dialog, 'Attività in corso',
+            answer = self.message(QMessageBox.Icon.Question, 'Attività in corso',
                 'L’aggiornamento chiuderà Yun Jin e interromperà l’attività in corso. Aggiornare adesso?',
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.No)
+                QMessageBox.StandardButton.No, parent=self.dialog)
             if answer != QMessageBox.StandardButton.Yes:
                 return
         try:
@@ -214,7 +252,7 @@ class Updates(QObject):
             probe = BASE.parent / ('.update-write-' + uuid.uuid4().hex)
             probe.write_text('', encoding='utf-8'); probe.unlink()
         except Exception as exc:
-            QMessageBox.warning(self.dialog, 'Aggiornamento non avviato', str(exc)); return
+            self.message(QMessageBox.Icon.Warning, 'Aggiornamento non avviato', str(exc), parent=self.dialog); return
         self.busy = self.installing = True
         self.dialog.refresh(); self.dialog.status.setText('Download e verifica del pacchetto…')
         self.set_status('Download dell’aggiornamento…'); self.available_changed.emit()
@@ -293,7 +331,7 @@ class Updates(QObject):
                 self.set_status('Aggiornamento a ' + VERSION + ' completato.')
             else:
                 text = result.get('message', 'Aggiornamento non completato.')
-                QTimer.singleShot(1000, lambda: QMessageBox.warning(self.pet, 'Aggiornamento', text))
+                QTimer.singleShot(1000, lambda: self.message(QMessageBox.Icon.Warning, 'Aggiornamento', text))
         except (OSError, ValueError):
             logging.exception('Reading update result')
 

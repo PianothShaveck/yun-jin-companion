@@ -1,6 +1,6 @@
 # Yun Jin Companion
 
-Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Versione **1.1.0**.
+Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Versione **1.1.1**.
 
 ## Avvio
 
@@ -17,6 +17,12 @@ Gli avviatori Windows e macOS cercano Python; se manca, scaricano l'installer uf
 **macOS: se Mac.command viene bloccato perché lo sviluppatore non è verificato**, dopo il tentativo di apertura vai in **Impostazioni di Sistema → Privacy e Sicurezza → Apri comunque**, poi conferma **Apri**. Fallo per il pacchetto scaricato dalla release ufficiale. Il semplice doppio clic può non bastare; una nuova copia scaricata può richiedere una nuova approvazione. Procedura Apple: https://support.apple.com/it-it/102445
 
 La guida unica e completa è [Guida.pdf](Guida.pdf), disponibile anche dal pulsante **Guida** nell'app. Include installazione, funzioni, comandi per ogni sistema, backup e aiuto.
+
+## Correzioni della 1.1.1
+
+- Gli avvisi di **Controlla ora** su macOS compaiono sopra il pannello Impostazioni. La chiusura dell’avviso restituisce il controllo al pannello.
+- Corretto il tipo di finestra usato dai messaggi modali con overlay; la stessa gestione copre gli errori e le conferme degli aggiornamenti.
+- **Guida indipendente dalla versione dell’app:** nessun numero in copertina, intestazioni o piè di pagina. La data di revisione nei crediti cambia solo quando cambiano i contenuti.
 
 ## Novità della 1.1.0
 
@@ -209,19 +215,19 @@ il controllo nativo di creazione del pannello e attivazione/disattivazione.
 `python tests/test_updater.py` verifica ZIP, hash, percorsi spostati, conservazione dati, rollback e riavvio in processi separati.
 
 `python tools/render_guide_assets.py` rigenera le schermate con dati fittizi e gli estratti delle animazioni definitive.
-`python docs/build_guide.py` rigenera il PDF su Linux con ReportLab, Pillow e i font DejaVu installati.
+`python docs/build_guide.py` rigenera il PDF su Linux con ReportLab, Pillow e i font DejaVu installati. Eseguilo solo quando cambiano i contenuti della guida; le release con sole correzioni riutilizzano lo stesso PDF. Aggiorna la data di revisione nei crediti quando modifichi il manuale.
 
 `python tools/package_release.py` crea lo ZIP di distribuzione in `dist/`; aggiungi `--source` per produrre anche lo ZIP del repository. Sono escluse cache, revisioni precedenti, archivi e dati personali. `Mac.command` e `Linux.sh` mantengono il permesso eseguibile.
 
-## Pubblicazione 1.1.0
+## Pubblicazione 1.1.1
 
-1. Estrai **Yun-Jin-Companion-1.1.0-Sorgenti.zip**. Carica nella radice del repository
+1. Estrai **Yun-Jin-Companion-1.1.1-Sorgenti.zip**. Carica nella radice del repository
    il contenuto della cartella estratta, comprese `.github` e `.gitignore`.
    `README.md`, `Windows.cmd` e `app/` devono trovarsi direttamente nella radice.
 2. Attendi i controlli nella scheda **Actions**. Verifica su Windows l’installazione,
    il collegamento aggiornato e l’icona nella barra; verifica anche l’uscita audio.
-3. Crea la release con tag **v1.1.0** e titolo **Yun Jin Companion 1.1.0**.
-   Allega **Yun-Jin-Companion-1.1.0.zip**, il pacchetto da scaricare e installare.
+3. Crea la release con tag **v1.1.1** e titolo **Yun Jin Companion 1.1.1**.
+   Allega **Yun-Jin-Companion-1.1.1.zip**, il pacchetto da scaricare e installare.
    GitHub fornisce automaticamente anche l’archivio dei sorgenti.
 4. Pubblica una release stabile, non una prerelease, e contrassegnala come **Latest**.
    Scrivi le note nel corpo della release: sono quelle che l’app mostrerà.
@@ -235,9 +241,9 @@ I dettagli per preparare le release future sono in [docs/UPDATES.md](docs/UPDATE
 Descrizione del repository: **Compagna desktop con appunti, promemoria vocali,
 focus, cronometro e metronomo.**
 
-Note per la release: vedi [docs/RELEASE-1.1.0.md](docs/RELEASE-1.1.0.md).
+Note per la release: vedi [docs/RELEASE-1.1.1.md](docs/RELEASE-1.1.1.md).
 
-Gli ZIP contengono solo la versione definitiva 1.1.0. Il pacchetto di distribuzione
+Gli ZIP contengono solo la versione definitiva 1.1.1. Il pacchetto di distribuzione
 include app, risorse, avviatori e guida; i sorgenti aggiungono documentazione,
 strumenti di sviluppo e test. Anteprime di controllo, revisioni precedenti,
 ambienti Python e dati personali sono esclusi.

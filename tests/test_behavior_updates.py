@@ -5,8 +5,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'app'))
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import QPointF, QSettings
+from PyQt6.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtCore import QPointF, QSettings, QTimer, Qt
 from yun_jin_core import YunJinPet, ANIMATIONS
 from yun_jin_app import Sounds, Companion
 from yun_jin_data import Store
@@ -93,6 +93,77 @@ class UpdateUiTests(unittest.TestCase):
   self.manager=self.pet.updates;self.manager.initial.stop();self.manager.timer.stop()
  def tearDown(self):
   self.pet.close();self.pet.deleteLater();self.store.close();self.tmp.cleanup()
+ def capture_message(self, action, button=QMessageBox.StandardButton.Ok):
+  observed={};timer=QTimer();timer.setSingleShot(True)
+  def inspect_and_close():
+   box=app.activeModalWidget()
+   if not isinstance(box,QMessageBox):
+    observed['error']='No active QMessageBox'
+    if box is not None:box.reject()
+    return
+   try:
+    observed.update(box=box,parent=box.parentWidget(),modality=box.windowModality(),
+      window_type=box.windowType(),qt_dialog=box.testOption(QMessageBox.Option.DontUseNativeDialog),
+      text=box.text(),default=box.standardButton(box.defaultButton()))
+    box.button(button).click()
+   except Exception as exc:
+    observed['error']=str(exc);box.reject()
+  timer.timeout.connect(inspect_and_close);timer.start(25)
+  try:result=action()
+  finally:timer.stop()
+  self.assertNotIn('error',observed);self.assertIn('box',observed)
+  self.assertIsNone(app.activeModalWidget())
+  return result,observed
+
+ def test_manual_results_above_settings_with_mac_overlay_on_and_off(self):
+  import yun_jin_updates_ui as ui
+  from yun_jin_macos import MacOverlay
+  levels={};native=Mock()
+  native.snapshot.side_effect=lambda widget:(int(widget.winId()),levels.get(widget,0),0)
+  native.configure.side_effect=lambda widget,level:levels.__setitem__(widget,level)
+  controller=MacOverlay(app,self.pet,native);self.pet.mac_overlay=controller
+  try:
+   self.pet.open_panel(tab=2)
+   for enabled in (True,False):
+    self.assertTrue(controller.set_enabled(enabled))
+    for error in ('','Connessione non disponibile'):
+     with self.subTest(overlay=enabled,error=error),patch.object(ui,'sys',SimpleNamespace(platform='darwin')):
+      self.manager.busy=True;self.manager.available_changed.emit()
+      _,box=self.capture_message(lambda:self.manager.on_checked(None,error,True))
+      self.assertIs(box['parent'],self.pet.panel)
+      self.assertEqual(box['modality'],Qt.WindowModality.WindowModal)
+      self.assertEqual(box['window_type'],Qt.WindowType.Tool)
+      self.assertTrue(box['qt_dialog'])
+      self.assertIn(error or 'è aggiornata',box['text'])
+      if enabled:
+       self.assertGreater(levels[box['box']],levels[self.pet.panel])
+       native.focus.assert_any_call(box['box'])
+      self.assertTrue(self.pet.panel.update_check.isEnabled())
+  finally:
+   controller.set_enabled(False);app.removeEventFilter(controller)
+   self.pet.mac_overlay=None;controller.deleteLater()
+
+ def test_message_falls_back_to_pet_when_settings_are_closed(self):
+  self.pet.open_panel(tab=2);self.pet.panel.hide()
+  _,box=self.capture_message(lambda:self.manager.on_checked(None,'',True))
+  self.assertIs(box['parent'],self.pet)
+
+ def test_update_confirmation_uses_update_dialog_and_no_cancels(self):
+  self.manager.release=dict(version='1.2.0',notes='Correzione',
+   url='https://github.com/PianothShaveck/yun-jin-companion/releases/tag/v1.2.0',automatic=True)
+  self.manager.show_notes()
+  with patch.object(self.manager,'activities_running',return_value=True),patch('yun_jin_update.prepare_update') as prepare:
+   _,box=self.capture_message(self.manager.install,QMessageBox.StandardButton.No)
+  self.assertIs(box['parent'],self.manager.dialog)
+  self.assertEqual(box['default'],QMessageBox.StandardButton.No)
+  self.assertFalse(self.manager.installing);prepare.assert_not_called()
+
+ def test_background_check_does_not_open_result_messages(self):
+  with patch.object(self.manager,'message') as message:
+   self.manager.on_checked(None,'',False)
+   self.manager.on_checked(None,'Offline',False)
+   message.assert_not_called()
+
  def test_skip_only_one_version_and_manual_check_still_offers(self):
   release=dict(version='1.2.0',notes='## Novità\nTest',url='https://github.com/PianothShaveck/yun-jin-companion/releases/tag/v1.2.0',automatic=True)
   self.manager.release=release;self.manager.skip_version()

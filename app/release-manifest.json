@@ -1,6 +1,6 @@
 {
   "protocol": 1,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "python_min": [
     3,
     10
@@ -16,7 +16,7 @@
     "gTTS": "2.5.4"
   },
   "files": {
-    "Guida.pdf": "e8ccf39cb0b550d7492920d204c1f1bf95891499a50f51422fa9a935826584cd",
+    "Guida.pdf": "2aad62baa4bb76bd6db7a511b953fcf8088959d5162de2d5ee04769b7cebb6b7",
     "Linux.sh": "5d55a03e5622074e0f55991a41266c40132101362504a0e78a7412883924958e",
     "Mac.command": "c37f5e21cba139c945c79a51bb0af04284e0902078ec04a8452b9804613b2c00",
     "Windows.cmd": "79430cd444f9a1be9cccde5f50d0f96150c1f1348d84be772d3fdf7e49fcbc0c",
@@ -46,23 +46,23 @@
     "app/favicon.png": "ce9f28c6d68106b21aa40a67609cf578fd450461226a4713ef3ee8a8af50f617",
     "app/licenses/GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "app/spritesheet-yun-jin-v2.png": "4e481fafea5149a8198eeb8c6f4e32b1cf8d2fcf359bc86aaf1c1ef8f4d47351",
-    "app/yun_jin_app.py": "fbb2d517305c5cc18fc5d706bb83d1341c4ee85975f66ebe29a3ba9410a7e080",
+    "app/yun_jin_app.py": "be5d293b59b4d1bc2aeef95624ac7fd8286d5fb501e6eb6ba0602604cece0824",
     "app/yun_jin_core.py": "d56049e16dcd2db96af3b17cda5cb52e2ad6d492a877f96ff720c589f5891476",
     "app/yun_jin_data.py": "a78ae3e889b591b3e9df6b28ffd76bf3d68626c4a1d5b6122a83c68a7e204dce",
-    "app/yun_jin_macos.py": "fd0e7bdf3f4ed54e3a5aa9d50fab1cba86f0cfd5532ec69c5a3202ad349b957b",
+    "app/yun_jin_macos.py": "b7941e3f96a1c12b43283a405de4a5ab49a78b7971784b93a590fc02af338fa8",
     "app/yun_jin_music.py": "c4e341e595844954996dcb8ed331217682c3b77a2792553e357f058c052da1ba",
     "app/yun_jin_music_panel.py": "750b0f5d15758328c463330e317269bcd2762d7420a4b4504537c763f819df91",
     "app/yun_jin_panel.py": "d9c517cdb96b1cfcc65ee5088d19f6f177557e6b8f55c96594acc22bc194d29c",
     "app/yun_jin_pet.py": "e1d2a9681726a4685200dd76b853e8a07e6d70e7f59c481a73a0ea9e245367b3",
-    "app/yun_jin_platform.py": "54dd6a9c47e5a593017086f86cb134c514e6a571e7d21d72f588092ac34c1e46",
+    "app/yun_jin_platform.py": "a668e78f25acdf228d93e4adf6aa3d20b8319269614adc1ae9c69d036fc65e12",
     "app/yun_jin_speech.py": "cb424cc6d1f44cb57aa1f17a3556b2672beab60adc111c0965056a9acfa84e38",
     "app/yun_jin_tts_worker.py": "9f9718b109f498b8adc237615a05d63b411997f105221965f41ab8d853d941dc",
     "app/yun_jin_ui.py": "0504a035ca6d1f3504847ee328d0d877307afd7dd71e8cbb0e23215aa99863fc",
     "app/yun_jin_update.py": "e722f90c078729dfcc3e0ccc333feb29f7cabd3db1affe3c0f19917f99f3c19c",
-    "app/yun_jin_updates_ui.py": "187206d4d217539958884948d2d6cdd909d695026be5405f164ecb60cc8a1e76",
+    "app/yun_jin_updates_ui.py": "719bad20190f5bef636c357d5bc5024eda4708d76188c84e232c25d06ae2769f",
     "app/yun_jin_windows.py": "8af355688c6c5f0e506b985731146aad9876704d991f8b97f9ba92524e7d1af3",
     "installer/install-mac-bundle.sh": "478d4016acdb8351080b3fb601b258bffcaf46c177da0b93c9f01fdfdef70420",
-    "installer/install.py": "e7b49fc35f9a6aef4ec7400853c4b336827e62e79f85667f847f7d84285fe60e",
+    "installer/install.py": "fdb279fc0abd23cca135f3fdd9cb7d9ca1bd4cf1716a556b7cfabf9b61070252",
     "installer/requirements.txt": "371da11fda0e35d1029b9e32e6ade5f51b8818ee72fc122b2c322a47cfc04be7",
     "installer/shortcut.ps1": "edaeda8c74e858c62657b89696cb19cb1a524d1ff1aa676f5796b09c7f23481c",
     "installer/windows.ps1": "b344cd8a734096a86bceff8dc43016e94b058f4375789a9e02eb0d63baf8d22a"

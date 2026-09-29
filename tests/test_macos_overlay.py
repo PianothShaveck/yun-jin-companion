@@ -9,7 +9,7 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'app'))
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QWidget, QDialog, QMenu, QComboBox
+from PyQt6.QtWidgets import QApplication, QWidget, QDialog, QMenu, QComboBox, QMessageBox
 from yun_jin_macos import (MacOverlay, AppKit, PREFERENCE, overlay_behavior,
     MOVE_TO_ACTIVE_SPACE, FULLSCREEN_PRIMARY, FULLSCREEN_NONE, PRIMARY, AUXILIARY,
     JOIN_SPACES, FULLSCREEN_AUXILIARY, JOIN_APPLICATIONS)
@@ -105,6 +105,20 @@ class OverlayTests(unittest.TestCase):
         self.assertFalse(self.controller.enabled)
         self.assertIn('native failure', self.controller.error)
         self.assertEqual(self.native.snapshot(self.pet), before)
+
+    def test_window_modal_message_becomes_tool_not_splash_screen(self):
+        self.controller.set_enabled(True)
+        panel = QDialog(self.pet); self.windows.append(panel)
+        self.controller.prepare(panel); self.controller.apply(panel)
+        box = QMessageBox(panel); self.windows.append(box)
+        box.setWindowModality(Qt.WindowModality.WindowModal)
+        hints = box.windowFlags() & ~Qt.WindowType.WindowType_Mask
+        self.controller.prepare(box)
+        self.assertEqual(box.windowType(), Qt.WindowType.Tool)
+        self.assertEqual(box.windowFlags() & ~Qt.WindowType.WindowType_Mask, hints)
+        self.assertEqual(box.windowModality(), Qt.WindowModality.WindowModal)
+        self.controller.apply(box)
+        self.assertGreater(self.native.snapshot(box)[1], self.native.snapshot(panel)[1])
 
     def test_combobox_popup_above_settings_and_modal_dialog(self):
         self.controller.set_enabled(True)

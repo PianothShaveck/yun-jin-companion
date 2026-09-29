@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the final 1.1.0 manual. Screenshots come from render_guide_assets.py."""
+"""Build the version-independent user guide. Screenshots come from render_guide_assets.py."""
 from pathlib import Path
 from reportlab.platypus import (BaseDocTemplate,PageTemplate,Frame,Paragraph,
     Spacer,PageBreak,Table,TableStyle,Image)
@@ -61,7 +61,6 @@ def cover(c):
     c.setFillColor(blue);c.setFont('Bold',9)
     c.drawString(48,H-62,'GUIDA ILLUSTRATA')
     c.setFillColor(cream);c.setFont('Text',9)
-    c.drawRightString(W-48,H-62,'VERSIONE 1.1.0')
     c.setStrokeColor(HexColor('#665371'));c.line(48,H-82,W-48,H-82)
     c.setFillColor(cream);c.setFont('Bold',55)
     c.drawCentredString(W/2,681,'YUN JIN')
@@ -110,7 +109,6 @@ def cover(c):
     c.setStrokeColor(HexColor('#665371'));c.line(48,110,W-48,110)
     c.setFillColor(muted);c.setFont('Text',9)
     c.drawString(48,85,'Windows · macOS · Linux')
-    c.drawRightString(W-48,85,'SETTEMBRE 2026')
     c.setFont('Text',7);c.drawString(48,62,'Progetto fan indipendente · Personaggio di Genshin Impact')
     c.restoreState()
 
@@ -124,9 +122,9 @@ def page(c,doc):
     tag,title=PAGES[n-1] if n<=len(PAGES) else ('GUIDA','Continua')
     c.setFillColor(TEAL);c.setFont('Bold',9);c.drawString(44,792,tag)
     c.setFillColor(INK);c.setFont('Bold',27);c.drawString(44,756,title)
-    c.setFillColor(PURPLE);c.setFont('Text',9);c.drawRightString(W-44,791,'YUN JIN COMPANION  1.1.0')
+    c.setFillColor(PURPLE);c.setFont('Text',9);c.drawRightString(W-44,791,'YUN JIN COMPANION')
     c.setStrokeColor(LINE);c.line(44,734,W-44,734);c.line(44,42,W-44,42)
-    c.setFont('Text',8);c.setFillColor(PURPLE);c.drawString(44,25,'Guida · versione 1.1.0')
+    c.setFont('Text',8);c.setFillColor(PURPLE);c.drawString(44,25,'Guida d’uso')
     c.drawRightString(W-44,25,f'{n:02d} / {len(PAGES):02d}')
     if n in (6,7):
         art='conduct16.png' if n==6 else 'stopwatch16.png'
@@ -137,7 +135,7 @@ story=[Spacer(1,1),PageBreak()]
 # 1
 story += [p('Una compagna per appunti, promemoria, concentrazione e musica.'),
     call('<b>Windows 10/11, 64 bit.</b> Estrai tutto lo ZIP prima di avviare l’app.'),
-    h('Installa'),p('<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai <b>Yun-Jin-Companion-1.1.0.zip</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento.'),
+    h('Installa'),p('<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai lo <b>ZIP di distribuzione della release</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento.'),
     p('L’avviatore cerca Python. Se manca, scarica Python ufficiale e verifica il file. Installa l’app nel tuo profilo, con un ambiente separato, e crea i collegamenti su Desktop e nel menu Start.'),
     h('Dopo l’installazione'),p('Apri <b>Yun Jin Companion</b> dal collegamento. Un doppio clic sul personaggio apre il pannello; il clic destro apre il menu. Scegli uno strumento dalla barra laterale.'),
     picture('appunti.png',390),Spacer(1,9),
@@ -204,7 +202,7 @@ story += [h('Dove sono i dati'),p('In <b>Impostazioni → Cartella dati</b> trov
     table(['Sistema','Cartella'],[['Windows','%LOCALAPPDATA%\\YunJinPet'],['macOS','~/Library/Application Support/YunJinPet'],['Linux','~/.local/share/YunJinPet<br/>(oppure XDG_DATA_HOME)']]),
     h('Backup'),p('Scegli <b>Impostazioni → Backup</b> e salva lo ZIP. Include il database, le immagini incollate e una copia leggibile degli appunti e dei promemoria. I file esterni collegati non vengono duplicati. Posizione, carattere e dimensione del pet sono impostazioni del sistema e non fanno parte del backup.'),
     h('Ripristino manuale'),p('<b>1.</b> Chiudi Yun Jin e copia la cartella dati in un luogo sicuro.<br/><b>2.</b> Sposta dalla cartella dati <b>companion.sqlite3</b> e gli eventuali file <b>companion.sqlite3-wal</b> e <b>companion.sqlite3-shm</b>.<br/><b>3.</b> Inserisci il database e la cartella <b>attachments</b> del backup.<br/><b>4.</b> Riapri Yun Jin. Se hai cambiato computer, aggiorna i collegamenti ai file esterni.'),
-    h('Installazione manuale e riparazione'),p('Per passare dalla 1.0.x alla 1.1.0, chiudi Yun Jin, estrai il nuovo pacchetto e avvia <b>Windows.cmd</b>, <b>Mac.command</b> o <b>Linux.sh</b>. L’installer sostituisce il programma e aggiorna le dipendenze conservando i dati. Ripeti l’avvio se il collegamento smette di funzionare dopo aver rimosso Python.'),
+    h('Installazione manuale e riparazione'),p('Per aggiornare manualmente o riparare l’installazione, chiudi Yun Jin, estrai il nuovo pacchetto e avvia <b>Windows.cmd</b>, <b>Mac.command</b> o <b>Linux.sh</b>. L’installer sostituisce il programma e aggiorna le dipendenze conservando i dati. Ripeti l’avvio se il collegamento smette di funzionare dopo aver rimosso Python.'),
     h('Disinstalla'),p('Chiudi l’app e rimuovi i collegamenti. Sul Mac elimina anche l’app in <b>/Applications</b>. Nella cartella dati rimuovi <b>program</b> e <b>runtime</b>; su Windows anche l’eventuale <b>python-3.13</b>. Conserva database e attachments per riusarli, oppure esporta un backup prima di eliminare tutta la cartella.'),
     call('Per condividere l’app invia lo <b>ZIP di distribuzione</b>. La tua cartella dati contiene appunti personali e non va inclusa.'),PageBreak()]
 # 9
@@ -217,7 +215,7 @@ story += [picture('aggiornamento-1.1.png',330),Spacer(1,8),
         ['Salta questa versione','Non propone più questa release. Continuerà a cercare quelle successive.']]),Spacer(1,9),
     p('In <b>Impostazioni</b> puoi disattivare il controllo, usare <b>Controlla ora</b> o riaprire le note. Un controllo manuale mostra anche una versione saltata.','small'),
     p('I file vengono aggiornati nella <b>cartella effettivamente in uso</b>, anche se spostata. Dati personali e file aggiunti da te restano al loro posto. In caso di errore nella copia o nel nuovo avvio viene ripristinato il programma precedente.','small'),
-    p('Serve Internet. Se una release richiede un nuovo Python o nuove dipendenze, l’app lo segnala e rimanda all’installer. Gli aggiornamenti integrati usano il Python già installato senza aprire Mac.command. La prima installazione della 1.1.0 resta manuale.','small'),PageBreak()]
+    p('Serve Internet. Se una release richiede un nuovo Python o nuove dipendenze, l’app lo segnala e rimanda all’installer. Gli aggiornamenti integrati usano il Python già installato senza aprire Mac.command. Chi usa ancora la 1.0.x deve aggiornare manualmente una volta.','small'),PageBreak()]
 # 10
 story += [h('Tre fasi, un movimento continuo'),
     p('Yun Jin sbadiglia, si siede e appoggia la testa sulle mani. Il sonno è un ciclo lento di respiro; al risveglio si rialza gradualmente e torna al comportamento normale.'),
@@ -245,9 +243,10 @@ story += [table(['Problema','Controllo'],[
     h('Requisiti e accesso alla rete'),p('Prima installazione, voce e controllo aggiornamenti richiedono Internet. Appunti, promemoria, focus, cronometro e metronomo funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
     h('Crediti e licenze'),p('Progetto fan non ufficiale. Yun Jin è un personaggio di Genshin Impact; personaggio e marchi appartengono ai rispettivi titolari. Lo sprite originale fornito dall’utente è conservato. Le animazioni aggiuntive sono generate da riferimenti e revisionate. Le immagini della guida provengono dai file definitivi dell’app.','small'),
     p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts e gTTS mantengono le rispettive licenze. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
-    h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small')]
+    h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small'),
+    p('Revisione della guida: 29 settembre 2026. La guida viene aggiornata quando cambiano funzioni o procedure; le correzioni delle singole versioni sono descritte nelle note di rilascio.','small')]
 
-doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion 1.1.0 - Guida',author='Yun Jin Companion',pageCompression=1)
+doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion - Guida',author='Yun Jin Companion',pageCompression=1)
 frame=Frame(44,53,BW,666,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)
 doc.addPageTemplates(PageTemplate(id='guide',frames=[frame],onPage=page));doc.build(story)
 print(OUT)

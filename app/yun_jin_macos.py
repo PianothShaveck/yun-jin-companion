@@ -107,7 +107,10 @@ class MacOverlay(QObject):
         # dialogs and message boxes, so text input remains available fullscreen.
         if isinstance(widget, QDialog) and not getattr(widget, '_overlay_prepared', False):
             widget._overlay_prepared = True
-            widget.setWindowFlag(Qt.WindowType.Tool, True)
+            # Window types are mutually exclusive values, not independent
+            # flags: Sheet | Tool becomes SplashScreen, not an NSPanel.
+            flags = widget.windowFlags() & ~Qt.WindowType.WindowType_Mask
+            widget.setWindowFlags(flags | Qt.WindowType.Tool)
             widget.setAttribute(Qt.WidgetAttribute.WA_MacAlwaysShowToolWindow, True)
 
     def apply(self, widget):
