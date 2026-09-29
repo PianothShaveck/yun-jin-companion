@@ -9,6 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'app'))
+from PyQt6 import sip
 from PyQt6.QtCore import Qt, QTimer, QDateTime
 from PyQt6.QtWidgets import QApplication, QDialog, QMessageBox, QFileDialog, QComboBox, QLineEdit
 from yun_jin_app import Companion
@@ -51,28 +52,62 @@ class DialogSettingsTests(unittest.TestCase):
         app.processEvents()
         self.store.close(); self.tmp.cleanup()
 
-    def during_dialog(self, action, inspect):
-        errors = []; seen = []
-        timer = QTimer(); timer.setSingleShot(True)
-        def check():
+    def dialog_ready(self, dialog):
+        if dialog is None or sip.isdeleted(dialog) or not dialog.isVisible():
+            return False
+        if not self.controller.enabled:
+            return True
+        # Construction/font discovery/file models may take longer than a fixed
+        # timer on CI. Inspect only after the application's deferred focus ran.
+        return (dialog in self.levels and
+                any(call.args and call.args[0] is dialog
+                    for call in self.native.focus.call_args_list))
+
+    def drive_dialogs(self, action, step, timeout=5):
+        errors = []; timer = QTimer(); deadline = time.monotonic() + timeout
+        def advance():
+            # An inspection can itself open a nested modal dialog. Its own
+            # driver must run without re-entering this driver's current step.
+            timer.stop()
             dialog = app.activeModalWidget()
-            seen.append(dialog)
             try:
-                self.assertIsNotNone(dialog)
-                inspect(dialog)
+                if time.monotonic() >= deadline and not errors:
+                    title = dialog.windowTitle() if dialog is not None else '(none)'
+                    errors.append(AssertionError('Dialog timeout: ' + title))
+                if errors:
+                    if dialog is not None and not sip.isdeleted(dialog):
+                        dialog.reject()
+                elif self.dialog_ready(dialog):
+                    step(dialog)
             except Exception as exc:
                 errors.append(exc)
-            finally:
-                if dialog is not None and dialog.isVisible():
+                if dialog is not None and not sip.isdeleted(dialog):
                     dialog.reject()
-        timer.timeout.connect(check); timer.start(40)
+            finally:
+                # Keep draining after a failure: a cancelled overwrite question
+                # reopens the file chooser, which must also be cancelled.
+                timer.start(10)
+        timer.timeout.connect(advance); timer.start(0)
         try:
             result = action()
         finally:
             timer.stop()
-        self.assertTrue(seen, 'Dialog did not enter an event loop')
         if errors:
             raise errors[0]
+        return result
+
+    def during_dialog(self, action, inspect):
+        seen = []
+        def step(dialog):
+            self.assertFalse(seen, 'Unexpected extra dialog: ' + dialog.windowTitle())
+            seen.append(dialog)
+            try:
+                inspect(dialog)
+            finally:
+                if not sip.isdeleted(dialog) and dialog.isVisible():
+                    dialog.reject()
+        result = self.drive_dialogs(action, step)
+        self.assertTrue(seen, 'Dialog did not enter an event loop')
         return result
 
     def assert_above_owner(self, dialog, owner):
@@ -166,30 +201,55 @@ class DialogSettingsTests(unittest.TestCase):
 
     def test_existing_backup_requires_confirmation_and_no_keeps_original(self):
         target = Path(self.tmp.name) / 'existing.zip'; target.write_bytes(b'original')
-        stages = []; errors = []; timer = QTimer()
-        def advance():
-            dialog = app.activeModalWidget()
-            try:
-                if isinstance(dialog, QFileDialog):
-                    if not stages:
-                        stages.append('selected'); dialog.selectFile(str(target)); dialog.accept()
-                    elif stages[-1] == 'declined':
-                        stages.append('cancelled'); dialog.reject()
-                elif isinstance(dialog, QMessageBox):
-                    self.assert_above_owner(dialog, self.panel)
-                    self.assertEqual(dialog.windowTitle(), 'Sostituisci file')
-                    stages.append('declined'); dialog.button(QMessageBox.StandardButton.No).click()
-            except Exception as exc:
-                errors.append(exc)
-                if dialog is not None:dialog.reject()
-        timer.timeout.connect(advance); timer.start(30)
-        try:
-            result = choose_files(self.panel, 'Backup', mode='save', filename=str(target))
-        finally:
-            timer.stop()
-        if errors:raise errors[0]
+        stages = []
+        def advance(dialog):
+            if isinstance(dialog, QFileDialog):
+                if not stages:
+                    stages.append('selected')
+                    dialog.findChild(QLineEdit, 'fileNameEdit').setText(str(target))
+                    dialog.accept()
+                elif stages[-1] == 'declined':
+                    stages.append('cancelled'); dialog.reject()
+                else:
+                    self.fail('File selection did not open the overwrite confirmation')
+            elif isinstance(dialog, QMessageBox):
+                self.assertEqual(stages, ['selected'])
+                self.assert_above_owner(dialog, self.panel)
+                self.assertEqual(dialog.windowTitle(), 'Sostituisci file')
+                stages.append('declined'); dialog.button(QMessageBox.StandardButton.No).click()
+            else:
+                self.fail('Unexpected dialog: ' + type(dialog).__name__)
+        result = self.drive_dialogs(
+            lambda: choose_files(self.panel, 'Backup', mode='save', filename=str(target)), advance)
         self.assertEqual(stages, ['selected', 'declined', 'cancelled'])
         self.assertEqual(result, []); self.assertEqual(target.read_bytes(), b'original')
+
+    def test_driver_waits_for_deferred_focus(self):
+        original = self.pet.focus_tool
+        def delayed(widget):
+            QTimer.singleShot(100, lambda: original(widget) if not sip.isdeleted(widget) else None)
+        with patch.object(self.pet, 'focus_tool', side_effect=delayed):
+            self.during_dialog(self.panel.show_shortcuts,
+                               lambda box: self.assert_above_owner(box, self.panel))
+
+    def test_driver_timeout_closes_unanswered_dialog(self):
+        with self.assertRaisesRegex(AssertionError, 'Dialog timeout'):
+            self.drive_dialogs(self.panel.show_shortcuts, lambda box: None, timeout=.1)
+        self.assertIsNone(app.activeModalWidget())
+
+    def test_driver_failure_also_closes_reopened_file_chooser(self):
+        target = Path(self.tmp.name) / 'existing.zip'; target.write_bytes(b'original')
+        def fail_in_confirmation(dialog):
+            if isinstance(dialog, QFileDialog):
+                dialog.findChild(QLineEdit, 'fileNameEdit').setText(str(target)); dialog.accept()
+            else:
+                self.fail('Deliberate inspection failure')
+        with self.assertRaisesRegex(AssertionError, 'Deliberate inspection failure'):
+            self.drive_dialogs(
+                lambda: choose_files(self.panel, 'Backup', mode='save', filename=str(target)),
+                fail_in_confirmation)
+        self.assertIsNone(app.activeModalWidget())
+        self.assertEqual(target.read_bytes(), b'original')
 
     def test_legacy_voice_preferences_migrate_once_and_manual_reading_still_works(self):
         self.pet.speech.shutdown()
