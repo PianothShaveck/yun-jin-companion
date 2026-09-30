@@ -10,6 +10,19 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 OUTPUT=ROOT/'dist/Yun-Jin-Companion-1.2.1.zip'
 
+# Only maintained sources belong in the repository archive. Working artwork,
+# reviews, release history and publishing notes are not distribution sources.
+SOURCE_FILES = (
+    'README.md', '.gitignore', 'docs/build_guide.py',
+    'tools/package_release.py', 'tools/prune_sprite_cache.py',
+    'tools/build_sprite_cache.py', 'tools/render_guide_assets.py',
+)
+GUIDE_IMAGES = (
+    'appunti.png', 'promemoria.png', 'avviso.png', 'voce.png',
+    'metronomo.png', 'cronometro.png', 'focus.png', 'aggiornamento.png',
+    'sonno-fasi.png', 'orario-meteo.png', 'conduct16.png', 'stopwatch16.png',
+)
+
 def runtime_files():
     paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf')]
     for folder in ('app','installer'):
@@ -33,8 +46,10 @@ def build(source=False):
     output=OUTPUT.with_name('Yun-Jin-Companion-1.2.1-Sorgenti.zip') if source else OUTPUT
     output.parent.mkdir(exist_ok=True)
     paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf')]
-    if source:paths.extend(ROOT/name for name in ('README.md','.gitignore'))
-    folders=('app','installer','docs','tests','tools','.github') if source else ('app','installer')
+    if source:
+        paths.extend(ROOT/name for name in SOURCE_FILES)
+        paths.extend(ROOT/'docs/art'/name for name in GUIDE_IMAGES)
+    folders=('app','installer','tests','.github') if source else ('app','installer')
     for folder in folders:
         paths.extend(p for p in (ROOT/folder).rglob('*') if p.is_file()
                      and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo','.log','.zip'))

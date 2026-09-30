@@ -11,3 +11,14 @@ Thumbs.db
 companion.lock
 voice-cache/
 attachments/
+
+# Local artwork experiments and reports are not repository documentation.
+docs/*.md
+docs/*.json
+docs/context-art/
+docs/source-art/
+docs/art/*-1.*.png
+docs/art/menu-animazioni.png
+docs/art/impostazioni.png
+animation-review/
+generated_images/
