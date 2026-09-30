@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.1.2: desktop companion and practice tools."""
+"""Yun Jin Companion 1.2.0: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -175,6 +175,7 @@ class Companion(YunJinPet):
         self.reminder_dialog=None
         self.mac_overlay=None
         self.updates=None
+        self.context=None
         super().__init__()
         icon=QIcon(str(BASE/'favicon.png'))
         if not icon.isNull():
@@ -211,6 +212,8 @@ class Companion(YunJinPet):
         QTimer.singleShot(1500,self.poll_reminders)
         from yun_jin_updates_ui import Updates
         self.updates=Updates(self)
+        from yun_jin_context import Context
+        self.context=Context(self)
 
     def tray_activated(self, reason):
         if reason in (QSystemTrayIcon.ActivationReason.Trigger,QSystemTrayIcon.ActivationReason.DoubleClick):
@@ -222,6 +225,8 @@ class Companion(YunJinPet):
         self.raise_()
 
     def focus_row(self):
+        if not self.focus_reminder:
+            return None
         return next((r for r in self.store.reminders() if r['id']==self.focus_reminder),None)
 
     def focus_active(self):
@@ -299,6 +304,8 @@ class Companion(YunJinPet):
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(BASE.parent/'Guida.pdf')))
 
     def music_animation(self,active):
+        if active and self.speech.category == 'ambient':
+            self.speech.stop(announce=False)
         if active and self.is_sleeping():
             self.wake_up(lambda:self.music_animation(True) if self.metronome.running else None)
             return
@@ -318,7 +325,7 @@ class Companion(YunJinPet):
         if self.state=='conducting' and self.metronome and self.metronome.running:
             from yun_jin_core import ANIMATIONS
             self.frame=min(ANIMATIONS[self.animation][1]-1,int(self.metronome.phase()*ANIMATIONS[self.animation][1]))
-            self.update()
+            self.update_frame()
         else:
             super().animate(dt)
 
@@ -351,12 +358,16 @@ class Companion(YunJinPet):
         self.speech.stop()
 
     def speech_status_animation(self, *_):
+        if self.speech.category == 'ambient':
+            return
         if self.speech.busy and self.speech.process is not None:
             self.voice_animation(True,preparing=True)
         elif not self.speech.busy and self.state=='voice_wait':
             self.voice_animation(False)
 
     def voice_animation(self,active,preparing=False):
+        if self.speech.category == 'ambient':
+            return
         if active and self.is_sleeping():
             self.wake_up(lambda:self.voice_animation(True,preparing=self.speech.process is not None)
                          if self.speech.busy else None)
@@ -461,6 +472,7 @@ class Companion(YunJinPet):
             return
         try:
             rows=self.store.mark_due()
+            badge_changed = self.due_count != len(rows)
             self.due_count=len(rows)
             new=[r for r in rows if r['id'] not in self.announced]
             focus_due=any(r['id']==self.focus_reminder for r in new)
@@ -483,7 +495,10 @@ class Companion(YunJinPet):
                 self.panel.refresh_reminders()
                 self.panel.refresh_focus()
             self.flush_feedback()
-            self.update()
+            if badge_changed:
+                self.update()
+            if self.context:
+                self.context.dispatch()
         except Exception:
             logging.exception('Reminder poll failed')
             self.reminder_timer.stop()
@@ -642,6 +657,8 @@ class Companion(YunJinPet):
                 event.ignore()
                 return
         self.closing=True
+        if self.context:
+            self.context.shutdown()
         if self.updates:
             self.updates.shutdown()
         self.save_settings()
@@ -697,6 +714,7 @@ def main():
         if sys.platform=='win32':
             app._yun_jin_taskbar_icons.apply(pet)
         pet.show()
+        pet.context.start()
         mac_all_spaces(pet)
         if pet.mac_overlay:
             pet.mac_overlay.set_enabled(store.preference(PREFERENCE,True))

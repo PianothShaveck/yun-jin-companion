@@ -61,10 +61,27 @@ class Speech(QObject):
             self.output.setVolume(value/100)
 
     def report(self,text):
+        if self.category == 'ambient':
+            return
         self.status=text
         self.status_changed.emit(text)
 
-    def speak(self,text,category='manual',tag=None,preview=False):
+    def ambient_allowed(self, tag=None):
+        context = getattr(self.pet, 'context', None)
+        tag = tag or self.current_tag or {}
+        return bool(context and context.enabled.get(tag.get('kind'), False)
+                    and time.time() >= self.pet.sound.quiet_until
+                    and int(self.pref('volume', 70)) > 0
+                    and context.can_react(ignore_speech=True, serial=tag.get('serial')))
+
+    def speak(self,text,category='manual',tag=None,preview=False,language=None):
+        if category == 'ambient':
+            if self.busy or self.player is None or not self.ambient_allowed(tag):
+                return False
+        elif self.category == 'ambient':
+            # User actions and reminders always take precedence over ambient speech.
+            self.stop(announce=False)
+            self.category = category
         text=str(text).strip()
         if not text:
             self.report('Nessun testo da leggere.')
@@ -84,7 +101,7 @@ class Speech(QObject):
         self.category=category
         self.current_tag=tag
         self.busy=True
-        language=self.pref('language','it')
+        language=language or self.pref('language','it')
         provider=self.pref('provider','edge')
         default_voice=VOICES.get(language,VOICES['it'])[0][1]
         voice=self.pref('voice_'+language,default_voice)
@@ -105,7 +122,7 @@ class Speech(QObject):
         process.errorOccurred.connect(lambda error,p=process:self.process_error(p,error))
         process.started.connect(lambda p=process,j=job:self.write_job(p,j))
         process.start()
-        self.timeout.start(45000)
+        self.timeout.start(12000 if category == 'ambient' else 45000)
         self.report('Preparazione…')
         return True
 
@@ -145,6 +162,10 @@ class Speech(QObject):
                 if self.current_tag not in active:
                     self.busy=False
                     return
+            if self.category == 'ambient' and not self.ambient_allowed():
+                self.busy=False
+                self.current_tag=None
+                return
             self.output.setVolume(max(0,min(100,int(self.pref('volume',70))))/100)
             self.player.setSource(QUrl.fromLocalFile(str(path)))
             self.player.play()

@@ -64,8 +64,7 @@ class UpdateDialog(QDialog):
     def refresh(self):
         release = self.manager.release
         self.title.setText('È disponibile Yun Jin ' + release['version'])
-        self.summary.setText('Versione attuale: ' + VERSION + '. Leggi le novità prima di aggiornare.\n'
-                             'Yun Jin salverà gli appunti, installerà l’aggiornamento e si riaprirà.')
+        self.summary.setText('Versione attuale: ' + VERSION)
         self.notes.document().setMarkdown(release['notes'], QTextDocument.MarkdownFeature.MarkdownNoHTML)
         self.status.setText(release.get('reason', ''))
         self.install.setEnabled(release['automatic'] and not self.manager.busy)

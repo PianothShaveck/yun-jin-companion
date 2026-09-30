@@ -248,3 +248,27 @@ class BeatIndicator(QWidget):
             radius=5 if active else 3.5
             p.drawEllipse(QPointF(start+i*step,self.height()/2),radius,radius)
         p.end()
+
+
+class ClockLabel(QLabel):
+    """A fixed text layout avoids relaying out the whole panel at every tenth."""
+    def __init__(self):
+        super().__init__('00:00:00.0')
+        self._clock_text = '00:00:00.0'
+        self.setObjectName('metric')
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    def setText(self, text):
+        if text != self._clock_text:
+            self._clock_text = text
+            self.setAccessibleName(text)
+            self.update()
+
+    def text(self):
+        return self._clock_text
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setFont(self.font())
+        painter.setPen(self.palette().color(self.foregroundRole()))
+        painter.drawText(self.contentsRect(), self.alignment(), self._clock_text)

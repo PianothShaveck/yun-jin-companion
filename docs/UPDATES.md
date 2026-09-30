@@ -5,10 +5,10 @@ Repository pubblico: https://github.com/PianothShaveck/yun-jin-companion
 ## Pubblicazione manuale su GitHub
 
 1. Aggiorna i sorgenti del repository con il contenuto dello ZIP Sorgenti. I file `README.md`, `app/`, `installer/`, `tests/`, `tools/`, `docs/`, la guida e gli avviatori devono stare nella radice. Aggiorna anche `.github/workflows/check.yml`; dal Mac puoi aprire il file già presente nell’editor web di GitHub e sostituirne il contenuto, evitando il selettore che rifiuta cartelle nascoste.
-2. Attendi i check di Windows, macOS e Ubuntu. Per questa correzione prova Controlla ora su macOS con il pannello aperto e overlay attivo/disattivo: chiudendo il messaggio il pannello deve tornare utilizzabile.
-3. Crea una release stabile con tag `v1.1.1`, titolo `Yun Jin Companion 1.1.1`, e impostala come Latest.
-4. Incolla il contenuto di `docs/RELEASE-1.1.1.md` nelle note. L’app legge proprio il corpo della release: puoi usare Markdown, elenchi e link HTTPS. Le immagini remote non vengono caricate nell’app.
-5. Allega `Yun-Jin-Companion-1.1.1.zip`, senza rinominarlo. Lo ZIP Sorgenti serve a caricare il repository, non come pacchetto di aggiornamento. GitHub calcola il digest SHA-256 dell’allegato; se ancora assente, l’app attende e non installa uno ZIP non verificabile.
+2. Attendi i check di Windows, macOS e Ubuntu. Per questa versione verifica su macOS il saluto all’avvio, la voce e la navigazione dei pannelli; lascia al meteo almeno un minuto per il primo controllo.
+3. Crea una release stabile con tag `v1.2.0`, titolo `Yun Jin Companion 1.2.0`, e impostala come Latest.
+4. Incolla il contenuto di `docs/RELEASE-1.2.0.md` nelle note. L’app legge proprio il corpo della release: puoi usare Markdown, elenchi e link HTTPS. Le immagini remote non vengono caricate nell’app.
+5. Allega `Yun-Jin-Companion-1.2.0.zip`, senza rinominarlo. Lo ZIP Sorgenti serve a caricare il repository, non come pacchetto di aggiornamento. GitHub calcola il digest SHA-256 dell’allegato; se ancora assente, l’app attende e non installa uno ZIP non verificabile.
 
 Le versioni 1.0.x non possono cercare aggiornamenti: gli utenti devono installare manualmente una release 1.1 o successiva una volta. Poi ricevono le release successive.
 
@@ -24,6 +24,7 @@ La distribuzione futura con un’app o installer firmato Developer ID e autentic
 
 - Aggiorna la versione in `app/yun_jin_platform.py`, `app/yun_jin_app.py`, `installer/install.py`, `tools/package_release.py`, README.
 - Aggiorna note e test. La guida non contiene la versione dell’app: ricostruiscila solo se cambiano funzioni, procedure o contenuti, aggiornando la data di revisione nei crediti. Per le sole correzioni riutilizza il PDF esistente.
+- Se modifichi le immagini o gli ancoraggi delle animazioni, esegui prima `python tools/build_sprite_cache.py`; conserva gli originali e includi `app/assets/normalized/`.
 - Esegui `python tools/package_release.py --source`. Il comando genera `app/release-manifest.json` con versione, requisiti e hash, poi crea gli archivi. Non modificare app o guida dopo il packaging senza rigenerare gli ZIP.
 - Pubblica tag `vX.Y.Z` e allegato esatto `Yun-Jin-Companion-X.Y.Z.zip`, marcando la release come stabile e Latest. Bozze, prerelease, sorgenti automatici GitHub e ZIP Sorgenti non vengono installati.
 - Conserva il protocollo 1 compatibile. Il primo aggiornamento è gestito dal codice della versione già installata: cambi incompatibili al protocollo richiedono una release intermedia compatibile.

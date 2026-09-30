@@ -1,0 +1,52 @@
+{
+  "baseline_version": "1.1.2",
+  "candidate_version": "1.2.0",
+  "baseline": {
+    "startup_seconds": 0.969,
+    "startup_cpu_seconds": 1.022,
+    "rss_start_mib": 151.8,
+    "idle": {
+      "cpu_ms_per_second": 14.21,
+      "paints_per_second": 31.4,
+      "rss_mib": 151.9
+    },
+    "hidden_stopwatch": {
+      "cpu_ms_per_second": 15.91,
+      "paints_per_second": 31.35,
+      "rss_mib": 157.3
+    },
+    "visible_stopwatch": {
+      "cpu_ms_per_second": 65.09,
+      "paints_per_second": 31.19,
+      "rss_mib": 157.3
+    },
+    "decoded_sprite_mib": 32.82,
+    "platform": "linux",
+    "backend": "offscreen",
+    "python": "3.12.14"
+  },
+  "candidate": {
+    "startup_seconds": 0.096,
+    "startup_cpu_seconds": 0.101,
+    "rss_start_mib": 93.9,
+    "idle": {
+      "cpu_ms_per_second": 5.3,
+      "paints_per_second": 2.76,
+      "rss_mib": 94.8
+    },
+    "hidden_stopwatch": {
+      "cpu_ms_per_second": 5.32,
+      "paints_per_second": 2.86,
+      "rss_mib": 109.6
+    },
+    "visible_stopwatch": {
+      "cpu_ms_per_second": 14.26,
+      "paints_per_second": 2.84,
+      "rss_mib": 109.7
+    },
+    "decoded_sprite_mib": 10.73,
+    "platform": "linux",
+    "backend": "offscreen",
+    "python": "3.12.14"
+  }
+}

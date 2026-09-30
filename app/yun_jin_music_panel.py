@@ -2,11 +2,11 @@
 """Metronome and stopwatch: one page per tool, only relevant controls."""
 import csv
 import time
-from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtCore import QTimer, Qt, QEvent
 from PyQt6.QtWidgets import (QWidget,QVBoxLayout,QHBoxLayout,QFormLayout,QTabWidget,
     QSpinBox,QCheckBox,QComboBox,QSlider,QTreeWidget,QTreeWidgetItem,QHeaderView,
     QFileDialog,QApplication,QMessageBox)
-from yun_jin_ui import plain_label,button,stepper,card,scroll_page,BeatIndicator,icon_button
+from yun_jin_ui import plain_label,button,stepper,card,scroll_page,BeatIndicator,icon_button,ClockLabel
 from yun_jin_dialogs import Messages, choose_files
 from yun_jin_music import MetroConfig,format_elapsed
 
@@ -69,7 +69,7 @@ class MusicPanel(QWidget):
     def build_stopwatch(self):
         page=QWidget(); layout=QVBoxLayout(page); layout.setContentsMargins(0,0,0,0); layout.setSpacing(14)
         hero,display=card(layout,hero=True)
-        self.clock=plain_label('', 'metric'); self.clock.setAlignment(Qt.AlignmentFlag.AlignCenter); display.addWidget(self.clock)
+        self.clock=ClockLabel(); display.addWidget(self.clock)
         row=QHBoxLayout(); row.setSpacing(12); row.addStretch()
         self.watch_start=button('Avvia',self.start_watch,row,glyph='play',role='primary')
         self.watch_pause=button('Pausa',self.watch.pause,row,glyph='pause',role='primary')
@@ -82,8 +82,22 @@ class MusicPanel(QWidget):
         row=QHBoxLayout(); row.setSpacing(12); row.addStretch()
         self.copy=button('Copia',self.copy_laps,row,glyph='copy'); self.export=button('CSV…',self.export_laps,row,glyph='export')
         layout.addLayout(row); self.tabs.addTab(page,'Cronometro')
+        self.clock_timer=QTimer(self); self.clock_timer.setInterval(50); self.clock_timer.timeout.connect(self.refresh_clock)
+        page.installEventFilter(self)
         self.watch.changed.connect(self.refresh_watch); self.refresh_watch()
-        self.clock_timer=QTimer(self); self.clock_timer.setInterval(50); self.clock_timer.timeout.connect(self.refresh_clock); self.clock_timer.start()
+
+    def eventFilter(self, watched, event):
+        if event.type() in (QEvent.Type.Show, QEvent.Type.Hide):
+            self.sync_clock_timer()
+        return super().eventFilter(watched, event)
+
+    def sync_clock_timer(self):
+        visible = self.clock.isVisible() and self.watch.running
+        if visible:
+            self.refresh_clock()
+            if not self.clock_timer.isActive(): self.clock_timer.start()
+        else:
+            self.clock_timer.stop()
 
     def start_metro(self):
         c=MetroConfig(self.bpm.value(),self.accent.value() if self.accent_on.isChecked() else 0,
@@ -128,6 +142,7 @@ class MusicPanel(QWidget):
     def refresh_clock(self):self.clock.setText(format_elapsed(self.watch.elapsed()))
 
     def refresh_watch(self):
+        self.sync_clock_timer()
         self.refresh_clock(); self.watch_start.setVisible(not self.watch.running); self.watch_pause.setVisible(self.watch.running)
         self.watch_start.setText('Riprendi' if self.watch.elapsed()>0 else 'Avvia')
         self.watch_lap.setEnabled(self.watch.running); self.watch_reset.setEnabled(self.watch.running or self.watch.elapsed()>0 or bool(self.watch.laps))

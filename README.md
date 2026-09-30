@@ -1,6 +1,6 @@
 # Yun Jin Companion
 
-Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Versione **1.1.2**.
+Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Versione **1.2.0**.
 
 ## Avvio
 
@@ -17,6 +17,34 @@ Gli avviatori Windows e macOS cercano Python; se manca, scaricano l'installer uf
 **macOS: se Mac.command viene bloccato perché lo sviluppatore non è verificato**, dopo il tentativo di apertura vai in **Impostazioni di Sistema → Privacy e Sicurezza → Apri comunque**, poi conferma **Apri**. Fallo per il pacchetto scaricato dalla release ufficiale. Il semplice doppio clic può non bastare; una nuova copia scaricata può richiedere una nuova approvazione. Procedura Apple: https://support.apple.com/it-it/102445
 
 La guida unica e completa è [Guida.pdf](Guida.pdf), disponibile anche dal pulsante **Guida** nell'app. Include installazione, funzioni, comandi per ogni sistema, backup e aiuto.
+
+## Novità della 1.2.0
+
+- **Interfaccia essenziale:** etichette brevi, niente paragrafi esplicativi nei
+  pannelli. Dettagli nei suggerimenti e nella guida.
+- **Orario locale:** un saluto in mandarino all’avvio e una sola animazione al
+  cambio di fascia: mattina 05–12, pomeriggio 12–18, sera 18–22, notte 22–05.
+- **Meteo:** verifica leggera ogni ora in background; reazioni ai cambiamenti di
+  sole, pioggia, nuvole, neve, nebbia e temporali. Tra due reazioni meteo passano
+  almeno due ore. Nessun errore visibile quando il servizio non risponde.
+- **Meno risorse:** animazioni caricate quando servono, con al massimo due clip
+  aggiuntive decodificate; meno ridisegni e cronometro senza aggiornamenti
+  grafici quando nascosto. Disegni e tempi delle animazioni conservati.
+
+In **Impostazioni → Orario e meteo** puoi disattivare separatamente le tre
+funzioni. Le frasi spontanee sono in mandarino e usano servizio e volume della
+Voce, senza cambiare la lingua di appunti e promemoria. **Silenzio per 1 ora**
+sospende anche queste frasi. Le reazioni attendono o vengono saltate durante
+comandi manuali, pausa, sonno, focus, metronomo, promemoria o pannelli aperti.
+
+Il meteo usa [Open-Meteo](https://open-meteo.com/) (dati CC BY 4.0). La posizione
+approssimativa viene stimata dall’indirizzo IP con [ipwho.is](https://ipwhois.io/),
+senza GPS; VPN e reti mobili possono indicare un’altra zona. Le coordinate sono
+arrotondate a due decimali e tenute in cache per 24 ore; il meteo per un’ora.
+Le chiamate passano solo l’IP e le coordinate necessarie, mai appunti o
+promemoria. Disattivare il meteo interrompe la richiesta in corso.
+
+Misure riproducibili e limiti: [docs/PERFORMANCE-1.2.0.md](docs/PERFORMANCE-1.2.0.md).
 
 ## Correzioni e interfaccia della 1.1.2
 
@@ -229,17 +257,19 @@ il controllo nativo di creazione del pannello e attivazione/disattivazione.
 `python tools/render_guide_assets.py` rigenera le schermate con dati fittizi e gli estratti delle animazioni definitive.
 `python docs/build_guide.py` rigenera il PDF su Linux con ReportLab, Pillow e i font DejaVu installati. Eseguilo solo quando cambiano i contenuti della guida; le release con sole correzioni riutilizzano lo stesso PDF. Aggiorna la data di revisione nei crediti quando modifichi il manuale.
 
+`python tools/build_sprite_cache.py` rigenera i fotogrammi pronti all’uso solo quando cambia l’arte o il suo allineamento. Verifica l’identità esatta dei pixel e conserva gli originali.
+
 `python tools/package_release.py` crea lo ZIP di distribuzione in `dist/`; aggiungi `--source` per produrre anche lo ZIP del repository. Sono escluse cache, revisioni precedenti, archivi e dati personali. `Mac.command` e `Linux.sh` mantengono il permesso eseguibile.
 
-## Pubblicazione 1.1.2
+## Pubblicazione 1.2.0
 
-1. Applica **Yun-Jin-Companion-1.1.2-Patch.zip** alla copia locale aggiornata del repository, oppure estrai lo ZIP Sorgenti. Carica nella radice del repository
+1. Applica **Yun-Jin-Companion-1.2.0-Patch.zip** alla copia locale aggiornata del repository, oppure estrai lo ZIP Sorgenti. Carica nella radice del repository
    il contenuto della cartella estratta, comprese `.github` e `.gitignore`.
    `README.md`, `Windows.cmd` e `app/` devono trovarsi direttamente nella radice.
 2. Attendi i controlli nella scheda **Actions**. Verifica su Windows l’installazione,
    il collegamento aggiornato e l’icona nella barra; verifica anche l’uscita audio.
-3. Crea la release con tag **v1.1.2** e titolo **Yun Jin Companion 1.1.2**.
-   Allega **Yun-Jin-Companion-1.1.2.zip**, il pacchetto da scaricare e installare.
+3. Crea la release con tag **v1.2.0** e titolo **Yun Jin Companion 1.2.0**.
+   Allega **Yun-Jin-Companion-1.2.0.zip**, il pacchetto da scaricare e installare.
    GitHub fornisce automaticamente anche l’archivio dei sorgenti.
 4. Pubblica una release stabile, non una prerelease, e contrassegnala come **Latest**.
    Scrivi le note nel corpo della release: sono quelle che l’app mostrerà.
@@ -253,11 +283,11 @@ I dettagli per preparare le release future sono in [docs/UPDATES.md](docs/UPDATE
 Descrizione del repository: **Compagna desktop con appunti, promemoria vocali,
 focus, cronometro e metronomo.**
 
-Comandi rapidi: [docs/PUBLISH-1.1.2.md](docs/PUBLISH-1.1.2.md).
+Comandi rapidi: [docs/PUBLISH-1.2.0.md](docs/PUBLISH-1.2.0.md).
 
-Note per la release: vedi [docs/RELEASE-1.1.2.md](docs/RELEASE-1.1.2.md).
+Note per la release: vedi [docs/RELEASE-1.2.0.md](docs/RELEASE-1.2.0.md).
 
-Gli ZIP contengono solo la versione definitiva 1.1.2. Il pacchetto di distribuzione
+Gli ZIP contengono solo la versione definitiva 1.2.0. Il pacchetto di distribuzione
 include app, risorse, avviatori e guida; i sorgenti aggiungono documentazione,
 strumenti di sviluppo e test. Anteprime di controllo, revisioni precedenti,
 ambienti Python e dati personali sono esclusi.
@@ -267,3 +297,5 @@ ambienti Python e dati personali sono esclusi.
 Codice: [GNU GPL v3 o successiva](app/licenses/GPL-3.0.txt). Le dipendenze mantengono le proprie licenze. Le illustrazioni del personaggio sono escluse dalla licenza del codice: non viene concesso alcun diritto ulteriore su personaggio o marchi.
 
 Progetto fan non ufficiale. Yun Jin è un personaggio di Genshin Impact, dei rispettivi titolari. Lo sprite originale fornito dall'utente è conservato; le sequenze aggiuntive sono generate da riferimenti e integrate come animazioni. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.
+
+Meteo: [Open-Meteo](https://open-meteo.com/), dati sotto [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Posizione approssimativa: [ipwho.is](https://ipwhois.io/).

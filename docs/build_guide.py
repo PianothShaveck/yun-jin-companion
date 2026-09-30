@@ -27,7 +27,7 @@ S={
 PAGES=[('INIZIA QUI','Windows'),('SUL DESKTOP','macOS, Linux e comandi'),('CONSERVA','Appunti'),
        ('RICORDA','Promemoria'),('ASCOLTA','Voce e suoni'),('ESERCITATI','Metronomo'),
        ('MISURA','Cronometro e focus'),('CONSERVA I DATI','Backup e manutenzione'),('SEMPRE AGGIORNATA','Aggiornamenti'),
-       ('RIPOSA','Il sonno di Yun Jin'),('AIUTO','Problemi e crediti')]
+       ('RIPOSA','Il sonno di Yun Jin'),('INTORNO A TE','Orario e meteo'),('AIUTO','Problemi e crediti')]
 
 def p(text,style='p'):return Paragraph(text,S[style])
 def h(text):return p(text,'h')
@@ -177,11 +177,11 @@ story += [pair,Spacer(1,16),h('Crea un promemoria'),
     p('Il numero sul pet e nella barra laterale indica gli avvisi da gestire. Il silenzio temporaneo sospende voce e campanelli; gli avvisi visivi rimangono attivi. Durante il metronomo il campanello dei promemoria suona; la lettura vocale resta sospesa, senza interrompere il ritmo.','small'),PageBreak()]
 # 5
 story += [picture('voce.png',460),Spacer(1,12),
-    p('In <b>Voce</b>, <b>Leggi automaticamente i promemoria</b> pronuncia gli avvisi alla scadenza. La lettura manuale è indipendente da questa opzione. <b>Ascolta</b> legge il campo di testo; <b>Leggi testo copiato</b> usa gli appunti del sistema. <b>Stop</b> compare durante la lettura o la preparazione.'),
+    p('In <b>Voce</b>, <b>Leggi i promemoria alla scadenza</b> pronuncia gli avvisi alla scadenza. La lettura manuale è indipendente da questa opzione. <b>Ascolta</b> legge il campo di testo; <b>Leggi testo copiato</b> usa gli appunti del sistema. <b>Stop</b> compare durante la lettura o la preparazione.'),
     table(['Servizio','Regolazioni'],[['Microsoft Edge','Voce, velocità, intonazione e volume.'],['Google Translate','Lingua, lettura lenta e volume; la voce è scelta dal servizio.']]),Spacer(1,10),
     p('Il menu <b>⋯</b> svuota la cache o ripristina Elsa: italiano, +20% di velocità, +15 Hz, volume 70%. La lettura accetta fino a 3.000 caratteri; seleziona un passaggio per testi più lunghi.'),
     p('<b>La sintesi vocale usa Internet e invia il testo al servizio scelto.</b> Non servono chiavi API. Edge e gTTS sono accessi non ufficiali: disponibilità e limiti dipendono dai servizi. Gli audio già letti restano nella cache locale.','small'),
-    p('I volumi sono separati: voce in <b>Voce</b>, effetti in <b>Impostazioni</b>, click nel <b>Metronomo</b>. Disattivando <b>Riproduci effetti sonori</b> spegni campanelli, saluti e conferme. Una lettura manuale ferma il metronomo.','small'),PageBreak()]
+    p('I volumi sono separati: voce in <b>Voce</b>, effetti in <b>Impostazioni</b>, click nel <b>Metronomo</b>. Disattivando <b>Effetti sonori</b> spegni campanelli e suoni di saluto e conferma. Una lettura manuale ferma il metronomo.','small'),PageBreak()]
 # 6
 story += [picture('metronomo.png',450),Spacer(1,12),
     table(['Controllo','Uso'],[['BPM / Tap tempo','Da 20 a 400. I clic ripetuti su Tap tempo impostano la velocità.'],
@@ -206,7 +206,7 @@ story += [h('Dove sono i dati'),p('In <b>Impostazioni → Cartella dati</b> trov
     h('Disinstalla'),p('Chiudi l’app e rimuovi i collegamenti. Sul Mac elimina anche l’app in <b>/Applications</b>. Nella cartella dati rimuovi <b>program</b> e <b>runtime</b>; su Windows anche l’eventuale <b>python-3.13</b>. Conserva database e attachments per riusarli, oppure esporta un backup prima di eliminare tutta la cartella.'),
     call('Per condividere l’app invia lo <b>ZIP di distribuzione</b>. La tua cartella dati contiene appunti personali e non va inclusa.'),PageBreak()]
 # 9
-story += [picture('aggiornamento-1.1.png',330),Spacer(1,8),
+story += [picture('aggiornamento.png',330),Spacer(1,8),
     p('Esempio di avviso con note dimostrative. Le note effettive vengono dalla release pubblicata su GitHub.','small'),
     p('Il controllo è attivo di default: circa 30 secondi dopo l’avvio e poi ogni <b>2 ore</b>, finché Yun Jin è aperta. L’avviso automatico attende la fine di voce, metronomo, cronometro o focus.'),
     table(['Scelta','Risultato'],[
@@ -231,18 +231,33 @@ story += [h('Tre fasi, un movimento continuo'),
     p('Il sonno non spegne i promemoria: gli avvisi e i suoni restano attivi. Voce e metronomo possono farla svegliare per la propria animazione. Focus e metronomo impediscono nuovi sonnellini spontanei.'),
     call('La modalità <b>Addormentata</b> è sopra <b>Tranquilla</b> nel menu Carattere. Non è la Pausa completa: il respiro continua ad animarsi.'),PageBreak()]
 # 11
+story += [picture('orario-meteo.png',390),Spacer(1,8),
+    h('Un saluto quando apri l’app'),
+    p('Yun Jin ti saluta in mandarino secondo l’orologio locale del computer. Il saluto vocale avviene <b>una sola volta all’avvio</b>: riaprire il pannello o cambiare impostazioni non lo ripete. Usa il servizio e il volume scelti in Voce, senza cambiare la lingua delle tue letture.'),
+    table(['Fascia locale','Reazione al cambio di fascia'],[
+        ['05:00–11:59 · Mattina','Si stiracchia.'],
+        ['12:00–17:59 · Pomeriggio','Si mette al lavoro.'],
+        ['18:00–21:59 · Sera','Una piroetta.'],
+        ['22:00–04:59 · Notte','Uno stiracchiamento tranquillo.']]),Spacer(1,10),
+    p('Ogni cambio di fascia produce al massimo una reazione. Al ritorno dalla sospensione considera solo la fascia attuale, senza recuperare tutte quelle trascorse. Le animazioni aggiuntive disattivate vengono sostituite con gesti originali.','small'),
+    h('Il tempo fuori'),
+    p('Dopo circa un minuto, poi ogni <b>ora</b>, cerca il meteo in background. Sole, nuvole, pioggia, neve, nebbia e temporali possono provocare un gesto e una breve frase in mandarino. Il cielo sereno di notte non viene confuso con il sole. Reagisce ai cambiamenti, con almeno <b>due ore</b> tra due commenti meteo.'),
+    p('La posizione è approssimativa, ricavata dall’IP con <b>ipwho.is</b> e conservata fino a 24 ore. VPN e reti mobili possono indicare un’altra zona. I dati di <link href="https://open-meteo.com/" color="#3e777e">Open-Meteo</link> sono stime, conservate per un’ora. Non usa GPS, account o chiavi API.','small'),
+    call('Puoi disattivare separatamente saluto, reazioni all’ora e meteo. Durante comandi manuali, sonno, pausa, focus, metronomo o promemoria queste reazioni aspettano brevemente o vengono saltate. Senza dati o connessione, Yun Jin continua normalmente e non mostra errori.'),PageBreak()]
+# 12
 story += [table(['Problema','Controllo'],[
     ['Yun Jin non si vede','Menu dell’area di notifica → Aspetto → Riporta sullo schermo.'],
     ['Mac: icona Dock assente','È normale con la modalità sopra le app a schermo intero. Puoi disattivarla in Impostazioni.'],
     ['La voce non parte','Controlla Internet, volume e uscita audio. In Voce prova l’altro servizio o svuota la cache.'],
-    ['Promemoria senza voce','In Voce abilita Leggi automaticamente i promemoria; termina il silenzio dal menu o ferma il metronomo.'],
+    ['Promemoria senza voce','In Voce abilita Leggi i promemoria alla scadenza; termina il silenzio dal menu o ferma il metronomo.'],
     ['Il metronomo non suona','Controlla l’uscita audio del sistema. Dopo aver cambiato dispositivo, premi Ferma e Avvia.'],
     ['Il pet resta fermo','In Comportamento togli Pausa completa e scegli Riprendi. Controlla Focus e il carattere scelto, incluso Addormentata.'],
     ['Avvio bloccato','Controlla la provenienza del pacchetto e le autorizzazioni del sistema. Su dispositivi gestiti rivolgiti all’amministratore.'],
     ['Installazione interrotta','Conserva il messaggio, verifica connessione e spazio libero, poi ripeti l’avvio. Il log è yun-jin.log nella cartella dati.']]),
-    h('Requisiti e accesso alla rete'),p('Prima installazione, voce e controllo aggiornamenti richiedono Internet. Appunti, promemoria, focus, cronometro e metronomo funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
+    h('Requisiti e accesso alla rete'),p('Prima installazione, voce, meteo e controllo aggiornamenti richiedono Internet. Appunti, promemoria, focus, cronometro e metronomo funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
     h('Crediti e licenze'),p('Progetto fan non ufficiale. Yun Jin è un personaggio di Genshin Impact; personaggio e marchi appartengono ai rispettivi titolari. Lo sprite originale fornito dall’utente è conservato. Le animazioni aggiuntive sono generate da riferimenti e revisionate. Le immagini della guida provengono dai file definitivi dell’app.','small'),
     p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts e gTTS mantengono le rispettive licenze. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
+    p('Meteo: <link href="https://open-meteo.com/" color="#3e777e">Open-Meteo</link>, dati CC BY 4.0. Posizione approssimativa: <link href="https://ipwhois.io/" color="#3e777e">ipwho.is</link>. Per la voce, il testo viene inviato al servizio selezionato; per il meteo, i servizi ricevono l’indirizzo IP e le coordinate approssimative necessarie.','small'),
     h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small'),
     p('Revisione della guida: 30 settembre 2026. La guida viene aggiornata quando cambiano funzioni o procedure; le correzioni delle singole versioni sono descritte nelle note di rilascio.','small')]
 

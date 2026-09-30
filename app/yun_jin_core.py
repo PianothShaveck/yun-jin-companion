@@ -13,11 +13,12 @@ import math
 import random
 import sys
 import time
-from collections import deque
+from collections import deque, OrderedDict
+from collections.abc import Mapping
 from pathlib import Path
 
 from PyQt6.QtCore import QPoint, QPointF, QRect, QRectF, Qt, QTimer, QSettings, QLockFile, QStandardPaths
-from PyQt6.QtGui import QActionGroup, QCursor, QIcon, QPainter, QPixmap, QRegion
+from PyQt6.QtGui import QActionGroup, QCursor, QIcon, QPainter, QPixmap, QRegion, QImageReader
 from PyQt6.QtWidgets import QApplication, QWidget, QMenu, QMessageBox
 
 BASE = Path(__file__).resolve().parent
@@ -80,16 +81,63 @@ def mac_all_spaces(widget):
         print('Spaces support unavailable:', exc, file=sys.stderr)
 
 
+def read_pixmap(path):
+    # QPixmap(filename) implicitly keeps large source atlases in Qt's global
+    # cache. Only the final frames are needed after decoding.
+    return QPixmap.fromImage(QImageReader(str(path)).read())
+
+
+def animation_fingerprint(path, spec):
+    digest = hashlib.sha256(b'yun-jin-normalized-v1\0')
+    digest.update(json.dumps(spec, sort_keys=True).encode('utf-8'))
+    digest.update(path.read_bytes())
+    return digest.hexdigest()[:24]
+
+
+class Frames(Mapping):
+    """Original frames plus a bounded cache of two decoded animation clips."""
+    def __init__(self):
+        self.original = {}
+        self.loaders = {}
+        self.cache = OrderedDict()
+
+    def __getitem__(self, key):
+        row, col = key
+        if row < 100:
+            return self.original[key]
+        count, load = self.loaders[row]
+        if not 0 <= col < count:
+            raise KeyError(key)
+        if row not in self.cache:
+            self.cache[row] = load()
+            while len(self.cache) > 2:
+                self.cache.popitem(last=False)
+        self.cache.move_to_end(row)
+        return self.cache[row][col]
+
+    def __setitem__(self, key, value):
+        self.original[key] = value
+
+    def __iter__(self):
+        yield from self.original
+        for row, (count, _) in self.loaders.items():
+            for col in range(count):
+                yield row, col
+
+    def __len__(self):
+        return len(self.original) + sum(count for count, _ in self.loaders.values())
+
+
 class SpriteSheet:
     def __init__(self, path):
-        sheet = QPixmap(str(path))
+        sheet = read_pixmap(path)
         if sheet.isNull():
             raise RuntimeError('Non riesco a leggere spritesheet-yun-jin-v2.png.\n'
                                'Mettilo nella stessa cartella di yun_jin_pet.py.')
         if sheet.width() < 80 or sheet.height() < 110:
             raise RuntimeError('Lo spritesheet è troppo piccolo o non valido.')
         self.ratio = (sheet.height() / 11) / (sheet.width() / 8)
-        self.frames = {}
+        self.frames = Frames()
         # The supplied 1374 x 2048 sheet has fractional cell boundaries.
         # Round each boundary independently; never crop the character to its bbox.
         for row in range(11):
@@ -148,9 +196,6 @@ class SpriteSheet:
                     raise ValueError('Griglia o numero di frame non valido')
                 path = (manifest.parent / spec['file']).resolve()
                 path.relative_to(manifest.parent.resolve())
-                pix = QPixmap(str(path))
-                if pix.isNull():
-                    raise ValueError('Immagine animazione non leggibile: '+path.name)
                 timing = spec.get('seconds_per_frame', .12)
                 durations = [float(timing)]*count if isinstance(timing,(int,float)) else [float(t) for t in timing]
                 if len(durations)!=count or any(not .02<=t<=10 for t in durations):
@@ -159,52 +204,74 @@ class SpriteSheet:
                 order=spec.get('frame_order',list(range(count)))
                 if len(order)!=count or any(not isinstance(i,int) or not 0<=i<columns*rows for i in order):
                     raise ValueError('Ordine dei fotogrammi non valido')
-                cells=[]
-                rects=spec.get('frame_rects')
-                offsets=spec.get('frame_offsets')
-                canvas=spec.get('frame_canvas')
-                clip_rows=spec.get('frame_clip_rows')
-                if clip_rows is not None and (not rects or len(clip_rows)!=len(rects)):
-                    raise ValueError('Maschere fotogrammi incomplete')
-                if rects is not None:
-                    if len(rects)!=columns*rows or len(offsets or [])!=len(rects) or not canvas or len(canvas)!=2:
-                        raise ValueError('Ritagli o ancoraggi incompleti')
-                    if any(not isinstance(v,int) or not 1<=v<=4096 for v in canvas):
-                        raise ValueError('Dimensioni canvas non valide')
-                for source_index in order:
-                    c,r = source_index%columns,source_index//columns
-                    x0,x1 = round(c*pix.width()/columns),round((c+1)*pix.width()/columns)
-                    y0,y1 = round(r*pix.height()/rows),round((r+1)*pix.height()/rows)
-                    cell=pix.copy(x0,y0,x1-x0,y1-y0)
-                    if rects is not None:
-                        x,y,w,h=rects[source_index]
-                        if min(x,y)<0 or min(w,h)<1 or x+w>pix.width() or y+h>pix.height():
-                            raise ValueError('Ritaglio fuori tavola')
-                        cell=QPixmap(*canvas);cell.fill(Qt.GlobalColor.transparent)
-                        painter=QPainter(cell)
-                        if clip_rows is not None:
-                            region=QRegion()
-                            ox,oy=offsets[source_index]
-                            for row,left,length in clip_rows[source_index]:
-                                if min(row,left)<0 or length<1 or row>=h or left+length>w:
-                                    raise ValueError('Maschera fuori fotogramma')
-                                region=region.united(QRegion(QRect(ox+left,oy+row,length,1)))
-                            painter.setClipRegion(region)
-                        painter.drawPixmap(QPoint(*offsets[source_index]),pix.copy(x,y,w,h))
-                        painter.end()
-                    cells.append(cell)
-                if spec.get('align_as_sequence',False):
-                    cells=self.align_sequence(cells,spec)
-                for i,cell in enumerate(cells):
-                    if spec.get('align_to_original',False) and not spec.get('align_as_sequence',False):
-                        cell=self.align_frame(cell)
-                    self.frames[key,i] = cell
+                self.frames.loaders[key] = (count, lambda spec=spec, path=path: self.optional_clip(path, spec))
                 ANIMATIONS[name] = (key,count,durations)
                 LABELS[name] = str(spec.get('label',name))
                 if spec.get('event') in ('saved','reminder','speaking','completed','preparing','break','conducting','chronometer'):
                     self.event_animations[spec['event']] = name
         except Exception:
             logging.exception('Optional animation pack could not be loaded')
+
+    def optional_clip(self, path, spec):
+        try:
+            return self.load_clip(path, spec)
+        except Exception:
+            logging.exception('Optional animation could not be decoded: %s', path.name)
+            return [self.frames[0, i % 6] for i in range(int(spec['count']))]
+
+    def load_clip(self, path, spec, use_cache=True):
+        count = int(spec['count'])
+        if use_cache:
+            normalized = path.parent / 'normalized' / (spec['name'] + '-' + animation_fingerprint(path, spec) + '.png')
+            if normalized.is_file():
+                pix = read_pixmap(normalized)
+                ref = self.frames[0, 5]
+                if pix.width() == ref.width()*4 and pix.height() == ref.height()*math.ceil(count/4):
+                    return [pix.copy((i%4)*ref.width(), (i//4)*ref.height(), ref.width(), ref.height()) for i in range(count)]
+        pix = read_pixmap(path)
+        if pix.isNull():
+            raise ValueError('Immagine animazione non leggibile: ' + path.name)
+        columns, rows = int(spec['columns']), int(spec['rows'])
+        order = spec.get('frame_order', list(range(count)))
+        cells=[]
+        rects=spec.get('frame_rects')
+        offsets=spec.get('frame_offsets')
+        canvas=spec.get('frame_canvas')
+        clip_rows=spec.get('frame_clip_rows')
+        if clip_rows is not None and (not rects or len(clip_rows)!=len(rects)):
+            raise ValueError('Maschere fotogrammi incomplete')
+        if rects is not None:
+            if len(rects)!=columns*rows or len(offsets or [])!=len(rects) or not canvas or len(canvas)!=2:
+                raise ValueError('Ritagli o ancoraggi incompleti')
+            if any(not isinstance(v,int) or not 1<=v<=4096 for v in canvas):
+                raise ValueError('Dimensioni canvas non valide')
+        for source_index in order:
+            c,r = source_index%columns,source_index//columns
+            x0,x1 = round(c*pix.width()/columns),round((c+1)*pix.width()/columns)
+            y0,y1 = round(r*pix.height()/rows),round((r+1)*pix.height()/rows)
+            cell=pix.copy(x0,y0,x1-x0,y1-y0)
+            if rects is not None:
+                x,y,w,h=rects[source_index]
+                if min(x,y)<0 or min(w,h)<1 or x+w>pix.width() or y+h>pix.height():
+                    raise ValueError('Ritaglio fuori tavola')
+                cell=QPixmap(*canvas);cell.fill(Qt.GlobalColor.transparent)
+                painter=QPainter(cell)
+                if clip_rows is not None:
+                    region=QRegion()
+                    ox,oy=offsets[source_index]
+                    for row,left,length in clip_rows[source_index]:
+                        if min(row,left)<0 or length<1 or row>=h or left+length>w:
+                            raise ValueError('Maschera fuori fotogramma')
+                        region=region.united(QRegion(QRect(ox+left,oy+row,length,1)))
+                    painter.setClipRegion(region)
+                painter.drawPixmap(QPoint(*offsets[source_index]),pix.copy(x,y,w,h))
+                painter.end()
+            cells.append(cell)
+        if spec.get('align_as_sequence',False):
+            cells=self.align_sequence(cells,spec)
+        if spec.get('align_to_original', False) and not spec.get('align_as_sequence', False):
+            cells = [self.align_frame(cell) for cell in cells]
+        return cells
 
     def align_sequence(self,cells,spec=None):
         """One fixed transform per clip; preserve pose proportions and movement."""
@@ -276,6 +343,7 @@ class YunJinPet(QWidget):
         self.pet_width = max(80, min(260, self.settings.value('size', 130, type=int)))
         self.setFixedSize(self.pet_width, round(self.pet_width * self.sheet.ratio))
         self.setWindowOpacity(max(.35, min(1., self.settings.value('opacity', 1., type=float))))
+        self.action_serial = 0
         self.state = 'idle'
         self.animation = 'idle'
         self.frame = 0
@@ -358,6 +426,7 @@ class YunJinPet(QWidget):
         self.update()
 
     def cancel(self):
+        self.action_serial += 1
         self.click_timer.stop()
         self.call_timer.stop()
         self.queue.clear()
@@ -474,7 +543,7 @@ class YunJinPet(QWidget):
                     if self.loops <= 0:
                         self.next_step()
                         break
-        self.update()
+        self.update_frame()
 
     def tick(self):
         now = time.monotonic()
@@ -506,7 +575,7 @@ class YunJinPet(QWidget):
                     self.next_blink = now + random.uniform(3, 6)
         if self.state == 'gaze_demo':
             self.look = int(now * 2) % 16
-        self.update()
+        self.update_frame()
 
     def decide(self, now):
         if self.mode == 'asleep':
@@ -635,13 +704,23 @@ class YunJinPet(QWidget):
         self.xy += QPointF(dx/distance*step, dy/distance*step)
         self.move(self.xy.toPoint())
 
-    def paintEvent(self, event):
+    def visible_frame(self):
         row = ANIMATIONS[self.animation][0]
         col = self.frame
         if self.look is not None:
             row, col = 9 + self.look // 8, self.look % 8
             if self.state != 'gaze_demo' and time.monotonic() < self.blink_until:
                 row, col = 0, 1
+        return row, col
+
+    def update_frame(self):
+        key = self.visible_frame()
+        if key != getattr(self, '_painted_frame', None):
+            self.update()
+
+    def paintEvent(self, event):
+        row, col = self.visible_frame()
+        self._painted_frame = (row, col)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         pix = self.sheet.frames[row, col]

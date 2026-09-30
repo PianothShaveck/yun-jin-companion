@@ -44,7 +44,6 @@ class ReminderDialog(QDialog):
         layout.addWidget(self.quick_choices)
         self.kind.currentIndexChanged.connect(self.update_kind)
         self.kind.setCurrentIndex(1 if existing else 0); self.update_kind()
-        layout.addWidget(plain_label('Yun Jin deve essere aperta per avvisarti.','muted'))
         buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
         save=buttons.button(QDialogButtonBox.StandardButton.Save); save.setText('Salva'); save.setProperty('role','primary')
         buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Annulla')
@@ -213,19 +212,19 @@ class Panel(QDialog):
     def build_settings(self):
         tab=QWidget(); layout=QVBoxLayout(tab); layout.setContentsMargins(0,0,4,0); layout.setSpacing(16)
         _,sounds=card(layout)
-        sounds.addWidget(plain_label('Suoni dell’app','section'))
-        self.sound_enabled=QCheckBox('Riproduci effetti sonori')
+        sounds.addWidget(plain_label('Suoni','section'))
+        self.sound_enabled=QCheckBox('Effetti sonori')
         self.sound_enabled.setChecked(self.pet.sound.enabled)
         sounds.addWidget(self.sound_enabled)
-        sounds.addWidget(plain_label('Campanello dei promemoria ed effetti dell’app. Voce e metronomo hanno volumi separati.','muted'))
+        self.sound_enabled.setToolTip('Campanello e suoni del personaggio. Voce e metronomo hanno volumi separati.')
         self.sound_options=QWidget(); options=QVBoxLayout(self.sound_options)
         options.setContentsMargins(28,0,0,0); options.setSpacing(12)
-        self.interaction_sounds=QCheckBox('Aggiungi suoni di saluto e conferma')
+        self.interaction_sounds=QCheckBox('Saluti e conferme')
         self.interaction_sounds.setChecked(self.pet.sound.interactions)
-        self.interaction_sounds.setToolTip('Saluti, salvataggi e completamenti')
+        self.interaction_sounds.setToolTip('Suoni di saluto, salvataggio e completamento.')
         self.interaction_sounds.toggled.connect(self.set_interactions)
         options.addWidget(self.interaction_sounds)
-        row=QHBoxLayout(); row.setSpacing(12); row.addWidget(plain_label('Volume effetti'))
+        row=QHBoxLayout(); row.setSpacing(12); row.addWidget(plain_label('Volume'))
         self.volume=QSlider(Qt.Orientation.Horizontal); self.volume.setRange(0,100); self.volume.setValue(round(self.pet.sound.volume*100))
         self.volume.setAccessibleName('Volume effetti'); self.volume.valueChanged.connect(self.set_volume); row.addWidget(self.volume,1)
         self.sound_volume_value=plain_label(f'{self.volume.value()}%'); self.sound_volume_value.setMinimumWidth(38)
@@ -245,14 +244,30 @@ class Panel(QDialog):
             from yun_jin_macos import LABEL
             self.mac_fullscreen=QCheckBox(LABEL)
             character.addWidget(self.mac_fullscreen)
-            self.mac_fullscreen_help=plain_label('', 'muted')
-            self.mac_fullscreen_help.setWordWrap(True)
-            character.addWidget(self.mac_fullscreen_help)
             self.sync_mac_overlay()
             self.mac_fullscreen.toggled.connect(self.pet.set_mac_overlay)
+        _,context=card(layout)
+        context.addWidget(plain_label('Orario e meteo','section'))
+        self.context_checks={}
+        for key, label, hint in (
+                ('greeting', 'Saluto in mandarino all’avvio', 'Una sola volta, secondo l’ora locale. Usa il servizio e il volume della voce.'),
+                ('time', 'Animazioni secondo l’ora', 'Una reazione al cambio di fascia: mattina, pomeriggio, sera e notte.'),
+                ('weather', 'Reazioni al meteo locale', 'Animazioni e brevi commenti in mandarino. Meteo ogni ora da Open-Meteo; posizione approssimativa dall’indirizzo IP (ipwho.is).')):
+            check=QCheckBox(label); check.setChecked(self.pet.context.enabled[key]); check.setToolTip(hint)
+            check.toggled.connect(lambda value, key=key:self.pet.context.set_enabled(key,value))
+            if key == 'weather':
+                weather_row=QHBoxLayout(); weather_row.setSpacing(12)
+                weather_row.addWidget(check); weather_row.addStretch(); context.addLayout(weather_row)
+            else: context.addWidget(check)
+            self.context_checks[key]=check
+        credit=plain_label('<a href="https://open-meteo.com/" style="color:#b8b2c8">Open-Meteo</a>', 'muted')
+        credit.setTextFormat(Qt.TextFormat.RichText); credit.setOpenExternalLinks(True)
+        credit.setToolTip('Dati meteo: Open-Meteo · CC BY 4.0. Posizione approssimativa: ipwho.is.')
+        weather_row.addWidget(credit)
         _,updates=card(layout)
         updates.addWidget(plain_label('Aggiornamenti','section'))
-        self.updates_enabled=QCheckBox('Controlla aggiornamenti ogni 2 ore')
+        self.updates_enabled=QCheckBox('Aggiornamenti automatici')
+        self.updates_enabled.setToolTip('Controlla ogni 2 ore. Puoi leggere le note prima di aggiornare, rimandare o saltare la versione.')
         self.updates_enabled.setChecked(self.pet.updates.enabled)
         self.updates_enabled.toggled.connect(self.pet.updates.set_enabled)
         updates.addWidget(self.updates_enabled)
@@ -291,20 +306,16 @@ class Panel(QDialog):
         text='Quando è attiva, usa Yun Jin o il menu nella barra in alto: l’icona nel Dock è nascosta.'
         if controller is None or controller.error:
             text='Modalità overlay non disponibile. '+(controller.error if controller else 'Riavvia l’app e controlla il log nella cartella dati.')
-        self.mac_fullscreen_help.setText(text)
+        self.mac_fullscreen.setToolTip(text)
 
     def build_voice(self):
         tab=QWidget(); layout=QVBoxLayout(tab); layout.setContentsMargins(0,0,4,0); layout.setSpacing(14)
         voice=self.pet.speech
-        _,automatic=card(layout)
-        automatic.addWidget(plain_label('Lettura automatica','section'))
-        self.tts_reminders=QCheckBox('Leggi automaticamente i promemoria')
+        self.tts_reminders=QCheckBox('Leggi i promemoria alla scadenza')
         self.tts_reminders.setChecked(voice.pref('auto_reminders',True))
         self.tts_reminders.toggled.connect(lambda v:voice.set_pref('auto_reminders',v))
-        automatic.addWidget(self.tts_reminders)
-        automatic.addWidget(plain_label('Alla scadenza pronuncia il testo. Non modifica la lettura manuale.','muted'))
         _,settings=card(layout)
-        row=QHBoxLayout(); row.setSpacing(12); row.addWidget(plain_label('Voce e lingua','section')); row.addStretch()
+        row=QHBoxLayout(); row.setSpacing(12); row.addWidget(plain_label('Voce','section')); row.addStretch()
         more=QMenu(self); more.addAction('Ripristina voce',self.reset_voice); more.addAction('Svuota cache',voice.clear_cache)
         overflow=menu_button('',more,row); overflow.setToolTip('Opzioni voce'); overflow.setAccessibleName('Opzioni voce')
         settings.addLayout(row)
@@ -323,7 +334,6 @@ class Panel(QDialog):
         self.pitch_controls=stepper(self.tts_pitch); form.addRow('Intonazione',self.pitch_controls)
         self.google_slow=QCheckBox('Lettura lenta'); self.google_slow.setChecked(int(voice.pref('google_slow',0))==1)
         self.google_slow.toggled.connect(lambda v:voice.set_pref('google_slow',int(v))); form.addRow('',self.google_slow)
-        self.google_voice_info=plain_label('Voce scelta da Google.','muted'); form.addRow('',self.google_voice_info)
         self.tts_volume=QSlider(Qt.Orientation.Horizontal); self.tts_volume.setRange(0,100)
         self.tts_volume.setValue(int(voice.pref('volume',70))); self.tts_volume.setAccessibleName('Volume voce')
         self.tts_volume.valueChanged.connect(lambda v:voice.set_pref('volume',v))
@@ -331,9 +341,9 @@ class Panel(QDialog):
         self.volume_label=plain_label(f'{self.tts_volume.value()}%'); self.volume_label.setMinimumWidth(38); vr.addWidget(self.volume_label)
         self.tts_volume.valueChanged.connect(lambda v:self.volume_label.setText(f'{v}%')); form.addRow('Volume',volume)
         settings.addLayout(form)
-        settings.addWidget(plain_label('Il testo viene inviato online al servizio scelto.','muted'))
+        settings.addWidget(self.tts_reminders)
+        self.provider.setToolTip('Il testo viene inviato online al servizio scelto. Google sceglie la voce per la lingua.')
         _,reading=card(layout)
-        reading.addWidget(plain_label('Lettura manuale','section'))
         self.tts_test=QLineEdit(); self.tts_test.setPlaceholderText('Testo da leggere'); self.tts_test.setAccessibleName('Testo da leggere')
         reading.addWidget(self.tts_test)
         row=QHBoxLayout(); row.setSpacing(12); button('Ascolta',lambda:voice.speak(self.tts_test.text(),preview=True),row,glyph='play',role='primary')
@@ -368,7 +378,7 @@ class Panel(QDialog):
         for widget in [self.tts_voice,self.rate_controls,self.pitch_controls]:
             widget.setVisible(edge)
             self.voice_form.labelForField(widget).setVisible(edge)
-        for widget in [self.google_slow,self.google_voice_info]:
+        for widget in [self.google_slow]:
             widget.setVisible(not edge)
             label=self.voice_form.labelForField(widget)
             if label is not None:
