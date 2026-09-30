@@ -1,0 +1,1474 @@
+{
+  "reference": {
+    "height": 174,
+    "silhouette": 106,
+    "head": 71,
+    "skirt": 103,
+    "boots": 37,
+    "boot_area": 708.29,
+    "toe_area": 367.74
+  },
+  "animations": {
+    "morning16": [
+      {
+        "height": 172,
+        "silhouette": 109,
+        "head": 73,
+        "skirt": 105,
+        "boots": 37,
+        "boot_area": 712.42,
+        "toe_area": 364.55
+      },
+      {
+        "height": 172,
+        "silhouette": 107,
+        "head": 74,
+        "skirt": 105,
+        "boots": 38,
+        "boot_area": 710.39,
+        "toe_area": 355.68
+      },
+      {
+        "height": 174,
+        "silhouette": 119,
+        "head": 75,
+        "skirt": 118,
+        "boots": 39,
+        "boot_area": 717.45,
+        "toe_area": 364.14
+      },
+      {
+        "height": 173,
+        "silhouette": 119,
+        "head": 75,
+        "skirt": 109,
+        "boots": 39,
+        "boot_area": 718.85,
+        "toe_area": 361.13
+      },
+      {
+        "height": 173,
+        "silhouette": 138,
+        "head": 89,
+        "skirt": 134,
+        "boots": 41,
+        "boot_area": 787.04,
+        "toe_area": 393.5
+      },
+      {
+        "height": 175,
+        "silhouette": 144,
+        "head": 93,
+        "skirt": 135,
+        "boots": 41,
+        "boot_area": 762.56,
+        "toe_area": 376.42
+      },
+      {
+        "height": 172,
+        "silhouette": 137,
+        "head": 94,
+        "skirt": 129,
+        "boots": 41,
+        "boot_area": 786.24,
+        "toe_area": 390.58
+      },
+      {
+        "height": 173,
+        "silhouette": 134,
+        "head": 93,
+        "skirt": 128,
+        "boots": 39,
+        "boot_area": 766.53,
+        "toe_area": 381.19
+      },
+      {
+        "height": 175,
+        "silhouette": 134,
+        "head": 97,
+        "skirt": 126,
+        "boots": 39,
+        "boot_area": 752.15,
+        "toe_area": 379.25
+      },
+      {
+        "height": 172,
+        "silhouette": 138,
+        "head": 76,
+        "skirt": 130,
+        "boots": 39,
+        "boot_area": 733.67,
+        "toe_area": 366.64
+      },
+      {
+        "height": 172,
+        "silhouette": 131,
+        "head": 77,
+        "skirt": 127,
+        "boots": 40,
+        "boot_area": 734.84,
+        "toe_area": 367.59
+      },
+      {
+        "height": 171,
+        "silhouette": 112,
+        "head": 76,
+        "skirt": 109,
+        "boots": 38,
+        "boot_area": 723.59,
+        "toe_area": 359.22
+      },
+      {
+        "height": 176,
+        "silhouette": 114,
+        "head": 75,
+        "skirt": 110,
+        "boots": 39,
+        "boot_area": 735.65,
+        "toe_area": 368.98
+      },
+      {
+        "height": 177,
+        "silhouette": 115,
+        "head": 75,
+        "skirt": 111,
+        "boots": 39,
+        "boot_area": 730.63,
+        "toe_area": 362.33
+      },
+      {
+        "height": 176,
+        "silhouette": 112,
+        "head": 74,
+        "skirt": 108,
+        "boots": 38,
+        "boot_area": 726.4,
+        "toe_area": 366.14
+      },
+      {
+        "height": 172,
+        "silhouette": 109,
+        "head": 73,
+        "skirt": 105,
+        "boots": 37,
+        "boot_area": 712.42,
+        "toe_area": 364.55
+      }
+    ],
+    "afternoon16": [
+      {
+        "height": 172,
+        "silhouette": 110,
+        "head": 73,
+        "skirt": 106,
+        "boots": 39,
+        "boot_area": 722.31,
+        "toe_area": 371.11
+      },
+      {
+        "height": 172,
+        "silhouette": 112,
+        "head": 75,
+        "skirt": 109,
+        "boots": 39,
+        "boot_area": 732.2,
+        "toe_area": 376.31
+      },
+      {
+        "height": 172,
+        "silhouette": 113,
+        "head": 76,
+        "skirt": 113,
+        "boots": 40,
+        "boot_area": 731.11,
+        "toe_area": 372.18
+      },
+      {
+        "height": 172,
+        "silhouette": 115,
+        "head": 73,
+        "skirt": 114,
+        "boots": 40,
+        "boot_area": 733.68,
+        "toe_area": 374.24
+      },
+      {
+        "height": 175,
+        "silhouette": 124,
+        "head": 76,
+        "skirt": 120,
+        "boots": 39,
+        "boot_area": 746.71,
+        "toe_area": 375.38
+      },
+      {
+        "height": 175,
+        "silhouette": 122,
+        "head": 75,
+        "skirt": 119,
+        "boots": 39,
+        "boot_area": 733.52,
+        "toe_area": 370.48
+      },
+      {
+        "height": 175,
+        "silhouette": 130,
+        "head": 76,
+        "skirt": 122,
+        "boots": 39,
+        "boot_area": 737.23,
+        "toe_area": 377.18
+      },
+      {
+        "height": 175,
+        "silhouette": 123,
+        "head": 75,
+        "skirt": 119,
+        "boots": 39,
+        "boot_area": 736.37,
+        "toe_area": 369.1
+      },
+      {
+        "height": 176,
+        "silhouette": 127,
+        "head": 76,
+        "skirt": 123,
+        "boots": 40,
+        "boot_area": 755.5,
+        "toe_area": 386.41
+      },
+      {
+        "height": 177,
+        "silhouette": 127,
+        "head": 84,
+        "skirt": 123,
+        "boots": 41,
+        "boot_area": 761.62,
+        "toe_area": 385.11
+      },
+      {
+        "height": 176,
+        "silhouette": 121,
+        "head": 77,
+        "skirt": 116,
+        "boots": 39,
+        "boot_area": 763.56,
+        "toe_area": 386.38
+      },
+      {
+        "height": 176,
+        "silhouette": 120,
+        "head": 77,
+        "skirt": 115,
+        "boots": 40,
+        "boot_area": 766.21,
+        "toe_area": 387.9
+      },
+      {
+        "height": 176,
+        "silhouette": 119,
+        "head": 75,
+        "skirt": 116,
+        "boots": 40,
+        "boot_area": 753.02,
+        "toe_area": 379.25
+      },
+      {
+        "height": 176,
+        "silhouette": 116,
+        "head": 76,
+        "skirt": 112,
+        "boots": 40,
+        "boot_area": 752.82,
+        "toe_area": 383.58
+      },
+      {
+        "height": 176,
+        "silhouette": 120,
+        "head": 77,
+        "skirt": 117,
+        "boots": 39,
+        "boot_area": 752.57,
+        "toe_area": 378.29
+      },
+      {
+        "height": 172,
+        "silhouette": 110,
+        "head": 73,
+        "skirt": 106,
+        "boots": 39,
+        "boot_area": 722.31,
+        "toe_area": 371.11
+      }
+    ],
+    "evening16": [
+      {
+        "height": 172,
+        "silhouette": 114,
+        "head": 75,
+        "skirt": 109,
+        "boots": 36,
+        "boot_area": 687.13,
+        "toe_area": 347.14
+      },
+      {
+        "height": 171,
+        "silhouette": 114,
+        "head": 74,
+        "skirt": 109,
+        "boots": 36,
+        "boot_area": 703.79,
+        "toe_area": 362.58
+      },
+      {
+        "height": 172,
+        "silhouette": 116,
+        "head": 76,
+        "skirt": 113,
+        "boots": 35,
+        "boot_area": 693.81,
+        "toe_area": 349.82
+      },
+      {
+        "height": 172,
+        "silhouette": 123,
+        "head": 75,
+        "skirt": 116,
+        "boots": 35,
+        "boot_area": 684.19,
+        "toe_area": 340.71
+      },
+      {
+        "height": 173,
+        "silhouette": 132,
+        "head": 77,
+        "skirt": 125,
+        "boots": 36,
+        "boot_area": 700.29,
+        "toe_area": 357.11
+      },
+      {
+        "height": 171,
+        "silhouette": 137,
+        "head": 78,
+        "skirt": 131,
+        "boots": 36,
+        "boot_area": 706.34,
+        "toe_area": 360.2
+      },
+      {
+        "height": 169,
+        "silhouette": 140,
+        "head": 78,
+        "skirt": 130,
+        "boots": 36,
+        "boot_area": 706.73,
+        "toe_area": 364.29
+      },
+      {
+        "height": 172,
+        "silhouette": 134,
+        "head": 75,
+        "skirt": 129,
+        "boots": 36,
+        "boot_area": 711.29,
+        "toe_area": 363.95
+      },
+      {
+        "height": 169,
+        "silhouette": 134,
+        "head": 75,
+        "skirt": 128,
+        "boots": 35,
+        "boot_area": 696.46,
+        "toe_area": 350.12
+      },
+      {
+        "height": 171,
+        "silhouette": 138,
+        "head": 77,
+        "skirt": 133,
+        "boots": 36,
+        "boot_area": 705.26,
+        "toe_area": 355.89
+      },
+      {
+        "height": 171,
+        "silhouette": 127,
+        "head": 75,
+        "skirt": 123,
+        "boots": 37,
+        "boot_area": 695.37,
+        "toe_area": 352.31
+      },
+      {
+        "height": 171,
+        "silhouette": 118,
+        "head": 74,
+        "skirt": 113,
+        "boots": 37,
+        "boot_area": 696.3,
+        "toe_area": 351.75
+      },
+      {
+        "height": 174,
+        "silhouette": 126,
+        "head": 77,
+        "skirt": 121,
+        "boots": 37,
+        "boot_area": 712.21,
+        "toe_area": 361.29
+      },
+      {
+        "height": 175,
+        "silhouette": 120,
+        "head": 76,
+        "skirt": 113,
+        "boots": 38,
+        "boot_area": 715.5,
+        "toe_area": 362.02
+      },
+      {
+        "height": 173,
+        "silhouette": 119,
+        "head": 74,
+        "skirt": 113,
+        "boots": 36,
+        "boot_area": 715.38,
+        "toe_area": 367.56
+      },
+      {
+        "height": 172,
+        "silhouette": 114,
+        "head": 75,
+        "skirt": 109,
+        "boots": 36,
+        "boot_area": 687.13,
+        "toe_area": 347.14
+      }
+    ],
+    "greeting16": [
+      {
+        "height": 169,
+        "silhouette": 106,
+        "head": 71,
+        "skirt": 103,
+        "boots": 38,
+        "boot_area": 708.35,
+        "toe_area": 372.7
+      },
+      {
+        "height": 169,
+        "silhouette": 106,
+        "head": 71,
+        "skirt": 103,
+        "boots": 36,
+        "boot_area": 710.81,
+        "toe_area": 373.22
+      },
+      {
+        "height": 165,
+        "silhouette": 107,
+        "head": 72,
+        "skirt": 106,
+        "boots": 37,
+        "boot_area": 724.5,
+        "toe_area": 379.47
+      },
+      {
+        "height": 164,
+        "silhouette": 108,
+        "head": 74,
+        "skirt": 106,
+        "boots": 38,
+        "boot_area": 731.73,
+        "toe_area": 376.93
+      },
+      {
+        "height": 161,
+        "silhouette": 107,
+        "head": 71,
+        "skirt": 105,
+        "boots": 37,
+        "boot_area": 741.23,
+        "toe_area": 386.68
+      },
+      {
+        "height": 157,
+        "silhouette": 113,
+        "head": 76,
+        "skirt": 113,
+        "boots": 40,
+        "boot_area": 763.21,
+        "toe_area": 397.15
+      },
+      {
+        "height": 142,
+        "silhouette": 116,
+        "head": 75,
+        "skirt": 116,
+        "boots": 39,
+        "boot_area": 1224.58,
+        "toe_area": 390.3
+      },
+      {
+        "height": 142,
+        "silhouette": 116,
+        "head": 75,
+        "skirt": 116,
+        "boots": 39,
+        "boot_area": 1224.58,
+        "toe_area": 390.3
+      },
+      {
+        "height": 142,
+        "silhouette": 116,
+        "head": 75,
+        "skirt": 116,
+        "boots": 39,
+        "boot_area": 1224.58,
+        "toe_area": 390.3
+      },
+      {
+        "height": 158,
+        "silhouette": 112,
+        "head": 74,
+        "skirt": 112,
+        "boots": 38,
+        "boot_area": 752.26,
+        "toe_area": 377.33
+      },
+      {
+        "height": 166,
+        "silhouette": 108,
+        "head": 73,
+        "skirt": 107,
+        "boots": 38,
+        "boot_area": 725.21,
+        "toe_area": 366.33
+      },
+      {
+        "height": 169,
+        "silhouette": 105,
+        "head": 72,
+        "skirt": 104,
+        "boots": 37,
+        "boot_area": 724.83,
+        "toe_area": 374.13
+      },
+      {
+        "height": 170,
+        "silhouette": 107,
+        "head": 71,
+        "skirt": 105,
+        "boots": 38,
+        "boot_area": 730.91,
+        "toe_area": 375.74
+      },
+      {
+        "height": 170,
+        "silhouette": 107,
+        "head": 71,
+        "skirt": 105,
+        "boots": 38,
+        "boot_area": 720.89,
+        "toe_area": 373.72
+      },
+      {
+        "height": 170,
+        "silhouette": 107,
+        "head": 71,
+        "skirt": 105,
+        "boots": 38,
+        "boot_area": 720.89,
+        "toe_area": 373.72
+      },
+      {
+        "height": 169,
+        "silhouette": 106,
+        "head": 71,
+        "skirt": 103,
+        "boots": 38,
+        "boot_area": 708.35,
+        "toe_area": 372.7
+      }
+    ],
+    "yawn16": [
+      {
+        "height": 173,
+        "silhouette": 111,
+        "head": 73,
+        "skirt": 106,
+        "boots": 40,
+        "boot_area": 754.71,
+        "toe_area": 390.87
+      },
+      {
+        "height": 174,
+        "silhouette": 114,
+        "head": 75,
+        "skirt": 109,
+        "boots": 40,
+        "boot_area": 756.87,
+        "toe_area": 394.09
+      },
+      {
+        "height": 174,
+        "silhouette": 113,
+        "head": 77,
+        "skirt": 108,
+        "boots": 39,
+        "boot_area": 764.68,
+        "toe_area": 389.75
+      },
+      {
+        "height": 174,
+        "silhouette": 113,
+        "head": 75,
+        "skirt": 109,
+        "boots": 39,
+        "boot_area": 758.1,
+        "toe_area": 391.98
+      },
+      {
+        "height": 176,
+        "silhouette": 119,
+        "head": 79,
+        "skirt": 114,
+        "boots": 40,
+        "boot_area": 770.93,
+        "toe_area": 399.66
+      },
+      {
+        "height": 175,
+        "silhouette": 120,
+        "head": 81,
+        "skirt": 115,
+        "boots": 41,
+        "boot_area": 770.91,
+        "toe_area": 398.39
+      },
+      {
+        "height": 174,
+        "silhouette": 120,
+        "head": 76,
+        "skirt": 115,
+        "boots": 41,
+        "boot_area": 783.21,
+        "toe_area": 400.19
+      },
+      {
+        "height": 174,
+        "silhouette": 120,
+        "head": 76,
+        "skirt": 115,
+        "boots": 41,
+        "boot_area": 783.21,
+        "toe_area": 400.19
+      },
+      {
+        "height": 174,
+        "silhouette": 120,
+        "head": 76,
+        "skirt": 115,
+        "boots": 41,
+        "boot_area": 783.21,
+        "toe_area": 400.19
+      },
+      {
+        "height": 173,
+        "silhouette": 122,
+        "head": 79,
+        "skirt": 117,
+        "boots": 40,
+        "boot_area": 772.74,
+        "toe_area": 390.06
+      },
+      {
+        "height": 173,
+        "silhouette": 122,
+        "head": 78,
+        "skirt": 120,
+        "boots": 41,
+        "boot_area": 794.55,
+        "toe_area": 398.68
+      },
+      {
+        "height": 171,
+        "silhouette": 117,
+        "head": 78,
+        "skirt": 113,
+        "boots": 40,
+        "boot_area": 763.44,
+        "toe_area": 385.96
+      },
+      {
+        "height": 175,
+        "silhouette": 119,
+        "head": 76,
+        "skirt": 115,
+        "boots": 39,
+        "boot_area": 757.24,
+        "toe_area": 383.12
+      },
+      {
+        "height": 175,
+        "silhouette": 119,
+        "head": 76,
+        "skirt": 115,
+        "boots": 39,
+        "boot_area": 757.24,
+        "toe_area": 383.12
+      },
+      {
+        "height": 175,
+        "silhouette": 116,
+        "head": 76,
+        "skirt": 111,
+        "boots": 40,
+        "boot_area": 774.33,
+        "toe_area": 392.85
+      },
+      {
+        "height": 173,
+        "silhouette": 111,
+        "head": 73,
+        "skirt": 106,
+        "boots": 40,
+        "boot_area": 754.71,
+        "toe_area": 390.87
+      }
+    ],
+    "sun16": [
+      {
+        "height": 173,
+        "silhouette": 111,
+        "head": 73,
+        "skirt": 107,
+        "boots": 38,
+        "boot_area": 715.09,
+        "toe_area": 358.03
+      },
+      {
+        "height": 173,
+        "silhouette": 114,
+        "head": 76,
+        "skirt": 110,
+        "boots": 39,
+        "boot_area": 724.12,
+        "toe_area": 368.05
+      },
+      {
+        "height": 173,
+        "silhouette": 114,
+        "head": 76,
+        "skirt": 109,
+        "boots": 40,
+        "boot_area": 728.23,
+        "toe_area": 365.42
+      },
+      {
+        "height": 174,
+        "silhouette": 112,
+        "head": 76,
+        "skirt": 108,
+        "boots": 39,
+        "boot_area": 725.54,
+        "toe_area": 364.15
+      },
+      {
+        "height": 173,
+        "silhouette": 115,
+        "head": 78,
+        "skirt": 111,
+        "boots": 40,
+        "boot_area": 753.27,
+        "toe_area": 380.71
+      },
+      {
+        "height": 174,
+        "silhouette": 123,
+        "head": 82,
+        "skirt": 117,
+        "boots": 41,
+        "boot_area": 743.37,
+        "toe_area": 370.12
+      },
+      {
+        "height": 174,
+        "silhouette": 126,
+        "head": 79,
+        "skirt": 118,
+        "boots": 40,
+        "boot_area": 759.95,
+        "toe_area": 388.79
+      },
+      {
+        "height": 175,
+        "silhouette": 119,
+        "head": 79,
+        "skirt": 113,
+        "boots": 39,
+        "boot_area": 750.14,
+        "toe_area": 381.49
+      },
+      {
+        "height": 174,
+        "silhouette": 125,
+        "head": 83,
+        "skirt": 116,
+        "boots": 40,
+        "boot_area": 744.05,
+        "toe_area": 368.67
+      },
+      {
+        "height": 175,
+        "silhouette": 129,
+        "head": 83,
+        "skirt": 122,
+        "boots": 40,
+        "boot_area": 767.56,
+        "toe_area": 392.0
+      },
+      {
+        "height": 174,
+        "silhouette": 124,
+        "head": 82,
+        "skirt": 119,
+        "boots": 40,
+        "boot_area": 740.29,
+        "toe_area": 369.08
+      },
+      {
+        "height": 173,
+        "silhouette": 116,
+        "head": 79,
+        "skirt": 111,
+        "boots": 40,
+        "boot_area": 749.49,
+        "toe_area": 385.06
+      },
+      {
+        "height": 177,
+        "silhouette": 119,
+        "head": 79,
+        "skirt": 113,
+        "boots": 42,
+        "boot_area": 765.35,
+        "toe_area": 387.27
+      },
+      {
+        "height": 176,
+        "silhouette": 117,
+        "head": 77,
+        "skirt": 114,
+        "boots": 41,
+        "boot_area": 764.62,
+        "toe_area": 382.16
+      },
+      {
+        "height": 176,
+        "silhouette": 115,
+        "head": 76,
+        "skirt": 109,
+        "boots": 40,
+        "boot_area": 764.95,
+        "toe_area": 387.76
+      },
+      {
+        "height": 173,
+        "silhouette": 111,
+        "head": 73,
+        "skirt": 107,
+        "boots": 38,
+        "boot_area": 715.09,
+        "toe_area": 358.03
+      }
+    ],
+    "cloud16": [
+      {
+        "height": 172,
+        "silhouette": 112,
+        "head": 73,
+        "skirt": 108,
+        "boots": 38,
+        "boot_area": 767.89,
+        "toe_area": 382.42
+      },
+      {
+        "height": 173,
+        "silhouette": 117,
+        "head": 78,
+        "skirt": 114,
+        "boots": 38,
+        "boot_area": 763.03,
+        "toe_area": 382.88
+      },
+      {
+        "height": 173,
+        "silhouette": 118,
+        "head": 79,
+        "skirt": 114,
+        "boots": 38,
+        "boot_area": 754.84,
+        "toe_area": 377.61
+      },
+      {
+        "height": 173,
+        "silhouette": 120,
+        "head": 79,
+        "skirt": 115,
+        "boots": 38,
+        "boot_area": 767.22,
+        "toe_area": 381.99
+      },
+      {
+        "height": 174,
+        "silhouette": 120,
+        "head": 99,
+        "skirt": 118,
+        "boots": 39,
+        "boot_area": 783.26,
+        "toe_area": 395.82
+      },
+      {
+        "height": 174,
+        "silhouette": 121,
+        "head": 104,
+        "skirt": 119,
+        "boots": 38,
+        "boot_area": 773.31,
+        "toe_area": 383.39
+      },
+      {
+        "height": 174,
+        "silhouette": 121,
+        "head": 102,
+        "skirt": 119,
+        "boots": 38,
+        "boot_area": 781.06,
+        "toe_area": 391.66
+      },
+      {
+        "height": 174,
+        "silhouette": 121,
+        "head": 98,
+        "skirt": 119,
+        "boots": 38,
+        "boot_area": 780.15,
+        "toe_area": 387.74
+      },
+      {
+        "height": 177,
+        "silhouette": 125,
+        "head": 108,
+        "skirt": 121,
+        "boots": 40,
+        "boot_area": 780.04,
+        "toe_area": 386.77
+      },
+      {
+        "height": 175,
+        "silhouette": 123,
+        "head": 104,
+        "skirt": 120,
+        "boots": 39,
+        "boot_area": 773.81,
+        "toe_area": 388.29
+      },
+      {
+        "height": 176,
+        "silhouette": 123,
+        "head": 83,
+        "skirt": 120,
+        "boots": 39,
+        "boot_area": 763.06,
+        "toe_area": 379.07
+      },
+      {
+        "height": 176,
+        "silhouette": 122,
+        "head": 83,
+        "skirt": 120,
+        "boots": 39,
+        "boot_area": 776.85,
+        "toe_area": 391.25
+      },
+      {
+        "height": 173,
+        "silhouette": 120,
+        "head": 79,
+        "skirt": 115,
+        "boots": 38,
+        "boot_area": 767.22,
+        "toe_area": 381.99
+      },
+      {
+        "height": 173,
+        "silhouette": 118,
+        "head": 79,
+        "skirt": 114,
+        "boots": 38,
+        "boot_area": 754.84,
+        "toe_area": 377.61
+      },
+      {
+        "height": 173,
+        "silhouette": 117,
+        "head": 78,
+        "skirt": 114,
+        "boots": 38,
+        "boot_area": 763.03,
+        "toe_area": 382.88
+      },
+      {
+        "height": 172,
+        "silhouette": 112,
+        "head": 73,
+        "skirt": 108,
+        "boots": 38,
+        "boot_area": 767.89,
+        "toe_area": 382.42
+      }
+    ],
+    "rain16": [
+      {
+        "height": 168,
+        "silhouette": 104,
+        "head": 73,
+        "skirt": 103,
+        "boots": 37,
+        "boot_area": 772.25,
+        "toe_area": 389.51
+      },
+      {
+        "height": 167,
+        "silhouette": 107,
+        "head": 73,
+        "skirt": 101,
+        "boots": 36,
+        "boot_area": 769.14,
+        "toe_area": 391.39
+      },
+      {
+        "height": 167,
+        "silhouette": 108,
+        "head": 73,
+        "skirt": 102,
+        "boots": 36,
+        "boot_area": 773.6,
+        "toe_area": 386.1
+      },
+      {
+        "height": 168,
+        "silhouette": 108,
+        "head": 73,
+        "skirt": 101,
+        "boots": 36,
+        "boot_area": 751.22,
+        "toe_area": 381.13
+      },
+      {
+        "height": 171,
+        "silhouette": 109,
+        "head": 74,
+        "skirt": 103,
+        "boots": 37,
+        "boot_area": 750.72,
+        "toe_area": 378.21
+      },
+      {
+        "height": 170,
+        "silhouette": 105,
+        "head": 92,
+        "skirt": 103,
+        "boots": 37,
+        "boot_area": 763.08,
+        "toe_area": 380.89
+      },
+      {
+        "height": 170,
+        "silhouette": 110,
+        "head": 95,
+        "skirt": 108,
+        "boots": 38,
+        "boot_area": 772.78,
+        "toe_area": 389.24
+      },
+      {
+        "height": 171,
+        "silhouette": 113,
+        "head": 103,
+        "skirt": 109,
+        "boots": 37,
+        "boot_area": 762.69,
+        "toe_area": 393.01
+      },
+      {
+        "height": 169,
+        "silhouette": 118,
+        "head": 107,
+        "skirt": 109,
+        "boots": 37,
+        "boot_area": 764.8,
+        "toe_area": 383.71
+      },
+      {
+        "height": 171,
+        "silhouette": 114,
+        "head": 105,
+        "skirt": 111,
+        "boots": 38,
+        "boot_area": 796.66,
+        "toe_area": 403.42
+      },
+      {
+        "height": 169,
+        "silhouette": 112,
+        "head": 98,
+        "skirt": 110,
+        "boots": 37,
+        "boot_area": 781.78,
+        "toe_area": 398.82
+      },
+      {
+        "height": 168,
+        "silhouette": 116,
+        "head": 74,
+        "skirt": 107,
+        "boots": 37,
+        "boot_area": 809.51,
+        "toe_area": 398.73
+      },
+      {
+        "height": 168,
+        "silhouette": 109,
+        "head": 76,
+        "skirt": 106,
+        "boots": 37,
+        "boot_area": 800.09,
+        "toe_area": 392.8
+      },
+      {
+        "height": 167,
+        "silhouette": 108,
+        "head": 75,
+        "skirt": 107,
+        "boots": 37,
+        "boot_area": 811.92,
+        "toe_area": 401.96
+      },
+      {
+        "height": 167,
+        "silhouette": 107,
+        "head": 75,
+        "skirt": 107,
+        "boots": 37,
+        "boot_area": 804.34,
+        "toe_area": 395.7
+      },
+      {
+        "height": 168,
+        "silhouette": 104,
+        "head": 73,
+        "skirt": 103,
+        "boots": 37,
+        "boot_area": 772.25,
+        "toe_area": 389.51
+      }
+    ],
+    "snow16": [
+      {
+        "height": 173,
+        "silhouette": 113,
+        "head": 74,
+        "skirt": 110,
+        "boots": 37,
+        "boot_area": 722.0,
+        "toe_area": 365.89
+      },
+      {
+        "height": 169,
+        "silhouette": 115,
+        "head": 75,
+        "skirt": 115,
+        "boots": 38,
+        "boot_area": 724.88,
+        "toe_area": 366.68
+      },
+      {
+        "height": 169,
+        "silhouette": 131,
+        "head": 76,
+        "skirt": 119,
+        "boots": 37,
+        "boot_area": 720.13,
+        "toe_area": 364.3
+      },
+      {
+        "height": 169,
+        "silhouette": 127,
+        "head": 103,
+        "skirt": 110,
+        "boots": 40,
+        "boot_area": 739.09,
+        "toe_area": 363.56
+      },
+      {
+        "height": 173,
+        "silhouette": 124,
+        "head": 100,
+        "skirt": 117,
+        "boots": 39,
+        "boot_area": 738.52,
+        "toe_area": 363.0
+      },
+      {
+        "height": 171,
+        "silhouette": 127,
+        "head": 100,
+        "skirt": 124,
+        "boots": 38,
+        "boot_area": 727.38,
+        "toe_area": 358.77
+      },
+      {
+        "height": 171,
+        "silhouette": 126,
+        "head": 98,
+        "skirt": 125,
+        "boots": 39,
+        "boot_area": 728.36,
+        "toe_area": 358.97
+      },
+      {
+        "height": 162,
+        "silhouette": 130,
+        "head": 100,
+        "skirt": 128,
+        "boots": 39,
+        "boot_area": 764.27,
+        "toe_area": 376.36
+      },
+      {
+        "height": 172,
+        "silhouette": 123,
+        "head": 76,
+        "skirt": 123,
+        "boots": 40,
+        "boot_area": 778.8,
+        "toe_area": 390.19
+      },
+      {
+        "height": 171,
+        "silhouette": 117,
+        "head": 77,
+        "skirt": 117,
+        "boots": 41,
+        "boot_area": 786.55,
+        "toe_area": 394.04
+      },
+      {
+        "height": 171,
+        "silhouette": 122,
+        "head": 77,
+        "skirt": 122,
+        "boots": 40,
+        "boot_area": 769.71,
+        "toe_area": 387.09
+      },
+      {
+        "height": 172,
+        "silhouette": 120,
+        "head": 76,
+        "skirt": 120,
+        "boots": 40,
+        "boot_area": 766.2,
+        "toe_area": 383.47
+      },
+      {
+        "height": 175,
+        "silhouette": 114,
+        "head": 75,
+        "skirt": 111,
+        "boots": 40,
+        "boot_area": 766.13,
+        "toe_area": 384.18
+      },
+      {
+        "height": 175,
+        "silhouette": 115,
+        "head": 75,
+        "skirt": 112,
+        "boots": 40,
+        "boot_area": 763.03,
+        "toe_area": 376.73
+      },
+      {
+        "height": 175,
+        "silhouette": 116,
+        "head": 74,
+        "skirt": 113,
+        "boots": 39,
+        "boot_area": 755.92,
+        "toe_area": 373.33
+      },
+      {
+        "height": 173,
+        "silhouette": 113,
+        "head": 74,
+        "skirt": 110,
+        "boots": 37,
+        "boot_area": 722.0,
+        "toe_area": 365.89
+      }
+    ],
+    "applause16": [
+      {
+        "height": 176,
+        "silhouette": 110,
+        "head": 74,
+        "skirt": 108,
+        "boots": 39,
+        "boot_area": 738.46,
+        "toe_area": 378.63
+      },
+      {
+        "height": 174,
+        "silhouette": 115,
+        "head": 74,
+        "skirt": 112,
+        "boots": 38,
+        "boot_area": 705.13,
+        "toe_area": 351.82
+      },
+      {
+        "height": 173,
+        "silhouette": 117,
+        "head": 73,
+        "skirt": 114,
+        "boots": 39,
+        "boot_area": 727.0,
+        "toe_area": 364.43
+      },
+      {
+        "height": 175,
+        "silhouette": 117,
+        "head": 74,
+        "skirt": 115,
+        "boots": 39,
+        "boot_area": 724.82,
+        "toe_area": 372.0
+      },
+      {
+        "height": 176,
+        "silhouette": 119,
+        "head": 74,
+        "skirt": 118,
+        "boots": 39,
+        "boot_area": 739.88,
+        "toe_area": 375.62
+      },
+      {
+        "height": 175,
+        "silhouette": 117,
+        "head": 77,
+        "skirt": 113,
+        "boots": 40,
+        "boot_area": 745.84,
+        "toe_area": 369.24
+      },
+      {
+        "height": 174,
+        "silhouette": 123,
+        "head": 77,
+        "skirt": 120,
+        "boots": 40,
+        "boot_area": 737.85,
+        "toe_area": 365.04
+      },
+      {
+        "height": 175,
+        "silhouette": 122,
+        "head": 76,
+        "skirt": 117,
+        "boots": 39,
+        "boot_area": 733.89,
+        "toe_area": 363.15
+      },
+      {
+        "height": 173,
+        "silhouette": 122,
+        "head": 75,
+        "skirt": 119,
+        "boots": 39,
+        "boot_area": 738.73,
+        "toe_area": 369.72
+      },
+      {
+        "height": 173,
+        "silhouette": 122,
+        "head": 76,
+        "skirt": 118,
+        "boots": 40,
+        "boot_area": 744.73,
+        "toe_area": 373.04
+      },
+      {
+        "height": 173,
+        "silhouette": 120,
+        "head": 76,
+        "skirt": 117,
+        "boots": 40,
+        "boot_area": 740.01,
+        "toe_area": 361.81
+      },
+      {
+        "height": 174,
+        "silhouette": 123,
+        "head": 75,
+        "skirt": 120,
+        "boots": 39,
+        "boot_area": 742.64,
+        "toe_area": 374.98
+      },
+      {
+        "height": 173,
+        "silhouette": 120,
+        "head": 73,
+        "skirt": 118,
+        "boots": 39,
+        "boot_area": 723.11,
+        "toe_area": 364.07
+      },
+      {
+        "height": 173,
+        "silhouette": 115,
+        "head": 74,
+        "skirt": 112,
+        "boots": 39,
+        "boot_area": 727.58,
+        "toe_area": 362.38
+      },
+      {
+        "height": 173,
+        "silhouette": 116,
+        "head": 73,
+        "skirt": 114,
+        "boots": 39,
+        "boot_area": 728.69,
+        "toe_area": 365.61
+      },
+      {
+        "height": 176,
+        "silhouette": 110,
+        "head": 74,
+        "skirt": 108,
+        "boots": 39,
+        "boot_area": 738.46,
+        "toe_area": 378.63
+      }
+    ]
+  },
+  "method": "Actual runtime PNGs; alpha > 80 for bounds; alpha-weighted areas. Head/skirt bands and 30/14-pixel bottom bands are screening measurements, not semantic body segmentation. Resting-pose ratios are checked separately from bent or turned poses."
+}

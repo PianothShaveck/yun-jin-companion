@@ -1,0 +1,531 @@
+{
+  "parameters": [
+    2.6466379588373456,
+    0.8588511586453722,
+    -0.6633299315409591,
+    0.8447403099744923,
+    -0.25401166667573283,
+    -0.010467093039977695,
+    -0.03402166355903658,
+    -0.019400239976494874
+  ],
+  "parameter_names": [
+    "lightness_lift",
+    "chroma",
+    "a_balance",
+    "b_balance",
+    "hue_rotation_degrees",
+    "pink_chroma_adjustment",
+    "cyan_chroma_adjustment",
+    "purple_chroma_adjustment"
+  ],
+  "distance_before": 5.800377180711408,
+  "distance_after": 3.25704247286132,
+  "method": "One restrained smooth CIELAB transform shared by 6 selected sequences, applied only after art/anatomy/motion review. No quantization.",
+  "metric": "Symmetric nearest-centroid Euclidean CIELAB distance; 24 k-means colors, square-root-frequency weights. Descriptive palette score, not a guarantee of perceptual equivalence.",
+  "reference": "Opaque interiors of 12 original idle/run/jump/fall poses; 96 selected playback frames at actual runtime resolution.",
+  "reference_poses_column_row": [
+    [
+      0,
+      0
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      5,
+      0
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      5,
+      1
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      6,
+      2
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      3,
+      5
+    ],
+    [
+      5,
+      5
+    ]
+  ],
+  "animation_names": [
+    "morning16",
+    "greeting16",
+    "yawn16",
+    "sun16",
+    "rain16",
+    "snow16"
+  ],
+  "original_spritesheet_sha256": "4e481fafea5149a8198eeb8c6f4e32b1cf8d2fcf359bc86aaf1c1ef8f4d47351",
+  "source_assets_sha256": {
+    "morning-16.png": "97ee24d4b9f206b3ad6ea813fd66405352ab4953b455ac5d5b69a0e5f61a4996",
+    "greeting-16.png": "b6a01955a443d51000335fccf31aca059678bfaf8d1b61d7303e88259264013d",
+    "yawn-16.png": "de13a66bf6d808b4076963c95e45c9f68901b6897633c1cfe000c6a9a3bea792",
+    "sun-16.png": "4b51597d6f6a1dab4ce9e72495f94dea4088ab7064f5cb57c35d40809f4640e4",
+    "rain-16.png": "84fc1fa544099e345b67195df17c7e99be8e69efcc119f28f467c05924ee047a",
+    "snow-16.png": "0f346bb00ef85b74e5145c913fc5fa3cb1bda11736d6ffeaab411e0ca7abea89"
+  },
+  "geometry": {
+    "isotropic_scale": true,
+    "reference_alpha_threshold": 80,
+    "same_transform_for_all_frames_in_sequence": true
+  },
+  "alpha_preserved": true,
+  "optimizer": {
+    "seeds": [
+      14,
+      29,
+      73
+    ],
+    "evaluations": 35733,
+    "bounds": [
+      [
+        -3,
+        3
+      ],
+      [
+        0.85,
+        1.05
+      ],
+      [
+        -2,
+        2
+      ],
+      [
+        -2,
+        2
+      ],
+      [
+        -4,
+        4
+      ],
+      [
+        -0.12,
+        0.12
+      ],
+      [
+        -0.12,
+        0.12
+      ],
+      [
+        -0.12,
+        0.12
+      ]
+    ]
+  },
+  "reference_palette": [
+    {
+      "rgb": [
+        119,
+        191,
+        205
+      ],
+      "weight": 0.04251617331467843
+    },
+    {
+      "rgb": [
+        70,
+        63,
+        82
+      ],
+      "weight": 0.04918683202552134
+    },
+    {
+      "rgb": [
+        237,
+        142,
+        179
+      ],
+      "weight": 0.03944912467927349
+    },
+    {
+      "rgb": [
+        208,
+        205,
+        219
+      ],
+      "weight": 0.05161735611818929
+    },
+    {
+      "rgb": [
+        124,
+        101,
+        90
+      ],
+      "weight": 0.032210075421218384
+    },
+    {
+      "rgb": [
+        166,
+        103,
+        123
+      ],
+      "weight": 0.03347965217182945
+    },
+    {
+      "rgb": [
+        247,
+        235,
+        218
+      ],
+      "weight": 0.044560007328905575
+    },
+    {
+      "rgb": [
+        132,
+        58,
+        69
+      ],
+      "weight": 0.028306548773073953
+    },
+    {
+      "rgb": [
+        92,
+        77,
+        128
+      ],
+      "weight": 0.0426146067896428
+    },
+    {
+      "rgb": [
+        243,
+        242,
+        244
+      ],
+      "weight": 0.06090174896618373
+    },
+    {
+      "rgb": [
+        70,
+        137,
+        157
+      ],
+      "weight": 0.03517676932701919
+    },
+    {
+      "rgb": [
+        163,
+        157,
+        165
+      ],
+      "weight": 0.040210528952251454
+    },
+    {
+      "rgb": [
+        77,
+        57,
+        59
+      ],
+      "weight": 0.03540855127078275
+    },
+    {
+      "rgb": [
+        90,
+        70,
+        103
+      ],
+      "weight": 0.07588453567539345
+    },
+    {
+      "rgb": [
+        223,
+        198,
+        165
+      ],
+      "weight": 0.035063148974230525
+    },
+    {
+      "rgb": [
+        133,
+        103,
+        151
+      ],
+      "weight": 0.03853318457512446
+    },
+    {
+      "rgb": [
+        204,
+        66,
+        76
+      ],
+      "weight": 0.02190977317268934
+    },
+    {
+      "rgb": [
+        223,
+        104,
+        134
+      ],
+      "weight": 0.027353046500633166
+    },
+    {
+      "rgb": [
+        65,
+        54,
+        84
+      ],
+      "weight": 0.07831956301496439
+    },
+    {
+      "rgb": [
+        44,
+        36,
+        53
+      ],
+      "weight": 0.055935921184253876
+    },
+    {
+      "rgb": [
+        232,
+        165,
+        188
+      ],
+      "weight": 0.030261915390598457
+    },
+    {
+      "rgb": [
+        175,
+        147,
+        122
+      ],
+      "weight": 0.03141990845893722
+    },
+    {
+      "rgb": [
+        113,
+        101,
+        117
+      ],
+      "weight": 0.037769661345196
+    },
+    {
+      "rgb": [
+        170,
+        142,
+        179
+      ],
+      "weight": 0.03191136656940928
+    }
+  ],
+  "new_palette": [
+    {
+      "rgb": [
+        88,
+        66,
+        106
+      ],
+      "weight": 0.06626285500903928
+    },
+    {
+      "rgb": [
+        160,
+        149,
+        173
+      ],
+      "weight": 0.036963424908432845
+    },
+    {
+      "rgb": [
+        211,
+        51,
+        62
+      ],
+      "weight": 0.021769877441074174
+    },
+    {
+      "rgb": [
+        223,
+        187,
+        147
+      ],
+      "weight": 0.03493356516917366
+    },
+    {
+      "rgb": [
+        244,
+        243,
+        245
+      ],
+      "weight": 0.053705038685129616
+    },
+    {
+      "rgb": [
+        238,
+        123,
+        170
+      ],
+      "weight": 0.03785240101564654
+    },
+    {
+      "rgb": [
+        42,
+        33,
+        55
+      ],
+      "weight": 0.0591890145309158
+    },
+    {
+      "rgb": [
+        81,
+        176,
+        197
+      ],
+      "weight": 0.04414654958825133
+    },
+    {
+      "rgb": [
+        104,
+        88,
+        113
+      ],
+      "weight": 0.03849949747969382
+    },
+    {
+      "rgb": [
+        152,
+        76,
+        110
+      ],
+      "weight": 0.03068214801021143
+    },
+    {
+      "rgb": [
+        125,
+        96,
+        92
+      ],
+      "weight": 0.033732509810801586
+    },
+    {
+      "rgb": [
+        48,
+        120,
+        152
+      ],
+      "weight": 0.03786244010905092
+    },
+    {
+      "rgb": [
+        66,
+        56,
+        83
+      ],
+      "weight": 0.0647104084910173
+    },
+    {
+      "rgb": [
+        85,
+        71,
+        129
+      ],
+      "weight": 0.04967969255032825
+    },
+    {
+      "rgb": [
+        247,
+        231,
+        212
+      ],
+      "weight": 0.044223962009382056
+    },
+    {
+      "rgb": [
+        179,
+        139,
+        117
+      ],
+      "weight": 0.03442947851434998
+    },
+    {
+      "rgb": [
+        184,
+        188,
+        229
+      ],
+      "weight": 0.036669219962253495
+    },
+    {
+      "rgb": [
+        135,
+        45,
+        55
+      ],
+      "weight": 0.025559990948088397
+    },
+    {
+      "rgb": [
+        218,
+        83,
+        114
+      ],
+      "weight": 0.028344920864074155
+    },
+    {
+      "rgb": [
+        225,
+        150,
+        181
+      ],
+      "weight": 0.028244180393038755
+    },
+    {
+      "rgb": [
+        61,
+        48,
+        85
+      ],
+      "weight": 0.0696792089738503
+    },
+    {
+      "rgb": [
+        208,
+        202,
+        218
+      ],
+      "weight": 0.04790769457515597
+    },
+    {
+      "rgb": [
+        143,
+        106,
+        153
+      ],
+      "weight": 0.04170740925514446
+    },
+    {
+      "rgb": [
+        80,
+        48,
+        58
+      ],
+      "weight": 0.033244511705895964
+    }
+  ],
+  "superseded_by": "palette-calibration-proportions.json"
+}

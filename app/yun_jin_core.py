@@ -36,12 +36,23 @@ ANIMATIONS = {
 }
 BUILTIN_ANIMATIONS = frozenset(ANIMATIONS)
 SLEEP_ANIMATIONS = ('sleep_in', 'sleep_loop', 'sleep_out')
+CONTEXT_ANIMATIONS = frozenset(('morning16', 'afternoon16', 'evening16', 'yawn16', 'sun16', 'rain16', 'snow16', 'cloud16'))
 LABELS = {
     'idle': 'Riposo', 'wave': 'Saluto', 'jump': 'Salto',
     'failed': 'Capitombolo', 'wait': 'In attesa',
     'work': 'Lavoro', 'review': 'Osserva',
     'left': 'Corsa a sinistra', 'right': 'Corsa a destra',
 }
+
+
+ANIMATION_GROUPS = (
+    ('Gesti', ('wave', 'talking16', 'reminder16', 'celebrate16', 'applause16', 'greeting16')),
+    ('Movimento', ('left', 'right', 'jump', 'failed', 'dance16', 'pirouette16', 'stretch16')),
+    ('Attività', ('work', 'writing16', 'conduct16', 'stopwatch16')),
+    ('Riposo', ('idle', 'wait', 'review', 'waiting16')),
+    ('Orario', ('morning16', 'afternoon16', 'evening16', 'yawn16')),
+    ('Meteo', ('sun16', 'cloud16', 'rain16', 'snow16')),
+)
 
 
 def gaze_index(dx, dy):
@@ -861,17 +872,11 @@ class YunJinPet(QWidget):
             action.setChecked(value)
             action.triggered.connect(callback)
         animations = menu.addMenu('Animazioni')
-        once = animations.addMenu('Esegui')
-        fixed = animations.addMenu('Ripeti')
-        for name, label in LABELS.items():
-            if name in SLEEP_ANIMATIONS:
-                continue
-            once.addAction(label, lambda checked=False, n=name: self.sequence([(n, 1)]))
-            fixed.addAction(label, lambda checked=False, n=name: self.hold_pose(n))
-        once.addAction('Sonnellino', lambda: self.start_sleep(6))
-        fixed.addAction('Sonno', lambda: self.set_mode('asleep'))
-        once.addAction('Riposo → salto → riposo', lambda: self.sequence([('idle', 1), ('jump', 1), ('idle', 1)]))
-        fixed.addAction('Direzioni dello sguardo', self.gaze_demo)
+        self.populate_animation_groups(animations)
+        animations.addSeparator()
+        self.populate_animation_groups(animations.addMenu('Ripeti'), repeat=True)
+        stop = animations.addAction('Termina', self.resume)
+        stop.setEnabled(self.state not in ('idle', 'walk', 'follow', 'follow_pending'))
         appearance = menu.addMenu('Aspetto')
         sizes = appearance.addMenu('Dimensioni')
         size_group = QActionGroup(sizes)
@@ -891,6 +896,24 @@ class YunJinPet(QWidget):
         self.add_companion_footer(menu)
         menu.addSeparator()
         menu.addAction('Chiudi', self.close)
+
+    def populate_animation_groups(self, menu, repeat=False):
+        for title, names in ANIMATION_GROUPS:
+            available = [name for name in names if name in ANIMATIONS]
+            if not available: continue
+            group = menu.addMenu(title)
+            for name in available:
+                group.addAction(LABELS[name], lambda checked=False, n=name, r=repeat:
+                                self.hold_pose(n) if r else self.sequence([(n, 1)]))
+            if title == 'Riposo':
+                if repeat:
+                    group.addAction('Sonno', lambda: self.set_mode('asleep'))
+                    group.addAction('Direzioni dello sguardo', self.gaze_demo)
+                else:
+                    group.addAction('Sonnellino', lambda: self.start_sleep(6))
+            if title == 'Movimento' and not repeat:
+                group.addAction('Riposo → salto → riposo',
+                                lambda: self.sequence([('idle', 1), ('jump', 1), ('idle', 1)]))
 
     def add_companion_footer(self, menu):
         pass

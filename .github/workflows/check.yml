@@ -28,6 +28,8 @@ jobs:
       - run: python tests/test_behavior_updates.py
       - run: python tests/test_dialogs_settings.py
       - run: python tests/test_context.py
+      - run: python tests/test_speech_bubbles.py
+      - run: python tests/test_animation_menu.py
       - run: python tests/test_resource_usage.py
       - run: python tests/test_updater.py
       - run: python tests/test_windows_encoding.py

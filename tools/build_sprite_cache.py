@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Bake lossless, already aligned clips. Original artwork is never modified."""
 import json
+import argparse
 import math
 import os
 import sys
@@ -9,17 +10,20 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'app'))
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtGui import QPainter, QPixmap
+from PyQt6.QtCore import Qt, QPoint, QByteArray, QBuffer, QIODevice
+from PyQt6.QtGui import QPainter, QPixmap, QImage
 from yun_jin_core import SpriteSheet, animation_fingerprint
 
 
-def build():
+def build(names=None):
     app = QApplication.instance() or QApplication([])
     sheet = SpriteSheet(ROOT/'app/spritesheet-yun-jin-v2.png')
     assets = ROOT/'app/assets'
     output = assets/'normalized'; output.mkdir(exist_ok=True)
+    checked=0
     for spec in json.loads((assets/'animations.json').read_text())['animations']:
+        if names and spec['name'] not in names: continue
+        checked += 1
         source = assets/spec['file']
         frames = sheet.load_clip(source, spec, use_cache=False)
         w, h = frames[0].width(), frames[0].height()
@@ -28,12 +32,30 @@ def build():
         for i, pix in enumerate(frames): painter.drawPixmap(QPoint(i%4*w, i//4*h), pix)
         painter.end()
         target = output/(spec['name']+'-'+animation_fingerprint(source, spec)+'.png')
-        if not atlas.save(str(target)): raise RuntimeError('Unable to save '+str(target))
+        payload = QByteArray(); buffer = QBuffer(payload)
+        if not buffer.open(QIODevice.OpenModeFlag.WriteOnly) or not atlas.save(buffer, 'PNG'):
+            raise RuntimeError('Unable to encode '+str(target))
+        buffer.close()
+        raw = bytes(payload)
+        if QImage.fromData(raw).isNull():
+            raise AssertionError('Encoded PNG is invalid: '+spec['name'])
+        temporary = target.with_suffix('.png.tmp')
+        try:
+            with temporary.open('wb') as stream:
+                stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+            temporary.replace(target)
+        finally:
+            temporary.unlink(missing_ok=True)
         baked = sheet.load_clip(source, spec)
         if any(a.toImage() != b.toImage() for a,b in zip(frames,baked)):
             raise AssertionError('Pixels changed: '+spec['name'])
-        for old in output.glob(spec['name']+'-*.png'):
+        # Snapshot before deleting: directory iterators can skip entries when
+        # their backing directory changes during traversal.
+        for old in list(output.glob(spec['name']+'-*.png')):
             if old != target: old.unlink()
-    print('13 animation clips: exact pixel round-trip verified.')
+    print(f'{checked} animation clips: exact pixel round-trip verified.')
 
-if __name__ == '__main__': build()
+if __name__ == '__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--names', nargs='+')
+    build(parser.parse_args().names)

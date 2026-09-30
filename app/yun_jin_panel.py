@@ -250,9 +250,9 @@ class Panel(QDialog):
         context.addWidget(plain_label('Orario e meteo','section'))
         self.context_checks={}
         for key, label, hint in (
-                ('greeting', 'Saluto in mandarino all’avvio', 'Una sola volta, secondo l’ora locale. Usa il servizio e il volume della voce.'),
+                ('greeting', 'Saluto all’avvio', 'Una sola volta, secondo l’ora locale. Usa lingua, servizio e volume scelti in Voce.'),
                 ('time', 'Animazioni secondo l’ora', 'Una reazione al cambio di fascia: mattina, pomeriggio, sera e notte.'),
-                ('weather', 'Reazioni al meteo locale', 'Animazioni e brevi commenti in mandarino. Meteo ogni ora da Open-Meteo; posizione approssimativa dall’indirizzo IP (ipwho.is).')):
+                ('weather', 'Reazioni al meteo locale', 'Animazioni e brevi commenti nella lingua scelta in Voce. Meteo ogni ora da Open-Meteo; posizione approssimativa dall’indirizzo IP (ipwho.is).')):
             check=QCheckBox(label); check.setChecked(self.pet.context.enabled[key]); check.setToolTip(hint)
             check.toggled.connect(lambda value, key=key:self.pet.context.set_enabled(key,value))
             if key == 'weather':

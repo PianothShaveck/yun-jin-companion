@@ -140,6 +140,8 @@ class MacOverlay(QObject):
         parent = widget.parentWidget()
         owner = parent.window() if parent is not None else None
         parent_level = self.window_level(owner, seen) if owner is not None else 1000
+        if widget is getattr(self.pet, 'bubble', None):
+            return 1001
         if widget.windowType() == Qt.WindowType.ToolTip:
             return max(1004, parent_level + 1)
         if widget.windowType() == Qt.WindowType.Popup or isinstance(widget, QMenu):

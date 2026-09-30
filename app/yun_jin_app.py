@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.2.0: desktop companion and practice tools."""
+"""Yun Jin Companion 1.2.1: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -184,7 +184,10 @@ class Companion(YunJinPet):
         self.setAcceptDrops(True)
         self.use_extra_animations=self.store.preference('extra_animations',True)
         self.sound=Sounds(self)
+        from yun_jin_bubble import SpeechBubble
+        self.bubble=SpeechBubble(self)
         self.speech=Speech(self)
+        self.speech.caption_changed.connect(self.bubble.present)
         self.speech.active_changed.connect(self.voice_animation)
         self.speech.status_changed.connect(self.speech_status_animation)
         self.metronome=Metronome(self)

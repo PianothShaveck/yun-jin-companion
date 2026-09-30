@@ -11,22 +11,65 @@ from yun_jin_core import BASE, ANIMATIONS
 from yun_jin_weather import fresh, location_valid, WEATHER_TTL
 
 GREETINGS = {
-    'morning': '早上好！愿你今天心情愉快。',
-    'afternoon': '下午好！很高兴又见到你。',
-    'evening': '晚上好！今天辛苦了。',
-    'night': '夜深了，别忘了早点休息。',
+    'it': {
+        'morning': 'Buongiorno! Ti auguro una bella giornata.',
+        'afternoon': 'Buon pomeriggio! Sono felice di rivederti.',
+        'evening': 'Buonasera! Com’è andata la giornata?',
+        'night': 'È tardi. Ricordati di riposare un po’.',
+    },
+    'en': {
+        'morning': 'Good morning! I hope you have a lovely day.',
+        'afternoon': 'Good afternoon! It’s lovely to see you again.',
+        'evening': 'Good evening! How was your day?',
+        'night': 'It’s getting late. Remember to get some rest.',
+    },
+    'zh-CN': {
+        'morning': '早上好！愿你今天心情愉快。',
+        'afternoon': '下午好！很高兴又见到你。',
+        'evening': '晚上好！今天过得怎么样？',
+        'night': '夜深了，别忘了早点休息。',
+    },
 }
-TIME_ANIMATIONS = {'morning': ('stretch16', 'wave'), 'afternoon': ('work', 'work'),
-                   'evening': ('pirouette16', 'review'), 'night': ('stretch16', 'wait')}
+TIME_ANIMATIONS = {'morning': ('morning16', 'wave'), 'afternoon': ('afternoon16', 'wave'),
+                   'evening': ('evening16', 'review'), 'night': ('yawn16', 'wait')}
 WEATHER_REACTIONS = {
-    'sun': ('celebrate16', 'wave', '阳光真好，愿你今天心情愉快。'),
-    'clear_night': ('review', 'review', '今晚天色晴朗，真是个宁静的夜晚。'),
-    'cloud': ('review', 'review', '今天多云，慢慢来，也很好。'),
-    'fog': ('wait', 'wait', '外面有雾，出门记得小心。'),
-    'rain': ('wait', 'wait', '外面下雨了，出门记得带伞。'),
-    'snow': ('celebrate16', 'wave', '下雪了！出门记得保暖。'),
-    'storm': ('review', 'review', '外面有雷雨，待在室内要安心些。'),
+    'sun': ('sun16', 'wave'), 'clear_night': ('review', 'review'),
+    'cloud': ('cloud16', 'review'), 'fog': ('wait', 'wait'),
+    'rain': ('rain16', 'wait'), 'snow': ('snow16', 'wave'), 'storm': ('rain16', 'review'),
 }
+WEATHER_LINES = {
+    'it': {
+        'sun': 'Che bel sole! Spero che illumini anche la tua giornata.',
+        'clear_night': 'Il cielo è sereno. Che bella notte tranquilla.',
+        'cloud': 'Oggi è nuvoloso. Possiamo prendercela con calma.',
+        'fog': 'Fuori c’è nebbia. Fai attenzione se esci.',
+        'rain': 'Piove. Se esci, ricordati l’ombrello.',
+        'snow': 'Nevica! Copriti bene se esci.',
+        'storm': 'C’è un temporale. Qui al riparo si sta meglio.',
+    },
+    'en': {
+        'sun': 'Such lovely sunshine! I hope it brightens your day too.',
+        'clear_night': 'The sky is clear. What a peaceful night.',
+        'cloud': 'It’s cloudy today. We can take things slowly.',
+        'fog': 'It’s foggy outside. Take care if you go out.',
+        'rain': 'It’s raining. Remember your umbrella if you go out.',
+        'snow': 'It’s snowing! Wrap up warmly if you go out.',
+        'storm': 'There’s a thunderstorm outside. It’s cosy in here.',
+    },
+    'zh-CN': {
+        'sun': '阳光真好，愿你今天心情愉快。',
+        'clear_night': '今晚天色晴朗，真是个宁静的夜晚。',
+        'cloud': '今天多云，慢慢来，也很好。',
+        'fog': '外面有雾，出门记得小心。',
+        'rain': '外面下雨了，出门记得带伞。',
+        'snow': '下雪了！出门记得保暖。',
+        'storm': '外面有雷雨，待在室内要安心些。',
+    },
+}
+
+
+def contextual_line(table, key, language):
+    return table.get(language, table['it'])[key]
 
 
 def time_period(now):
@@ -122,18 +165,22 @@ class Context(QObject):
         kind = next(k for k in ('greeting', 'time', 'weather') if k in self.pending)
         _, value = self.pending.pop(kind)
         self.last_reaction = now
-        if kind == 'greeting':
-            self.pet.speech.speak(GREETINGS[value], category='ambient', language='zh-CN', tag={'kind': kind})
-            return
-        if kind == 'time':
-            animation, fallback = TIME_ANIMATIONS[value]; text = None
+        language = self.pet.speech.pref('language', 'it')
+        text = None
+        if kind in ('greeting', 'time'):
+            animation, fallback = TIME_ANIMATIONS[value]
+            if kind == 'greeting':
+                text = contextual_line(GREETINGS, value, language)
         else:
-            animation, fallback, text = WEATHER_REACTIONS[value]
+            animation, fallback = WEATHER_REACTIONS[value]
+            text = contextual_line(WEATHER_LINES, value, language)
             self.pet.store.set_preference('context_weather_reaction', {'kind': value, 'at': self.wall()})
-        if not self.pet.use_extra_animations or animation not in ANIMATIONS: animation = fallback
-        self.pet.sequence([(animation, 1)])
+        # The greeting can be spoken independently of the time-animation switch.
+        if kind != 'greeting' or self.enabled['time']:
+            if not self.pet.use_extra_animations or animation not in ANIMATIONS: animation = fallback
+            self.pet.sequence([(animation, 1)])
         if text:
-            self.pet.speech.speak(text, category='ambient', language='zh-CN',
+            self.pet.speech.speak(text, category='ambient',
                                   tag={'kind': kind, 'serial': self.pet.action_serial})
 
     def valid_weather(self, result):

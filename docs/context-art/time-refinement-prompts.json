@@ -1,0 +1,25 @@
+[
+  {
+    "name": "greeting2",
+    "prompt": "Edit the 4x4 sheet in image 1 into a gentle bow animation. Image 2 is the ONLY model/style/color reference; copy this exact slender Yun Jin chibi, tiny boots, narrow skirt, narrow small head, delicate pastel dusty colors, matte flat shading, muted cranberry eyes, thin dark-purple outlines. Image 3 shows her tiny compact footwear. It must look like sixteen frames drawn by the ORIGINAL artist, not a glossy bright chibi reinterpretation. Keep the original exact palette, gentle low-contrast shading and body proportions. Original standing silhouette width 61% of height, skirt width 59%, head/hat width 41%, both shoes together 21%; never enlarge shoes during the bow. Animate a polite waist bow: frame1 original rest;2-3 bring hands together near chest;4-7 gradually lower head and shoulders;8-9 hold bow;10-13 rise smoothly;14-16 gently return to exactly the same rest. Tiny feet planted throughout. Original narrow skirt and separate thin cyan cords sway subtly. 16 complete full-body poses with identical camera scale, 4 by 4 chronological grid with large transparent gutters. Real transparent background, no shadows beneath feet. No clipping or intersections, extra objects, text, sparkles, motion lines, symbols, thick black outlines, saturated highlights, puffy dress, broad hair mass or giant boots. Frame16 same as frame1.",
+    "refs": [
+      "/workspace/scratch/946a38ef28a4/revision-1.2.1-time/Yun-Jin-Companion-1.2.1/docs/context-art/original-seed-white.png",
+      "/workspace/scratch/946a38ef28a4/revision-1.2.1-time/Yun-Jin-Companion-1.2.1/docs/context-art/original-model-white.png",
+      "/workspace/scratch/946a38ef28a4/revision-1.2.1-time/Yun-Jin-Companion-1.2.1/docs/context-art/original-boots-reference.png"
+    ],
+    "source": "/workspace/scratch/946a38ef28a4/generated_images/exec-ad8a5b24-eb73-4761-bb8e-cb5317abc4b0.png",
+    "mode": "built-in imagegen",
+    "selected": true
+  },
+  {
+    "name": "afternoon2",
+    "prompt": "Precise-object-edit: remove ONLY the stray curved reddish motion lines floating beside or above the raised hand in this 4x4 transparent Yun Jin animation sheet. The source has these motion strokes near the upper-left side of several poses; erase them entirely to clean transparent empty space. Preserve EVERY character pixel as closely as possible: no change to face, colors, shoes, head/body proportions, scale, pose sequence, hands, frame positions, anatomy, contours, clothing or cyan cords. Keep the actual hand and sleeve. Keep sixteen complete poses, 4 by 4. Do not redraw the character. Transparent background stays transparent. No added content.",
+    "refs": [
+      "/workspace/scratch/946a38ef28a4/generated_images/exec-ae68c143-6a7c-43de-bc98-663dbd4fb8d5.png"
+    ],
+    "source": "/workspace/scratch/946a38ef28a4/generated_images/exec-33c58390-5c26-4c70-940c-4e2f99036b54.png",
+    "mode": "built-in imagegen",
+    "selected": false,
+    "rejection": "Drawing proportions changed; not included in the animation pack."
+  }
+]

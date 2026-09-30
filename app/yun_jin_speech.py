@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Qt speech controller: no GUI blocking, no automatic provider switching."""
 import json
+import bisect
 import sys
 import time
 from pathlib import Path
@@ -15,9 +16,23 @@ VOICES={
 }
 
 
+def caption_pages(text):
+    """Small readable chunks, including languages without spaces; no text is lost."""
+    text = ' '.join(text.split())
+    limit = 72 if any('\u3400' <= c <= '\u9fff' for c in text) else 140
+    pages = []
+    while len(text) > limit:
+        boundary = max(text.rfind(c, limit//2, limit+1) for c in ' .!?;。！？；')
+        end = boundary+1 if boundary >= 0 else limit
+        pages.append(text[:end].strip()); text = text[end:].lstrip()
+    if text: pages.append(text)
+    return pages
+
+
 class Speech(QObject):
     status_changed=pyqtSignal(str)
     active_changed=pyqtSignal(bool)
+    caption_changed=pyqtSignal(str)
 
     def __init__(self,pet):
         super().__init__(pet)
@@ -34,6 +49,11 @@ class Speech(QObject):
         self.current_tag=None
         self.category='manual'
         self.status=''
+        self.current_text=''
+        self.caption_pages=[]
+        self.caption_ends=[]
+        self.caption_index=-1
+        self.caption_playing=False
         self.cache=pet.store.root/'voice-cache'
         self.cache.mkdir(exist_ok=True)
         self.timeout=QTimer(self)
@@ -45,6 +65,8 @@ class Speech(QObject):
             self.output=QAudioOutput(self)
             self.player.setAudioOutput(self.output)
             self.player.playbackStateChanged.connect(self.playback_state)
+            self.player.positionChanged.connect(self.update_caption)
+            self.player.durationChanged.connect(lambda _: self.update_caption())
             self.player.mediaStatusChanged.connect(self.media_status)
             self.player.errorOccurred.connect(self.playback_error)
         except Exception as exc:
@@ -101,6 +123,12 @@ class Speech(QObject):
         self.category=category
         self.current_tag=tag
         self.busy=True
+        self.current_text=text
+        self.caption_pages=caption_pages(text)
+        total=0
+        for page in self.caption_pages:
+            total += len(page)
+            self.caption_ends.append(total)
         language=language or self.pref('language','it')
         provider=self.pref('provider','edge')
         default_voice=VOICES.get(language,VOICES['it'])[0][1]
@@ -175,13 +203,38 @@ class Speech(QObject):
             self.current_tag=None
             self.report('Voce non disponibile: '+str(exc)+' Riprova o cambia servizio.')
 
+    def clear_caption(self):
+        if self.caption_index != -1:
+            self.caption_index=-1
+            self.caption_changed.emit('')
+        self.caption_playing=False
+
+    def update_caption(self, position=None):
+        if not self.caption_playing or not self.caption_pages or not self.player:
+            return
+        duration=self.player.duration()
+        position=self.player.position() if position is None else position
+        progress=max(0, position)/duration if duration > 0 else 0
+        index=min(len(self.caption_pages)-1,
+                  bisect.bisect_right(self.caption_ends, progress*self.caption_ends[-1]))
+        if index != self.caption_index:
+            self.caption_index=index
+            self.caption_changed.emit(self.caption_pages[index])
+
     def playback_state(self,state):
         from PyQt6.QtMultimedia import QMediaPlayer
-        self.active_changed.emit(state==QMediaPlayer.PlaybackState.PlayingState)
+        playing=state==QMediaPlayer.PlaybackState.PlayingState
+        self.caption_playing=playing and self.busy
+        if self.caption_playing:
+            self.update_caption()
+        else:
+            self.clear_caption()
+        self.active_changed.emit(playing)
 
     def media_status(self,status):
         from PyQt6.QtMultimedia import QMediaPlayer
         if status==QMediaPlayer.MediaStatus.EndOfMedia:
+            self.clear_caption()
             self.busy=False
             self.current_tag=None
             self.active_changed.emit(False)
@@ -189,6 +242,7 @@ class Speech(QObject):
 
     def playback_error(self,*args):
         if not self.closed:
+            self.clear_caption()
             self.busy=False
             self.active_changed.emit(False)
             self.report('Errore nella riproduzione: '+self.player.errorString())
@@ -198,6 +252,10 @@ class Speech(QObject):
         self.report('Nessuna risposta. Riprova o cambia servizio.')
 
     def stop(self,announce=True):
+        self.clear_caption()
+        self.current_text=''
+        self.caption_pages=[]
+        self.caption_ends=[]
         self.timeout.stop()
         process,self.process=self.process,None
         if process:

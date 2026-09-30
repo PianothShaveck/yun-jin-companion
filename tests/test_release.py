@@ -195,7 +195,7 @@ class GuiTests(unittest.TestCase):
   from PyQt6.QtWidgets import QMenu
   pet=self.pet;menu=QMenu();pet.populate_context_menu(menu)
   animations=next(a.menu() for a in menu.actions() if a.text()=='Animazioni')
-  once=next(a.menu() for a in animations.actions() if a.text()=='Esegui')
+  once=next(a.menu() for a in animations.actions() if a.text()=='Movimento')
   for label,name in [('Danza','dance16'),('Piroetta','pirouette16')]:
    next(a for a in once.actions() if a.text()==label).trigger()
    self.assertEqual(pet.animation,name)

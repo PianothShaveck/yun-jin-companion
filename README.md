@@ -1,6 +1,6 @@
 # Yun Jin Companion
 
-Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Versione **1.2.0**.
+Una piccola compagna per il desktop: appunti, promemoria vocali, focus, cronometro e metronomo con scalata. Versione **1.2.1**.
 
 ## Avvio
 
@@ -18,24 +18,26 @@ Gli avviatori Windows e macOS cercano Python; se manca, scaricano l'installer uf
 
 La guida unica e completa è [Guida.pdf](Guida.pdf), disponibile anche dal pulsante **Guida** nell'app. Include installazione, funzioni, comandi per ogni sistema, backup e aiuto.
 
-## Novità della 1.2.0
+## Novità della 1.2.1
 
-- **Interfaccia essenziale:** etichette brevi, niente paragrafi esplicativi nei
-  pannelli. Dettagli nei suggerimenti e nella guida.
-- **Orario locale:** un saluto in mandarino all’avvio e una sola animazione al
-  cambio di fascia: mattina 05–12, pomeriggio 12–18, sera 18–22, notte 22–05.
-- **Meteo:** verifica leggera ogni ora in background; reazioni ai cambiamenti di
-  sole, pioggia, nuvole, neve, nebbia e temporali. Tra due reazioni meteo passano
-  almeno due ore. Nessun errore visibile quando il servizio non risponde.
-- **Meno risorse:** animazioni caricate quando servono, con al massimo due clip
-  aggiuntive decodificate; meno ridisegni e cronometro senza aggiornamenti
-  grafici quando nascosto. Disegni e tempi delle animazioni conservati.
+- Dieci nuove animazioni: Buongiorno, Buon pomeriggio, Buona sera, Inchino, Sbadiglio, Al sole, Nuvoloso, Pioggia, Neve e Applauso.
+- Saluti e commenti meteo nella lingua selezionata in **Voce**.
+- Fumetti durante il parlato, anche per appunti e promemoria.
+- Menu Animazioni suddiviso in categorie; Applauso disponibile solo su comando.
 
-In **Impostazioni → Orario e meteo** puoi disattivare separatamente le tre
-funzioni. Le frasi spontanee sono in mandarino e usano servizio e volume della
-Voce, senza cambiare la lingua di appunti e promemoria. **Silenzio per 1 ora**
-sospende anche queste frasi. Le reazioni attendono o vengono saltate durante
-comandi manuali, pausa, sonno, focus, metronomo, promemoria o pannelli aperti.
+In **Impostazioni → Orario e meteo** puoi disattivare separatamente saluto,
+reazioni all’ora e meteo. Il saluto avviene una volta all’avvio; i cambi di
+fascia producono una sola animazione. Il meteo viene controllato ogni ora,
+con almeno due ore tra i commenti. Gli errori di rete restano silenziosi.
+Le reazioni attendono o vengono saltate durante comandi manuali, pausa,
+sonno, focus, metronomo, promemoria o pannelli aperti.
+
+Le nuove animazioni si provano da **Animazioni → Orario oppure Meteo**.
+**Applauso** si trova in **Animazioni → Gesti** e non parte mai da solo.
+Per ripetere una sequenza scegli **Animazioni → Ripeti**, poi la categoria;
+**Termina** la interrompe.
+I fumetti appaiono quando inizia l’audio e scompaiono alla fine o con **Stop**;
+i testi lunghi scorrono in brevi parti. Non attivano finestre o timer aggiuntivi.
 
 Il meteo usa [Open-Meteo](https://open-meteo.com/) (dati CC BY 4.0). La posizione
 approssimativa viene stimata dall’indirizzo IP con [ipwho.is](https://ipwhois.io/),
@@ -56,7 +58,6 @@ Misure riproducibili e limiti: [docs/PERFORMANCE-1.2.0.md](docs/PERFORMANCE-1.2.
   Chi aveva disattivato la voce conserva la lettura automatica disattivata.
 - Impostazioni organizzate per argomento, caselle su righe separate e
   controlli audio subordinati disabilitati quando gli effetti sono spenti.
-- Guida aggiornata alle nuove etichette e procedure, sempre senza versione.
 
 ## Correzioni della 1.1.1
 
@@ -252,6 +253,7 @@ il controllo nativo di creazione del pannello e attivazione/disattivazione.
 `python tests/test_release.py` controlla pianificazione dei battiti, PCM, pause e parziali, comportamento del pannello, voce e animazioni. L'uscita audio fisica e i dialoghi nativi di installazione richiedono un dispositivo reale.
 
 `python tests/test_behavior_updates.py` verifica Seguimi, sonno, proporzioni, suoni e interfaccia aggiornamenti.
+`python tests/test_speech_bubbles.py` verifica lingue, fumetti, interruzioni e posizionamento.
 `python tests/test_updater.py` verifica ZIP, hash, percorsi spostati, conservazione dati, rollback e riavvio in processi separati.
 
 `python tools/render_guide_assets.py` rigenera le schermate con dati fittizi e gli estratti delle animazioni definitive.
@@ -261,15 +263,15 @@ il controllo nativo di creazione del pannello e attivazione/disattivazione.
 
 `python tools/package_release.py` crea lo ZIP di distribuzione in `dist/`; aggiungi `--source` per produrre anche lo ZIP del repository. Sono escluse cache, revisioni precedenti, archivi e dati personali. `Mac.command` e `Linux.sh` mantengono il permesso eseguibile.
 
-## Pubblicazione 1.2.0
+## Pubblicazione 1.2.1
 
-1. Applica **Yun-Jin-Companion-1.2.0-Patch.zip** alla copia locale aggiornata del repository, oppure estrai lo ZIP Sorgenti. Carica nella radice del repository
+1. Applica **Yun-Jin-Companion-1.2.1-Patch.zip** alla copia locale aggiornata del repository, oppure estrai lo ZIP Sorgenti. Carica nella radice del repository
    il contenuto della cartella estratta, comprese `.github` e `.gitignore`.
    `README.md`, `Windows.cmd` e `app/` devono trovarsi direttamente nella radice.
 2. Attendi i controlli nella scheda **Actions**. Verifica su Windows l’installazione,
    il collegamento aggiornato e l’icona nella barra; verifica anche l’uscita audio.
-3. Crea la release con tag **v1.2.0** e titolo **Yun Jin Companion 1.2.0**.
-   Allega **Yun-Jin-Companion-1.2.0.zip**, il pacchetto da scaricare e installare.
+3. Crea la release con tag **v1.2.1** e titolo **Yun Jin Companion 1.2.1**.
+   Allega **Yun-Jin-Companion-1.2.1.zip**, il pacchetto da scaricare e installare.
    GitHub fornisce automaticamente anche l’archivio dei sorgenti.
 4. Pubblica una release stabile, non una prerelease, e contrassegnala come **Latest**.
    Scrivi le note nel corpo della release: sono quelle che l’app mostrerà.
@@ -283,11 +285,11 @@ I dettagli per preparare le release future sono in [docs/UPDATES.md](docs/UPDATE
 Descrizione del repository: **Compagna desktop con appunti, promemoria vocali,
 focus, cronometro e metronomo.**
 
-Comandi rapidi: [docs/PUBLISH-1.2.0.md](docs/PUBLISH-1.2.0.md).
+Comandi rapidi: [docs/PUBLISH-1.2.1.md](docs/PUBLISH-1.2.1.md).
 
-Note per la release: vedi [docs/RELEASE-1.2.0.md](docs/RELEASE-1.2.0.md).
+Note per la release: vedi [docs/RELEASE-1.2.1.md](docs/RELEASE-1.2.1.md).
 
-Gli ZIP contengono solo la versione definitiva 1.2.0. Il pacchetto di distribuzione
+Gli ZIP contengono solo la versione definitiva 1.2.1. Il pacchetto di distribuzione
 include app, risorse, avviatori e guida; i sorgenti aggiungono documentazione,
 strumenti di sviluppo e test. Anteprime di controllo, revisioni precedenti,
 ambienti Python e dati personali sono esclusi.

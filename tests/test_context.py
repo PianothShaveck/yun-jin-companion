@@ -113,24 +113,44 @@ class ContextTests(unittest.TestCase):
         if errors: raise errors[0]
         self.assertTrue(predicate(),'Timed out waiting for event')
 
-    def test_greeting_only_once_and_uses_mandarin_without_changing_language(self):
+    def test_greeting_only_once_and_uses_voice_language(self):
         self.store.set_preference('tts_language','it'); self.ctx.start()
         self.assertEqual(self.speak.call_count,1)
-        self.assertEqual(self.speak.call_args.args[0],GREETINGS['morning'])
-        self.assertEqual(self.speak.call_args.kwargs['language'],'zh-CN')
+        self.assertEqual(self.speak.call_args.args[0],GREETINGS['it']['morning'])
+        self.assertNotIn('language',self.speak.call_args.kwargs)
         for _ in range(3): self.ctx.start(); self.ctx.dispatch(); self.advance()
         self.assertEqual(self.speak.call_count,1)
         self.assertEqual(self.store.preference('tts_language',''),'it')
+
+    def test_distinct_daypart_animations_and_single_startup_greeting(self):
+        for hour, period, animation in [(8, 'morning', 'morning16'),
+                                        (14, 'afternoon', 'afternoon16'),
+                                        (20, 'evening', 'evening16')]:
+            with self.subTest(period=period):
+                self.ctx.shutdown(); self.pet.cancel(); self.pet.idle()
+                self.now.local = datetime(2026, 9, 30, hour)
+                self.ctx = Context(self.pet, lambda:self.now.local, lambda:self.now.mono, lambda:self.now.wall)
+                self.pet.context = self.ctx; self.ctx.enabled['weather'] = False
+                self.speak.reset_mock()
+                with patch.object(self.pet, 'sequence') as sequence:
+                    self.ctx.start(); self.ctx.start(); self.ctx.poll()
+                    sequence.assert_called_once_with([(animation, 1)])
+                self.speak.assert_called_once()
+                self.assertEqual(self.speak.call_args.args[0], GREETINGS['it'][period])
 
     def test_each_time_period_once_rollback_midnight_and_resume(self):
         self.ctx.enabled['greeting']=False; self.ctx.start()
         with patch.object(self.pet,'sequence') as sequence:
             self.advance(hour=12); self.advance(hour=12)
             self.assertEqual(sequence.call_count,1)
+            sequence.assert_called_with([('afternoon16',1)])
             self.advance(hour=8); self.advance(hour=12); self.assertEqual(sequence.call_count,1)
-            self.advance(hour=23); self.assertEqual(sequence.call_count,2)
-            self.advance(hour=2, day=1)  # backwards: never replay
+            self.advance(hour=18); self.advance(hour=18)
             self.assertEqual(sequence.call_count,2)
+            sequence.assert_called_with([('evening16',1)])
+            self.advance(hour=23); self.assertEqual(sequence.call_count,3)
+            self.advance(hour=2, day=1)  # backwards: never replay
+            self.assertEqual(sequence.call_count,3)
         self.assertEqual(time_period(datetime(2026,9,30,23)),time_period(datetime(2026,10,1,3)))
 
     def test_resume_only_latest_period_not_missed_animation_queue(self):
@@ -138,7 +158,7 @@ class ContextTests(unittest.TestCase):
         self.now.local=datetime(2026,10,4,20); self.now.mono+=86400
         with patch.object(self.pet,'sequence') as sequence:
             self.ctx.poll(); self.ctx.dispatch()
-        sequence.assert_called_once_with([('pirouette16',1)])
+        sequence.assert_called_once_with([('evening16',1)])
 
     def test_unavailable_clock_silent_and_no_late_greeting(self):
         self.ctx.clock=Mock(side_effect=OSError('clock')); self.ctx.start(); self.ctx.poll()
