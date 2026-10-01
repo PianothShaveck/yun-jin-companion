@@ -100,6 +100,34 @@ class CaptionTests(unittest.TestCase):
         self.assertFalse(self.pet.bubble.isVisible())
         self.assertFalse(self.speech.busy)
 
+    def expire_feedback(self):
+        from PyQt6.QtCore import QEventLoop
+        loop=QEventLoop();self.pet.shortcut_timer.timeout.connect(loop.quit)
+        guard=QTimer();guard.setSingleShot(True);guard.timeout.connect(loop.quit)
+        self.pet.shortcut_timer.start(1);guard.start(1000);loop.exec();guard.stop()
+        self.pet.shortcut_timer.timeout.disconnect(loop.quit)
+        self.assertFalse(self.pet.shortcut_timer.isActive())
+
+    def test_shortcut_feedback_temporarily_replaces_caption_then_restores_latest_page(self):
+        self.speak('Una frase da leggere. '*40);self.play()
+        self.pet.shortcut_feedback('stopwatch_reset')
+        self.assertEqual(self.pet.bubble.text,'Cronometro azzerato')
+        self.speech.update_caption(9000)
+        expected=self.speech.caption_pages[self.speech.caption_index]
+        self.assertEqual(self.pet.bubble.text,'Cronometro azzerato')
+        self.expire_feedback()
+        self.assertEqual(self.pet.bubble.text,expected);self.assertTrue(self.pet.bubble.isVisible())
+        self.assertTrue(self.speech.busy)
+
+    def test_new_feedback_replaces_previous_and_finished_speech_is_not_resurrected(self):
+        self.speak('Una frase.');self.play()
+        self.pet.shortcut_feedback('stopwatch_reset')
+        self.speech.media_status(QMediaPlayer.MediaStatus.EndOfMedia)
+        self.pet.shortcut_feedback('pet_pause')
+        self.assertEqual(self.pet.bubble.text,'Yun Jin riprende')
+        self.expire_feedback()
+        self.assertFalse(self.pet.bubble.isVisible());self.assertEqual(self.pet.bubble.text,'')
+
     def test_bubble_is_plain_text_passive_and_has_no_timer(self):
         bubble = self.pet.bubble
         bubble.present('<b>Una frase</b> & un’altra.')

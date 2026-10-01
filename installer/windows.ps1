@@ -28,7 +28,7 @@ function Find-Python {
     if ($Command -and $Command.Source -notlike '*\WindowsApps\*') { $Candidates.Add($Command.Source) }
     foreach ($Candidate in ($Candidates | Select-Object -Unique)) {
         if (Test-Path -LiteralPath $Candidate) {
-            & $Candidate -c 'import sys; sys.exit(0 if (3,10)<=sys.version_info[:2]<(3,15) and sys.maxsize>2**32 else 1)' 2>$null
+            & $Candidate -c 'import sys; sys.exit(0 if (3,11)<=sys.version_info[:2]<(3,15) and sys.maxsize>2**32 else 1)' 2>$null
             if ($LASTEXITCODE -eq 0) { return $Candidate }
         }
     }

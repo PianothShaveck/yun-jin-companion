@@ -11,6 +11,7 @@ Thumbs.db
 companion.lock
 voice-cache/
 attachments/
+study-media/
 
 # Local artwork experiments and reports are not repository documentation.
 docs/*.md

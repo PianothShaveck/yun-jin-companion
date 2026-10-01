@@ -29,7 +29,7 @@ def main():
         pet.stopwatch.accumulated=125.8
         pet.stopwatch.laps=[{'total':42.1,'split':42.1},{'total':83.7,'split':41.6},{'total':125.8,'split':42.1}]
         panel.music.refresh_watch()
-        for name,page,sub in [('appunti',0,None),('voce',3,None),('impostazioni',2,None),('metronomo',5,0),('cronometro',5,1)]:
+        for name,page,sub in [('appunti',0,None),('voce',3,None),('metronomo',5,0),('cronometro',5,1)]:
             panel.resize(990,690) if name in ('appunti','voce','impostazioni') else panel.resize(760,550)
             panel.show_page(page,sub)
             if name=='metronomo':panel.music.ramp.setChecked(True)
@@ -47,6 +47,21 @@ def main():
         pet.card.present(store.mark_due());app.processEvents();pet.card.grab().save(str(out/'avviso.png'));pet.card.hide()
         for name in ('conduct16','stopwatch16'):
             row=ANIMATIONS[name][0];pet.sheet.frames[row,6].save(str(out/(name+'.png')))
+        # Study screens use only fictional, local Chinese vocabulary.
+        study=store.study;deck=study.save_deck('Cinese · parole quotidiane')
+        for front,back in [('你好','nǐ hǎo · Ciao'),('谢谢','xièxie · Grazie'),('学习','xuéxí · Studiare'),('明天','míngtiān · Domani')]:
+            study.save_note(deck,'basic',dict(front=front,back=back))
+        study.save_note(deck,'cloze',dict(front='我{{c1::喜欢::xǐhuān}}学习中文。',back='Mi piace studiare il cinese.'))
+        panel.study.refresh(deck);panel.resize(990,690);panel.show_page(6);app.processEvents()
+        panel.grab().save(str(out/'studio.png'))
+        from yun_jin_study_widgets import NoteEditor
+        editor=NoteEditor(pet,deck,parent=panel);editor.kind.setCurrentIndex(1)
+        editor.edits['front'].setPlainText('我{{c1::喜欢::xǐhuān}}学习中文。')
+        editor.edits['back'].setPlainText('Mi piace studiare il cinese.');editor.show();app.processEvents()
+        editor.grab().save(str(out/'carte.png'));editor.close();editor.deleteLater()
+        from yun_jin_hotkeys import ShortcutDialog
+        shortcuts=ShortcutDialog(pet,panel);shortcuts.show();app.processEvents()
+        shortcuts.grab().save(str(out/'scorciatoie.png'));shortcuts.reject();shortcuts.deleteLater()
         pet.close();store.close()
     print(out)
 

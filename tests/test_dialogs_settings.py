@@ -10,8 +10,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'app'))
 from PyQt6 import sip
-from PyQt6.QtCore import Qt, QTimer, QDateTime
-from PyQt6.QtWidgets import QApplication, QDialog, QMessageBox, QFileDialog, QComboBox, QLineEdit
+from PyQt6.QtCore import Qt, QTimer, QDateTime, QUrl
+from PyQt6.QtWidgets import QApplication, QDialog, QMessageBox, QFileDialog, QComboBox, QLineEdit, QPushButton, QLabel
 from yun_jin_app import Companion
 from yun_jin_data import Store
 from yun_jin_dialogs import exec_dialog, choose_files
@@ -126,7 +126,12 @@ class DialogSettingsTests(unittest.TestCase):
                     self.assert_above_owner(box, self.panel)
                     self.assertTrue(box.testOption(QMessageBox.Option.DontUseNativeDialog))
                     box.button(QMessageBox.StandardButton.Ok).click()
-                self.during_dialog(self.panel.show_shortcuts, inspect)
+                def inspect_shortcuts(dialog):
+                    self.assert_above_owner(dialog,self.panel)
+                    from yun_jin_hotkeys import ACTIONS
+                    self.assertEqual(set(dialog.edits),set(ACTIONS))
+                    dialog.reject()
+                self.during_dialog(self.panel.show_shortcuts, inspect_shortcuts)
                 self.panel.note_path = str(Path(self.tmp.name) / 'missing.txt')
                 self.during_dialog(self.panel.open_material, inspect)
             self.assertIsNone(app.activeModalWidget())
@@ -296,6 +301,60 @@ class DialogSettingsTests(unittest.TestCase):
         self.assertEqual(p.volume.value(), old_volume)
         self.assertGreater(p.interaction_sounds.mapTo(p, p.interaction_sounds.rect().topLeft()).y(),
                            p.sound_enabled.mapTo(p, p.sound_enabled.rect().bottomLeft()).y())
+
+    def test_guide_data_folder_and_attachments_save_notes_and_hide_panel_on_success(self):
+        path=Path(self.tmp.name)/'materiale.txt';path.write_text('materiale')
+        folder=next(b for b in self.panel.findChildren(QPushButton) if b.text()=='Cartella dati')
+        for action,expected in [(self.pet.open_guide,'Guida.pdf'),(folder.click,str(self.store.root)),
+                                (self.panel.open_material,str(path))]:
+            with self.subTest(target=expected):
+                self.pet.open_panel();self.panel.note_path=str(path)
+                self.panel.body.setPlainText('Da conservare: '+expected)
+                def launch(url):
+                    self.assertFalse(self.panel.dirty)
+                    self.assertEqual(self.store.note(self.panel.note_id)['body'],'Da conservare: '+expected)
+                    self.assertTrue(url.toLocalFile().endswith(expected));return True
+                with patch('yun_jin_app.QDesktopServices.openUrl',side_effect=launch),patch.object(self.pet,'panel_closed') as closed:
+                    action();self.assertFalse(self.panel.isVisible());closed.assert_called_once()
+                self.pet.open_panel();self.assertEqual(self.panel.body.toPlainText(),'Da conservare: '+expected)
+
+    def test_failed_external_launch_or_save_keeps_the_editor_visible(self):
+        self.panel.body.setPlainText('Non perdere questo testo')
+        with patch('yun_jin_app.QDesktopServices.openUrl',return_value=False),patch('yun_jin_app.Messages.warning') as warning:
+            self.pet.open_guide();warning.assert_called_once()
+            self.assertTrue(self.panel.isVisible());self.assertEqual(self.panel.body.toPlainText(),'Non perdere questo testo')
+        with patch.object(self.panel,'save_note',side_effect=OSError('Disco pieno')), \
+                patch('yun_jin_app.QDesktopServices.openUrl') as launch,patch('yun_jin_app.Messages.warning') as warning:
+            self.pet.open_guide();launch.assert_not_called();warning.assert_called_once()
+            self.assertTrue(self.panel.isVisible())
+
+    def test_chatgpt_and_weather_credit_links_yield_the_foreground(self):
+        self.panel.body.setPlainText('Testo da spiegare')
+        with patch('yun_jin_app.QDesktopServices.openUrl',return_value=True) as launch:
+            self.panel.ask_ai();self.assertFalse(self.panel.isVisible())
+            self.assertEqual(launch.call_args.args[0].toString(),'https://chatgpt.com/')
+            self.assertIn('Testo da spiegare',QApplication.clipboard().text())
+            self.pet.open_panel(tab=2)
+            credit=next(label for label in self.panel.findChildren(QLabel) if 'href="https://open-meteo.com/' in label.text())
+            self.assertFalse(credit.openExternalLinks());credit.linkActivated.emit('https://open-meteo.com/')
+            self.assertFalse(self.panel.isVisible())
+            self.assertEqual(launch.call_args.args[0].toString(),'https://open-meteo.com/')
+
+    def test_release_links_hide_update_window_and_panel_but_reject_unsafe_links(self):
+        manager=self.pet.updates
+        manager.release=dict(version='1.3.1',url='https://github.com/PianothShaveck/yun-jin-companion/releases/tag/v1.3.1',
+            notes='Una correzione.',automatic=True)
+        manager.show_notes();dialog=manager.dialog
+        with patch('yun_jin_app.QDesktopServices.openUrl',return_value=True) as launch:
+            for url in ('file:///private/test','http://example.com','https://user:password@example.com'):
+                dialog.open_link(QUrl(url))
+            launch.assert_not_called();self.assertTrue(dialog.isVisible());self.assertTrue(self.panel.isVisible())
+            dialog.web.click()
+            self.assertEqual(launch.call_args.args[0].toString(),manager.release['url'])
+            self.assertFalse(dialog.isVisible());self.assertFalse(self.panel.isVisible())
+            self.pet.open_panel(tab=2);manager.show_notes()
+            dialog.open_link(QUrl('https://github.com/PianothShaveck/yun-jin-companion'))
+            self.assertFalse(dialog.isVisible());self.assertFalse(self.panel.isVisible())
 
 
 if __name__ == '__main__':

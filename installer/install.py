@@ -16,7 +16,7 @@ import venv
 
 SOURCE = Path(__file__).resolve().parent.parent
 NAME = 'Yun Jin Companion'
-VERSION = '1.2.1'
+VERSION = '1.3.0'
 MAC_APPLICATIONS = Path('/Applications')
 MAC_BUNDLE_ID = 'pianoth.yunjin.desktoppet.v1'
 
@@ -50,7 +50,7 @@ def environment(root):
     except (OSError,ValueError,KeyError):
         pass
     if ready:
-        ready = subprocess.run([str(executable),'-c','import PyQt6.QtMultimedia, edge_tts, gtts'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0
+        ready = subprocess.run([str(executable),'-c','import PyQt6.QtMultimedia, edge_tts, gtts, fsrs, fsrs_rs_python'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0
     if not ready:
         print('Installo le dipendenze. Al primo avvio serve Internet…', flush=True)
         run([executable,'-m','pip','install','--disable-pip-version-check','--only-binary=:all:','-r',requirements])
@@ -185,8 +185,8 @@ def linux_shortcut(executable,program,root):
 
 
 def main():
-    if not (3,10)<=sys.version_info[:2]<(3,15):
-        raise RuntimeError('Serve Python 3.10–3.14 a 64 bit. Usa il programma di avvio incluso.')
+    if not (3,11)<=sys.version_info[:2]<(3,15):
+        raise RuntimeError('Serve Python 3.11–3.14 a 64 bit. Usa il programma di avvio incluso.')
     if sys.maxsize<=2**32:raise RuntimeError('Serve Python a 64 bit.')
     if sys.platform=='darwin' and int(platform.mac_ver()[0].split('.')[0])<13:
         raise RuntimeError('Questa versione richiede macOS 13 o successivo.')

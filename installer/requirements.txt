@@ -2,3 +2,5 @@ PyQt6==6.11.0
 PyQt6-Qt6==6.11.2
 edge-tts==7.2.8
 gTTS==2.5.4
+fsrs==6.3.2
+fsrs-rs-python==0.9.3

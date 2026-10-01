@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin desktop pet — Python 3.10+ / PyQt6.
+"""Yun Jin desktop pet — Python 3.11+ / PyQt6.
 
 Place next to spritesheet-yun-jin-v2.png. Animation rows and gaze directions
 come from that sheet, not from the annotated contact sheets or GIF previews.

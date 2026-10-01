@@ -5,14 +5,14 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from PyQt6.QtCore import Qt, QDateTime, QTimer, QUrl, QSize
-from PyQt6.QtGui import QDesktopServices, QPixmap, QImageReader
+from PyQt6.QtGui import QPixmap, QImageReader
 from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
     QLabel, QLineEdit, QTextEdit, QTabWidget, QWidget, QListWidget,
     QListWidgetItem, QSplitter, QTreeWidget, QTreeWidgetItem, QSpinBox, QComboBox,
     QDateTimeEdit, QDialogButtonBox, QFileDialog, QMessageBox, QCheckBox, QSlider,
     QMenu, QHeaderView)
 from yun_jin_platform import shortcut_help
-from yun_jin_dialogs import Messages, choose_files, owner_window
+from yun_jin_dialogs import Messages, choose_files, owner_window, exec_dialog
 from yun_jin_ui import (STYLE, button, plain_label, stepper, icon, icon_button,
     menu_button, card, scroll_page, FeedbackLabel)
 
@@ -85,7 +85,7 @@ class Panel(QDialog):
         side.addLayout(brand); side.addSpacing(20)
         self.nav={}
         for label,glyph,page,sub in [('Appunti','note',0,None),('Promemoria','bell',1,None),
-                ('Focus','focus',4,None),('Metronomo','metro',5,0),('Cronometro','clock',5,1)]:
+                ('Studio','cards',6,None),('Focus','focus',4,None),('Metronomo','metro',5,0),('Cronometro','clock',5,1)]:
             self.add_navigation(side,label,glyph,page,sub)
         side.addStretch()
         self.add_navigation(side,'Voce','voice',3,None)
@@ -99,6 +99,8 @@ class Panel(QDialog):
         self.build_notes(); self.build_reminders(); self.build_settings(); self.build_voice(); self.build_focus()
         from yun_jin_music_panel import MusicPanel
         self.music=MusicPanel(pet); self.tabs.addTab(self.music,'Musica')
+        from yun_jin_study_ui import StudyPanel
+        self.study=StudyPanel(pet);self.tabs.addTab(self.study,'Studio')
         self.music.tabs.currentChanged.connect(self.sync_navigation)
         self.tabs.currentChanged.connect(self.sync_navigation)
         content.addWidget(self.status)
@@ -261,7 +263,8 @@ class Panel(QDialog):
             else: context.addWidget(check)
             self.context_checks[key]=check
         credit=plain_label('<a href="https://open-meteo.com/" style="color:#b8b2c8">Open-Meteo</a>', 'muted')
-        credit.setTextFormat(Qt.TextFormat.RichText); credit.setOpenExternalLinks(True)
+        credit.setTextFormat(Qt.TextFormat.RichText); credit.setOpenExternalLinks(False)
+        credit.linkActivated.connect(lambda url:self.pet.open_external(QUrl(url),self))
         credit.setToolTip('Dati meteo: Open-Meteo · CC BY 4.0. Posizione approssimativa: ipwho.is.')
         weather_row.addWidget(credit)
         _,updates=card(layout)
@@ -285,7 +288,7 @@ class Panel(QDialog):
         _,data=card(layout)
         data.addWidget(plain_label('Dati e strumenti','section'))
         row=QHBoxLayout(); row.setSpacing(12); button('Backup…',self.backup,row,glyph='export')
-        button('Cartella dati',lambda:QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.pet.store.root))),row,glyph='folder')
+        button('Cartella dati',lambda:self.pet.open_external(QUrl.fromLocalFile(str(self.pet.store.root)),self),row,glyph='folder')
         row.addStretch(); data.addLayout(row)
         row=QHBoxLayout(); row.setSpacing(12); button('Scorciatoie',self.show_shortcuts,row,glyph='help'); row.addStretch(); data.addLayout(row)
         self.hotkey_status=plain_label(self.pet.hotkey_status,'alert')
@@ -293,7 +296,13 @@ class Panel(QDialog):
         layout.addStretch(); self.tabs.addTab(scroll_page(tab),'Impostazioni')
 
     def show_shortcuts(self):
-        Messages.information(self,'Scorciatoie',shortcut_help())
+        from yun_jin_hotkeys import ShortcutDialog
+        dialog=ShortcutDialog(self.pet,self)
+        try: exec_dialog(dialog,self.pet)
+        finally:
+            dialog.deleteLater()
+            self.hotkey_status.setText(self.pet.hotkey_status)
+            self.hotkey_status.setVisible(bool(self.pet.hotkeys.errors))
 
     def sync_mac_overlay(self):
         if not hasattr(self,'mac_fullscreen'):
@@ -544,8 +553,7 @@ class Panel(QDialog):
     def open_material(self):
         path=self.resolved_path()
         if path and path.exists():
-            if not QDesktopServices.openUrl(QUrl.fromLocalFile(str(path))):
-                Messages.warning(self,'Impossibile aprire','Nessuna applicazione per questo file.')
+            self.pet.open_external(QUrl.fromLocalFile(str(path)),self)
         else:
             Messages.information(self,'Materiale non trovato','Il file è stato spostato o eliminato.')
 
@@ -590,7 +598,7 @@ class Panel(QDialog):
         if material:
             prompt+='\n\nMateriale a cui mi riferisco: '+material.name+' (da allegare a questa conversazione).'
         QApplication.clipboard().setText(prompt.strip())
-        QDesktopServices.openUrl(QUrl('https://chatgpt.com/'))
+        self.pet.open_external(QUrl('https://chatgpt.com/'),self)
         self.status.setText('Incolla in ChatGPT.'+(' Allega anche il file.' if material else ''))
 
     def selected_reminder(self):

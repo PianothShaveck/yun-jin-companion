@@ -11,7 +11,7 @@ import threading
 import time
 import uuid
 from PyQt6.QtCore import QObject, QTimer, Qt, QUrl, pyqtSignal
-from PyQt6.QtGui import QDesktopServices, QTextDocument
+from PyQt6.QtGui import QTextDocument
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser,
                             QPushButton, QProgressBar, QMessageBox, QApplication)
 from yun_jin_platform import VERSION
@@ -49,7 +49,7 @@ class UpdateDialog(QDialog):
         self.status = QLabel(); self.status.setTextFormat(Qt.TextFormat.PlainText)
         self.status.setWordWrap(True); layout.addWidget(self.status)
         row = QHBoxLayout(); self.web = QPushButton('Apri release su GitHub')
-        self.web.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(self.manager.release['url'])))
+        self.web.clicked.connect(lambda:self.open_link(QUrl(self.manager.release['url'])))
         row.addWidget(self.web); row.addStretch()
         self.later = QPushButton('Più tardi'); self.later.clicked.connect(self.close); row.addWidget(self.later)
         self.skip = QPushButton('Salta questa versione'); self.skip.clicked.connect(manager.skip_version)
@@ -59,7 +59,7 @@ class UpdateDialog(QDialog):
 
     def open_link(self, url):
         if url.scheme() == 'https' and not url.userName() and not url.password():
-            QDesktopServices.openUrl(url)
+            self.manager.pet.open_external(url,self)
 
     def refresh(self):
         release = self.manager.release

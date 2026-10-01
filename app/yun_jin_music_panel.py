@@ -99,10 +99,12 @@ class MusicPanel(QWidget):
         else:
             self.clock_timer.stop()
 
-    def start_metro(self):
-        c=MetroConfig(self.bpm.value(),self.accent.value() if self.accent_on.isChecked() else 0,
+    def current_config(self):
+        return MetroConfig(self.bpm.value(),self.accent.value() if self.accent_on.isChecked() else 0,
             self.ramp.isChecked(),self.target.value(),self.step.value(),self.every.value(),self.unit.currentData(),self.finish.currentData())
-        self.pet.speech.stop(announce=False); self.metro.start(c)
+
+    def start_metro(self):
+        return self.pet.start_metronome(self.current_config())
 
     def preview_beats(self,*_):
         if not self.metro.running:self.beats.set_beat(-1,self.accent.value() if self.accent_on.isChecked() else 0)
@@ -134,10 +136,10 @@ class MusicPanel(QWidget):
             if elapsed>0:self.bpm.setValue(round(60*(len(self.tap_times)-1)/elapsed))
 
     def start_watch(self):
-        self.watch.start(); self.pet.queue_feedback('chronometer','review')
+        self.pet.start_stopwatch()
 
     def lap_watch(self):
-        if self.watch.lap() is not None:self.pet.queue_feedback('chronometer','wave')
+        self.pet.lap_stopwatch()
 
     def refresh_clock(self):self.clock.setText(format_elapsed(self.watch.elapsed()))
 

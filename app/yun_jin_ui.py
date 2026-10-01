@@ -38,20 +38,20 @@ QPushButton[role="nav"] { text-align: left; background: transparent;
 QPushButton[role="nav"]:hover { background: #312c40; }
 QPushButton[role="nav"]:checked { background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
     stop:0 #514064, stop:1 #39394e); border-color: #635571; color: #ffffff; }
-QLineEdit, QTextEdit, QListWidget, QTreeWidget, QDateTimeEdit, QSpinBox, QComboBox {
+QLineEdit, QTextEdit, QListWidget, QTreeWidget, QDateTimeEdit, QSpinBox, QDoubleSpinBox, QKeySequenceEdit, QComboBox {
     background: #211f2e; border: 1px solid #4b435a; border-radius: 7px;
     padding: 7px; selection-background-color: #68547d; selection-color: #ffffff; }
-QLineEdit:focus, QTextEdit:focus, QDateTimeEdit:focus, QSpinBox:focus, QComboBox:focus {
+QLineEdit:focus, QTextEdit:focus, QDateTimeEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QKeySequenceEdit:focus, QComboBox:focus {
     border-color: #a99ac1; }
-QLineEdit:disabled, QSpinBox:disabled, QComboBox:disabled { color: #8e849c; border-color: #3e394c; }
+QLineEdit:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled, QComboBox:disabled { color: #8e849c; border-color: #3e394c; }
 QSpinBox#tempo { background: transparent; border: none; font-size: 42px; font-weight: 300; }
 QComboBox { padding-right: 24px; }
 QComboBox::drop-down { width: 24px; border: none; }
 QComboBox::down-arrow, QDateTimeEdit::down-arrow { image: url("ASSET_DIR/chevron-down.svg"); width: 14px; height: 14px; }
-QSpinBox::up-button, QDateTimeEdit::up-button { subcontrol-origin: border; subcontrol-position: top right; width: 19px; border: none; }
-QSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; width: 19px; border: none; }
-QSpinBox::up-arrow, QDateTimeEdit::up-arrow { image: url("ASSET_DIR/chevron-up.svg"); width: 11px; height: 11px; }
-QSpinBox::down-arrow { image: url("ASSET_DIR/chevron-down.svg"); width: 11px; height: 11px; }
+QSpinBox::up-button, QDoubleSpinBox::up-button, QDateTimeEdit::up-button { subcontrol-origin: border; subcontrol-position: top right; width: 19px; border: none; }
+QSpinBox::down-button, QDoubleSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; width: 19px; border: none; }
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow, QDateTimeEdit::up-arrow { image: url("ASSET_DIR/chevron-up.svg"); width: 11px; height: 11px; }
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow { image: url("ASSET_DIR/chevron-down.svg"); width: 11px; height: 11px; }
 QDateTimeEdit::drop-down { width: 26px; border: none; }
 QToolButton::menu-indicator { image: url("ASSET_DIR/chevron-down.svg"); width: 11px; height: 11px;
     subcontrol-origin: padding; subcontrol-position: center right; right: 5px; }
@@ -91,6 +91,10 @@ QMenu::item:disabled { color: #84788f; }
 QMenu::separator { height: 1px; background: #4e435b; margin: 5px 9px; }
 QToolTip { color: #eee7f3; background: #342c44; border: 1px solid #887495; padding: 5px; }
 QTabWidget::pane { border: none; }
+QTabBar::tab { background: #2c283b; color: #bfb6cd; border: 1px solid #4b435a;
+    border-radius: 7px; padding: 8px 22px; margin-right: 8px; }
+QTabBar::tab:selected { background: #534263; color: #ffffff; border-color: #9b85ac; }
+QTabBar::tab:hover:!selected { background: #3b334a; color: #edeaf4; }
 '''.replace('ASSET_DIR',(Path(__file__).parent/'assets'/'ui').as_posix())
 
 
@@ -129,6 +133,10 @@ def icon(name, color='#c8bfd7'):
     elif name=='help':
         p.drawEllipse(QRectF(3,3,18,18));path=QPainterPath(QPointF(9,9))
         path.cubicTo(9,4,18,7,13,11);path.quadTo(12,12,12,14);p.drawPath(path);line(12,17,12,17.2)
+    elif name=='cards':
+        p.drawRoundedRect(QRectF(6,6,15,16),2,2);poly([(16,3),(3,3),(3,17)]);line(10,11,17,11);line(10,15,15,15)
+    elif name in ('left','right'):
+        poly([(14,6),(8,12),(14,18)] if name=='left' else [(9,6),(15,12),(9,18)])
     elif name=='folder': poly([(3,7),(10,7),(12,9),(21,9),(20,20),(3,20),(3,7)])
     elif name=='copy':
         p.drawRoundedRect(QRectF(8,7,12,14),2,2);poly([(15,4),(4,4),(4,17)])

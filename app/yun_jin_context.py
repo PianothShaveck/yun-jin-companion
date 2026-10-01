@@ -154,6 +154,8 @@ class Context(QObject):
                     and not p.menu_open and p.drag_anchor is None and not p.following and p.mode != 'asleep'
                     and not p.is_sleeping() and not p.metronome.running and not p.focus_active()
                     and not p.due_count and not p.pending_feedback and not p.reminder_dialog
+                    and not (getattr(p,'study_tools',None) and p.study_tools.active_dialog and p.study_tools.active_dialog.isVisible())
+                    and not (getattr(p,'study_tools',None) and p.study_tools.prompt and p.study_tools.prompt.isVisible())
                     and not (p.panel and p.panel.isVisible()) and QApplication.activeModalWidget() is None and QApplication.activePopupWidget() is None
                     and (ignore_speech or not p.speech.busy))
 

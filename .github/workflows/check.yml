@@ -31,6 +31,10 @@ jobs:
       - run: python tests/test_speech_bubbles.py
       - run: python tests/test_animation_menu.py
       - run: python tests/test_resource_usage.py
+      - run: python tests/test_srs.py
+      - run: python tests/test_study_ui.py
+      - run: python tests/test_anki_reader.py
+      - run: python tests/test_hotkeys.py
       - run: python tests/test_updater.py
       - run: python tests/test_windows_encoding.py
       - run: python tests/test_windows_identity.py

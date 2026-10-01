@@ -129,7 +129,7 @@ class Messages:
                        QMessageBox.StandardButton.No)
 
 
-def choose_files(owner, title, mode='files', filename='', name_filter=''):
+def choose_files(owner, title, mode='files', filename='', name_filter='', directory=''):
     parent = owner_window(owner)
     pet = companion(owner)
     dialog = QFileDialog(parent)
@@ -137,6 +137,7 @@ def choose_files(owner, title, mode='files', filename='', name_filter=''):
     if sys.platform == 'darwin':
         dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
     dialog.setWindowTitle(title); dialog.setStyleSheet(STYLE)
+    if directory:dialog.setDirectory(str(directory))
     if name_filter:
         dialog.setNameFilter(name_filter)
     if mode == 'folder':
@@ -151,6 +152,7 @@ def choose_files(owner, title, mode='files', filename='', name_filter=''):
         dialog.selectFile(filename)
     else:
         dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
+        if filename:dialog.selectFile(filename)
     try:
         while exec_dialog(dialog, pet) == QDialog.DialogCode.Accepted:
             paths = dialog.selectedFiles()

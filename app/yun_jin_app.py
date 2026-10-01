@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.2.1: desktop companion and practice tools."""
+"""Yun Jin Companion 1.3.0: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -19,8 +19,9 @@ from yun_jin_panel import Panel, ReminderDialog, STYLE, plain_label, button
 from yun_jin_ui import icon_button, icon
 from yun_jin_speech import Speech
 from yun_jin_platform import action_label, shortcut_help, mac_dock_icon
-from yun_jin_music import Metronome, Stopwatch
+from yun_jin_music import Metronome, Stopwatch, format_elapsed
 from yun_jin_windows import set_process_identity, install_taskbar_icons
+from yun_jin_hotkeys import Hotkeys
 
 
 class Sounds(QObject):
@@ -70,48 +71,6 @@ class Sounds(QObject):
         effect.setVolume(self.volume)
         effect.play()
         self.last_play=now
-
-
-class Hotkeys(QAbstractNativeEventFilter):
-    def __init__(self, pet):
-        super().__init__()
-        self.pet = pet
-        self.registered = []
-        self.actions={0x5911:pet.open_panel,0x5912:pet.new_reminder,0x5913:pet.read_clipboard,0x5914:pet.stop_speech}
-        self.user32=None
-        if sys.platform!='win32':
-            pet.hotkey_status='Apri il pannello con un doppio clic su Yun Jin; usa il menu con clic destro.'
-            return
-        from ctypes import wintypes
-        self.MSG=wintypes.MSG
-        self.user32=ctypes.WinDLL('user32',use_last_error=True)
-        self.user32.RegisterHotKey.argtypes=[wintypes.HWND,ctypes.c_int,wintypes.UINT,wintypes.UINT]
-        self.user32.RegisterHotKey.restype=wintypes.BOOL
-        self.user32.UnregisterHotKey.argtypes=[wintypes.HWND,ctypes.c_int]
-        self.user32.UnregisterHotKey.restype=wintypes.BOOL
-        failures=[]
-        for ident,vk,label in [(0x5911,ord('J'),'Ctrl+Alt+J'),(0x5912,ord('R'),'Ctrl+Alt+R'),(0x5913,ord('L'),'Ctrl+Alt+L'),(0x5914,ord('S'),'Ctrl+Alt+S')]:
-            if self.user32.RegisterHotKey(None,ident,0x0001|0x0002|0x4000,vk):
-                self.registered.append(ident)
-            else:
-                failures.append(label)
-        QApplication.instance().installNativeEventFilter(self)
-        pet.hotkey_status=('Non disponibili (forse già in uso): '+', '.join(failures)) if failures else 'Scorciatoie globali attive.'
-
-    def nativeEventFilter(self, event_type, message):
-        if self.user32 is not None and bytes(event_type) in (b'windows_generic_MSG',b'windows_dispatcher_MSG'):
-            msg=self.MSG.from_address(int(message))
-            if msg.message==0x0312 and int(msg.wParam) in self.registered:
-                QTimer.singleShot(0,self.actions[int(msg.wParam)])
-                return True,0
-        return False,0
-
-    def close(self):
-        if self.user32:
-            for ident in self.registered:
-                self.user32.UnregisterHotKey(None,ident)
-            QApplication.instance().removeNativeEventFilter(self)
-            self.registered.clear()
 
 
 class ReminderCard(QDialog):
@@ -186,8 +145,11 @@ class Companion(YunJinPet):
         self.sound=Sounds(self)
         from yun_jin_bubble import SpeechBubble
         self.bubble=SpeechBubble(self)
+        self.speech_caption=''
+        self.shortcut_timer=QTimer(self);self.shortcut_timer.setSingleShot(True)
+        self.shortcut_timer.setInterval(3000);self.shortcut_timer.timeout.connect(self.clear_shortcut_feedback)
         self.speech=Speech(self)
-        self.speech.caption_changed.connect(self.bubble.present)
+        self.speech.caption_changed.connect(self.show_caption)
         self.speech.active_changed.connect(self.voice_animation)
         self.speech.status_changed.connect(self.speech_status_animation)
         self.metronome=Metronome(self)
@@ -217,6 +179,8 @@ class Companion(YunJinPet):
         self.updates=Updates(self)
         from yun_jin_context import Context
         self.context=Context(self)
+        from yun_jin_study import StudyTools
+        self.study_tools=StudyTools(self)
 
     def tray_activated(self, reason):
         if reason in (QSystemTrayIcon.ActivationReason.Trigger,QSystemTrayIcon.ActivationReason.DoubleClick):
@@ -237,6 +201,7 @@ class Companion(YunJinPet):
         return bool(row and row['status']=='pending' and row['due']>time.time())
 
     def start_focus(self,minutes=25):
+        if getattr(self,"study_tools",None): self.study_tools.hide_prompt()
         minutes=max(1,min(180,int(minutes)))
         self.store.set_preference('focus_minutes',minutes)
         previous=self.focus_row()
@@ -261,6 +226,39 @@ class Companion(YunJinPet):
         self.refresh_reminders()
         if self.panel:
             self.panel.refresh_focus()
+
+    def toggle_focus(self):
+        if self.focus_active():self.stop_focus()
+        else:self.start_focus(self.panel.focus_minutes.value() if self.panel else self.store.preference('focus_minutes',25))
+
+    def start_stopwatch(self):
+        if not self.stopwatch.running:
+            self.stopwatch.start();self.queue_feedback('chronometer','review')
+
+    def toggle_stopwatch(self):
+        if self.stopwatch.running:self.stopwatch.pause()
+        else:self.start_stopwatch()
+
+    def lap_stopwatch(self):
+        if self.stopwatch.lap() is not None:self.queue_feedback('chronometer','wave')
+
+    def start_metronome(self,config=None):
+        if config is None:
+            config=self.panel.music.current_config() if self.panel else self.metronome.settings()
+        self.speech.stop(announce=False)
+        try:
+            if self.metronome.start(config):return True
+        except (ImportError,OSError,RuntimeError,ValueError):
+            logging.exception('Metronome start')
+            self.metronome.stop(announce=False)
+            self.metronome.status='Audio non disponibile. Controlla l’uscita audio.'
+            self.metronome.changed.emit()
+        self.open_panel(tab=5,subtab=0)
+        return False
+
+    def toggle_metronome(self):
+        if self.metronome.running:self.metronome.stop()
+        else:self.start_metronome()
 
     def decide(self,now):
         if self.focus_active() or (self.metronome and self.metronome.running):
@@ -304,7 +302,51 @@ class Companion(YunJinPet):
             self.play(self.event_animation('conducting','work'))
 
     def open_guide(self):
-        QDesktopServices.openUrl(QUrl.fromLocalFile(str(BASE.parent/'Guida.pdf')))
+        self.open_external(QUrl.fromLocalFile(str(BASE.parent/'Guida.pdf')))
+
+    def open_external(self,url,owner=None):
+        """Save the editor, then yield the foreground to the requested app."""
+        try:
+            if self.panel:self.panel.save_note()
+        except Exception as exc:
+            Messages.warning(owner or self,'Appunto non salvato',str(exc))
+            return False
+        if not QDesktopServices.openUrl(url):
+            Messages.warning(owner or self,'Impossibile aprire','Non riesco ad aprire questo elemento.')
+            return False
+        if owner is not None and owner is not self and owner is not self.panel:
+            owner.hide()
+        if self.panel and self.panel.isVisible():
+            self.panel.hide();self.panel_closed()
+        return True
+
+    def show_caption(self,text):
+        self.speech_caption=text
+        if not self.shortcut_timer.isActive():self.bubble.present(text)
+
+    def clear_shortcut_feedback(self):
+        self.shortcut_timer.stop()
+        self.bubble.present(self.speech_caption)
+
+    def shortcut_feedback(self,action):
+        if self.closing or (self.panel and self.panel.isVisible() and not self.panel.isMinimized()):return
+        if action=='stopwatch_toggle':
+            if self.stopwatch.running:
+                text='Cronometro ripreso' if self.stopwatch.accumulated else 'Cronometro avviato'
+            else:text='Cronometro in pausa · '+format_elapsed(self.stopwatch.elapsed())
+        elif action=='stopwatch_lap':
+            text=(f'Parziale {len(self.stopwatch.laps)} · '+format_elapsed(self.stopwatch.laps[-1]['split'])
+                  if self.stopwatch.running and self.stopwatch.laps else 'Avvia il cronometro per registrare un parziale.')
+        elif action=='stopwatch_reset':text='Cronometro azzerato'
+        elif action=='metronome_toggle':text='Metronomo avviato' if self.metronome.running else 'Metronomo fermato'
+        elif action=='focus_toggle':
+            text=f'Focus · {self.store.preference("focus_minutes",25)} min' if self.focus_active() else 'Focus interrotto'
+        elif action=='pet_pause':text='Yun Jin in pausa' if self.paused else 'Yun Jin riprende'
+        elif action=='quiet':text='Silenzio per un’ora' if time.time()<self.sound.quiet_until else 'Silenzio disattivato'
+        elif action=='stop':text='Voce interrotta'
+        else:return
+        self.shortcut_timer.start()
+        self.bubble.present(text)
 
     def music_animation(self,active):
         if active and self.speech.category == 'ambient':
@@ -402,12 +444,16 @@ class Companion(YunJinPet):
             self.sound.play('hello')
 
     def open_panel(self, checked=False, tab=0, subtab=None):
+        self.clear_shortcut_feedback()
         if self.panel is None:
             self.panel=Panel(self)
         # Opening a tool must not change the user's explicit pause setting.
         self.panel.show_page(tab,subtab)
         self.panel.refresh_reminders()
         show_dialog(self.panel, self)
+
+    def new_note(self):
+        self.open_panel();self.panel.new_note()
 
     def focus_tool(self, widget):
         if self.mac_overlay and self.mac_overlay.enabled:
@@ -624,21 +670,28 @@ class Companion(YunJinPet):
         if self.panel:
             self.panel.status.setText('Suoni sospesi per un’ora.')
 
+    def toggle_quiet(self):
+        if time.time()<self.sound.quiet_until:
+            self.sound.quiet_until=0.
+            if self.panel:self.panel.status.clear()
+        else:self.quiet_hour()
+
     def add_companion_menu(self,menu):
-        menu.addAction(action_label('Pannello…','J'),self.open_panel)
+        menu.addAction(self.hotkeys.label('Pannello…','panel'),self.open_panel)
         tools=menu.addMenu('Strumenti')
         tools.addAction('Appunti…',self.open_panel)
-        tools.addAction('Importa appunti copiati',self.capture_clipboard)
+        tools.addAction(self.hotkeys.label('Importa appunti copiati','capture'),self.capture_clipboard)
         tools.addSeparator()
-        tools.addAction(action_label('Nuovo promemoria…','R'),self.new_reminder)
+        tools.addAction(self.hotkeys.label('Nuovo promemoria…','reminder'),self.new_reminder)
         tools.addAction('Promemoria…',lambda:self.open_panel(tab=1))
         tools.addSeparator()
-        tools.addAction('Focus…',lambda:self.open_panel(tab=4))
-        tools.addAction('Metronomo…',lambda:self.open_panel(tab=5,subtab=0))
-        tools.addAction('Cronometro…',lambda:self.open_panel(tab=5,subtab=1))
+        tools.addAction(self.hotkeys.label('Studio…','study'),lambda:self.open_panel(tab=6))
+        tools.addAction(self.hotkeys.label('Focus…','focus_open'),lambda:self.open_panel(tab=4))
+        tools.addAction(self.hotkeys.label('Metronomo…','metronome_open'),lambda:self.open_panel(tab=5,subtab=0))
+        tools.addAction(self.hotkeys.label('Cronometro…','stopwatch_open'),lambda:self.open_panel(tab=5,subtab=1))
         voice=menu.addMenu('Voce')
-        voice.addAction(action_label('Leggi testo copiato','L'),self.read_clipboard)
-        voice.addAction(action_label('Interrompi','S'),self.stop_speech)
+        voice.addAction(self.hotkeys.label('Leggi testo copiato','read'),self.read_clipboard)
+        voice.addAction(self.hotkeys.label('Interrompi','stop'),self.stop_speech)
         voice.addSeparator()
         voice.addAction('Impostazioni voce…',lambda:self.open_panel(tab=3))
         if self.sound and time.time()<self.sound.quiet_until:
@@ -660,6 +713,8 @@ class Companion(YunJinPet):
                 event.ignore()
                 return
         self.closing=True
+        self.shortcut_timer.stop()
+        if getattr(self,"study_tools",None):self.study_tools.shutdown()
         if self.context:
             self.context.shutdown()
         if self.updates:

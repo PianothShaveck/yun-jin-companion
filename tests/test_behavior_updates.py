@@ -13,6 +13,7 @@ from yun_jin_app import Sounds, Companion
 from yun_jin_data import Store
 from yun_jin_updates_ui import Updates, UpdateDialog
 app=QApplication.instance() or QApplication([])
+app.setQuitOnLastWindowClosed(False)
 
 class BehaviorTests(unittest.TestCase):
  def setUp(self):

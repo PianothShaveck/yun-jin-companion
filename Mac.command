@@ -7,7 +7,7 @@ if [ "$(sw_vers -productVersion | cut -d. -f1)" -lt 13 ]; then
 fi
 find_python() {
     for candidate in /Library/Frameworks/Python.framework/Versions/3.13/bin/python3 /opt/homebrew/bin/python3 /usr/local/bin/python3 /Library/Frameworks/Python.framework/Versions/3.14/bin/python3 /Library/Frameworks/Python.framework/Versions/3.12/bin/python3; do
-        if [ -x "$candidate" ] && "$candidate" -c 'import sys; sys.exit(0 if (3,10)<=sys.version_info[:2]<(3,15) and sys.maxsize>2**32 else 1)' 2>/dev/null; then
+        if [ -x "$candidate" ] && "$candidate" -c 'import sys; sys.exit(0 if (3,11)<=sys.version_info[:2]<(3,15) and sys.maxsize>2**32 else 1)' 2>/dev/null; then
             printf '%s\n' "$candidate"; return 0
         fi
     done

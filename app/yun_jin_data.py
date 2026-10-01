@@ -34,6 +34,8 @@ class Store:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('PRAGMA synchronous=FULL')
+        self.db.execute('PRAGMA foreign_keys=ON')
+        self._study = None
         self.db.executescript('''
             CREATE TABLE IF NOT EXISTS notes (
                 id TEXT PRIMARY KEY, title TEXT NOT NULL, body TEXT NOT NULL,
@@ -45,6 +47,13 @@ class Store:
             CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY, value TEXT NOT NULL);
             CREATE INDEX IF NOT EXISTS reminder_due ON reminders(status,due);
         ''')
+
+    @property
+    def study(self):
+        if self._study is None:
+            from yun_jin_srs import StudyStore
+            self._study = StudyStore(self)
+        return self._study
 
     def preference(self, key, default):
         r = self.db.execute('SELECT value FROM preferences WHERE key=?', (key,)).fetchone()
@@ -143,6 +152,10 @@ class Store:
                 z.writestr('reminders.json', json.dumps(self.reminders(True), ensure_ascii=False, indent=2))
                 for image in sorted((self.root/'attachments').glob('*.png')):
                     z.write(image, 'attachments/' + image.name)
+                from yun_jin_srs import MEDIA
+                for media in sorted((self.root/'study-media').glob('*')):
+                    if MEDIA.fullmatch(media.name) and media.is_file() and not media.is_symlink():
+                        z.write(media, 'study-media/' + media.name)
             os.replace(stage, out)
         finally:
             tmp.unlink(missing_ok=True)

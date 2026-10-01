@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Platform-specific shortcuts and release information."""
 import sys
-VERSION = '1.2.1'
+VERSION = '1.3.0'
 
 def shortcut(key):
     return ('Ctrl+Alt+'+key.upper()) if sys.platform=='win32' else ''
@@ -11,11 +11,7 @@ def action_label(text,key):
     return text+(' · '+value if value else '')
 
 def shortcut_help():
-    if sys.platform=='win32':
-        return 'Ctrl+Alt+J: taccuino · Ctrl+Alt+R: promemoria\nCtrl+Alt+L: leggi testo copiato · Ctrl+Alt+S: interrompi voce'
-    if sys.platform=='darwin':
-        return 'Doppio clic su Yun Jin: pannello · Ctrl-clic o clic destro: menu'
-    return 'Doppio clic su Yun Jin: pannello · Clic destro: menu'
+    return 'Doppio clic su Yun Jin: pannello · Clic destro: menu\nPersonalizza i tasti in Impostazioni → Scorciatoie.'
 
 
 def mac_dock_icon(path):
