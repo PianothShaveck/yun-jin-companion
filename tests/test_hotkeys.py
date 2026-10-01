@@ -122,7 +122,7 @@ class HotkeyTests(unittest.TestCase):
             self.assertTrue(backend.register(23456,'Ctrl+Meta+Shift+F19'))
             self.assertIn(23456,backend.registered)
             self.assertIsInstance(backend.keycode(ord('J')),int)
-            self.assertIsInstance(backend.system_shortcuts(),set())
+            self.assertIsInstance(backend.system_shortcuts(),set)
             # Dispatch real Carbon events through the installed native handler.
             events=[];backend.callback=events.append;c=backend.carbon;p=ctypes.c_void_p;u=ctypes.c_uint32
             c.CreateEvent.argtypes=[p,u,u,ctypes.c_double,u,ctypes.POINTER(p)];c.CreateEvent.restype=ctypes.c_int32

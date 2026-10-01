@@ -7,6 +7,7 @@ import sys
 import time
 import uuid
 import zipfile
+from contextlib import closing
 from pathlib import Path
 
 
@@ -144,7 +145,8 @@ class Store:
         out = Path(destination)
         stage = out.with_name(out.name + '.part')
         try:
-            with sqlite3.connect(str(tmp)) as target:
+            # A connection's own context manager ends a transaction, not its lifetime.
+            with closing(sqlite3.connect(str(tmp))) as target:
                 self.db.backup(target)
             with zipfile.ZipFile(stage, 'w', zipfile.ZIP_DEFLATED) as z:
                 z.write(tmp, 'companion.sqlite3')

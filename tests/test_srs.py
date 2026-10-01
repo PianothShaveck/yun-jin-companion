@@ -1,5 +1,6 @@
 """SQLite/FSRS integration: real histories, limits, migration, media and recovery."""
 import io,json,math,os,random,sqlite3,sys,tempfile,time,unittest,zipfile
+from contextlib import closing,ExitStack
 from datetime import datetime,timezone,timedelta
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'app'))
@@ -133,8 +134,37 @@ class SrsTests(unittest.TestCase):
         with zipfile.ZipFile(backup) as archive:
             self.assertIn('study-media/'+media,archive.namelist());raw=archive.read('companion.sqlite3')
         snapshot=Path(self.tmp.name)/'snapshot.sqlite3';snapshot.write_bytes(raw)
-        with sqlite3.connect(snapshot) as db:self.assertEqual(db.execute('SELECT reps FROM sr_cards WHERE id=?',(cid,)).fetchone()[0],1)
+        with closing(sqlite3.connect(snapshot)) as db:self.assertEqual(db.execute('SELECT reps FROM sr_cards WHERE id=?',(cid,)).fetchone()[0],1)
         with self.assertRaises(ValueError):self.s.media_path('../../other')
+
+    def test_backup_closes_snapshot_and_cleans_up_on_success_and_failure(self):
+        from unittest.mock import Mock,patch
+        connect=sqlite3.connect;destination=self.store.root/'backup.zip'
+        for failure in (None,'snapshot','archive'):
+            with self.subTest(failure=failure):
+                destination.write_bytes(b'previous backup');targets=[]
+                def tracked_connect(*args,**kwargs):
+                    target=connect(*args,**kwargs);targets.append(target)
+                    self.addCleanup(target.close)
+                    return target
+                with ExitStack() as stack:
+                    stack.enter_context(patch('yun_jin_data.sqlite3.connect',side_effect=tracked_connect))
+                    if failure=='snapshot':
+                        stack.enter_context(patch.object(self.store,'db',Mock(backup=Mock(side_effect=OSError('snapshot failed')))))
+                    elif failure=='archive':
+                        stack.enter_context(patch.object(zipfile.ZipFile,'write',side_effect=OSError('archive failed')))
+                    if failure:
+                        with self.assertRaisesRegex(OSError,failure+' failed'):
+                            self.store.export_backup(destination)
+                        self.assertEqual(destination.read_bytes(),b'previous backup')
+                    else:
+                        self.store.export_backup(destination)
+                        self.assertTrue(zipfile.is_zipfile(destination))
+                self.assertEqual(len(targets),1)
+                for target in targets:
+                    with self.assertRaises(sqlite3.ProgrammingError):target.execute('SELECT 1')
+                self.assertEqual(list(self.store.root.glob('backup-*.sqlite3*')),[])
+                self.assertFalse(destination.with_suffix('.zip.part').exists())
 
     def test_optimizer_keeps_defaults_with_insufficient_history(self):
         from yun_jin_srs_worker import optimize
