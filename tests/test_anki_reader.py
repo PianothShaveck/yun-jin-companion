@@ -193,9 +193,14 @@ class AnkiTests(unittest.TestCase):
 
     def test_concurrent_anki_writes_are_retried_or_rejected(self):
         self.exclusive();changes=[]
+        # read_candidates resolves aliases before copying. Exercise that on
+        # every platform, rather than depending on the runner's temp location.
+        alias=self.path.parent/'alias';alias.mkdir()
+        self.path=alias/'..'/self.path.name
+        source_path=self.path.resolve()
         def changing_copy(source,destination,deadline):
             copy_bounded(source,destination,deadline)
-            if source==self.path:
+            if source==source_path:
                 changes.append(1)
                 self.db.execute('UPDATE notes SET flds=? WHERE id=1',(f'変更{len(changes)}\x1fNuovo',));self.db.commit()
         with patch('yun_jin_anki.copy_bounded',side_effect=changing_copy):

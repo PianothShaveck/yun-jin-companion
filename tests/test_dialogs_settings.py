@@ -305,18 +305,25 @@ class DialogSettingsTests(unittest.TestCase):
     def test_guide_data_folder_and_attachments_save_notes_and_hide_panel_on_success(self):
         path=Path(self.tmp.name)/'materiale.txt';path.write_text('materiale')
         folder=next(b for b in self.panel.findChildren(QPushButton) if b.text()=='Cartella dati')
-        for action,expected in [(self.pet.open_guide,'Guida.pdf'),(folder.click,str(self.store.root)),
-                                (self.panel.open_material,str(path))]:
+        guide=Path(__file__).resolve().parents[1]/'Guida.pdf'
+        for action,expected in [(self.pet.open_guide,guide),(folder.click,self.store.root),
+                                (self.panel.open_material,path)]:
             with self.subTest(target=expected):
                 self.pet.open_panel();self.panel.note_path=str(path)
-                self.panel.body.setPlainText('Da conservare: '+expected)
+                text='Da conservare: '+str(expected)
+                self.panel.body.setPlainText(text);opened=[]
                 def launch(url):
-                    self.assertFalse(self.panel.dirty)
-                    self.assertEqual(self.store.note(self.panel.note_id)['body'],'Da conservare: '+expected)
-                    self.assertTrue(url.toLocalFile().endswith(expected));return True
+                    # Qt may terminate the process for an assertion escaping a
+                    # clicked slot. Capture state here; assert after it returns.
+                    opened.append((url.toLocalFile(),self.panel.dirty,self.store.note(self.panel.note_id)))
+                    return True
                 with patch('yun_jin_app.QDesktopServices.openUrl',side_effect=launch),patch.object(self.pet,'panel_closed') as closed:
                     action();self.assertFalse(self.panel.isVisible());closed.assert_called_once()
-                self.pet.open_panel();self.assertEqual(self.panel.body.toPlainText(),'Da conservare: '+expected)
+                self.assertEqual(len(opened),1)
+                target,dirty,note=opened[0]
+                self.assertEqual(Path(target).resolve(),expected.resolve())
+                self.assertFalse(dirty);self.assertIsNotNone(note);self.assertEqual(note['body'],text)
+                self.pet.open_panel();self.assertEqual(self.panel.body.toPlainText(),text)
 
     def test_failed_external_launch_or_save_keeps_the_editor_visible(self):
         self.panel.body.setPlainText('Non perdere questo testo')
