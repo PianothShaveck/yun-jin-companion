@@ -150,7 +150,8 @@ class Context(QObject):
     def can_react(self, ignore_speech=False, serial=None):
         p = self.pet
         allowed_state = p.state == 'idle' or (serial is not None and p.state == 'action' and serial == p.action_serial)
-        return bool(not self.closed and not p.closing and allowed_state and not p.paused and not p.locked
+        return bool(not self.closed and not p.closing and allowed_state
+                    and (serial is None or serial == p.action_serial) and not p.paused and not p.locked
                     and not p.menu_open and p.drag_anchor is None and not p.following and p.mode != 'asleep'
                     and not p.is_sleeping() and not p.metronome.running and not p.focus_active()
                     and not p.due_count and not p.pending_feedback and not p.reminder_dialog
@@ -177,13 +178,25 @@ class Context(QObject):
             animation, fallback = WEATHER_REACTIONS[value]
             text = contextual_line(WEATHER_LINES, value, language)
             self.pet.store.set_preference('context_weather_reaction', {'kind': value, 'at': self.wall()})
-        # The greeting can be spoken independently of the time-animation switch.
-        if kind != 'greeting' or self.enabled['time']:
-            if not self.pet.use_extra_animations or animation not in ANIMATIONS: animation = fallback
-            self.pet.sequence([(animation, 1)])
-        if text:
-            self.pet.speech.speak(text, category='ambient',
-                                  tag={'kind': kind, 'serial': self.pet.action_serial})
+        tag = {'kind': kind, 'serial': self.pet.action_serial,
+               'animation': (animation, fallback)}
+        # Prepare the voice first: a short gesture can finish before TTS is ready.
+        if text and self.pet.speech.speak(text, category='ambient', tag=tag):
+            return
+        self.play_speech_animation(tag)
+
+    def play_speech_animation(self, tag):
+        """One gesture at playback start, or silently if speech is unavailable."""
+        animation = tag.pop('animation', None)
+        kind = tag.get('kind')
+        if (not animation or not self.enabled.get(kind, False)
+                or (kind == 'greeting' and not self.enabled['time'])
+                or not self.can_react(ignore_speech=True, serial=tag.get('serial'))):
+            return
+        name, fallback = animation
+        if not self.pet.use_extra_animations or name not in ANIMATIONS: name = fallback
+        self.pet.sequence([(name, 1)])
+        tag['serial'] = self.pet.action_serial
 
     def valid_weather(self, result):
         return (isinstance(result, dict) and isinstance(result.get('kind'), str) and result['kind'] in WEATHER_REACTIONS

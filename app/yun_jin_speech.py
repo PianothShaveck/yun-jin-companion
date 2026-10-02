@@ -96,6 +96,11 @@ class Speech(QObject):
                     and int(self.pref('volume', 70)) > 0
                     and context.can_react(ignore_speech=True, serial=tag.get('serial')))
 
+    def animate_ambient(self):
+        context = getattr(self.pet, 'context', None)
+        if self.category == 'ambient' and self.current_tag and context:
+            context.play_speech_animation(self.current_tag)
+
     def speak(self,text,category='manual',tag=None,preview=False,language=None):
         if category == 'ambient':
             if self.busy or self.player is None or not self.ambient_allowed(tag):
@@ -165,6 +170,7 @@ class Speech(QObject):
         if error==QProcess.ProcessError.FailedToStart:
             self.timeout.stop()
             self.process=None
+            self.animate_ambient()
             self.busy=False
             process.deleteLater()
             self.report('Impossibile avviare il generatore vocale. Verifica il Python usato dal collegamento.')
@@ -199,6 +205,7 @@ class Speech(QObject):
             self.player.play()
             self.report('Lettura…')
         except Exception as exc:
+            self.animate_ambient()
             self.busy=False
             self.current_tag=None
             self.report('Voce non disponibile: '+str(exc)+' Riprova o cambia servizio.')
@@ -224,8 +231,12 @@ class Speech(QObject):
     def playback_state(self,state):
         from PyQt6.QtMultimedia import QMediaPlayer
         playing=state==QMediaPlayer.PlaybackState.PlayingState
+        if playing and self.busy and self.category == 'ambient' and not self.ambient_allowed():
+            self.stop(announce=False)
+            return
         self.caption_playing=playing and self.busy
         if self.caption_playing:
+            self.animate_ambient()
             self.update_caption()
         else:
             self.clear_caption()
@@ -242,12 +253,14 @@ class Speech(QObject):
 
     def playback_error(self,*args):
         if not self.closed:
+            self.animate_ambient()
             self.clear_caption()
             self.busy=False
             self.active_changed.emit(False)
             self.report('Errore nella riproduzione: '+self.player.errorString())
 
     def timed_out(self):
+        self.animate_ambient()
         self.stop(announce=False)
         self.report('Nessuna risposta. Riprova o cambia servizio.')
 

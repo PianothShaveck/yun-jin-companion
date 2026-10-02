@@ -1,6 +1,6 @@
 {
   "protocol": 1,
-  "version": "1.3.0",
+  "version": "1.3.1",
   "python_min": [
     3,
     11
@@ -18,7 +18,7 @@
     "fsrs-rs-python": "0.9.3"
   },
   "files": {
-    "Guida.pdf": "72b2c2ee0e2c284a7831e0e5eabccb9e1cce6d52c52d5b39be37da5d0a4e1c90",
+    "Guida.pdf": "b960458f24eb8f565a7a5614f170b3c3ff601adfe8473ed0add8a10bc461ed77",
     "Linux.sh": "b2f6d19c49e5967d6ba9764709db2e9954de888cf73e3338e957ef27306aaf4b",
     "Mac.command": "a6dba241af1164dc96304c5b05c45a529f670c7691f754c5ab5e89c4eb446ade",
     "Windows.cmd": "79430cd444f9a1be9cccde5f50d0f96150c1f1348d84be772d3fdf7e49fcbc0c",
@@ -85,10 +85,10 @@
     "app/licenses/WEATHER.md": "e4444ed3f561dde09ceda180af6203e326fa29f327c6d8d71015d272a56039c4",
     "app/spritesheet-yun-jin-v2.png": "4e481fafea5149a8198eeb8c6f4e32b1cf8d2fcf359bc86aaf1c1ef8f4d47351",
     "app/yun_jin_anki.py": "af366c8ad9014b471f15a76ca76c766e22f2345c69747ec9e198aa4c7bf7cbb7",
-    "app/yun_jin_app.py": "c610e35a3cb54cc8eb16b98466972198ef44050a1182cb4d55c59db3265fe46e",
+    "app/yun_jin_app.py": "23ba23536de2676a767fa908e597052906989009ba3325b1c8df96c6874a934f",
     "app/yun_jin_bubble.py": "ff731564e519901d19e31d659955dc6309c6b9d4e639d5de7a209e2d0867c00d",
-    "app/yun_jin_context.py": "828434968d2c15f667ab7dc184275334a4036c51b39d93c2e6919c81cb395223",
-    "app/yun_jin_core.py": "16b3c947bbd83b3afda7e539bcb86025fc4c757f2e6dffc874246c407d2538e5",
+    "app/yun_jin_context.py": "115756a892c73ffc2995c4605bfb7e5616eaaaabb632d79867edf1b851d2fd0b",
+    "app/yun_jin_core.py": "258be4b921cc1d41cd71257cda1e41b2da986193586a8aa6d27854b24c83487a",
     "app/yun_jin_data.py": "a83727148f97b956265786772615612c9ca518c0ea6efb3317099fbfceb61be3",
     "app/yun_jin_dialogs.py": "d9bcf2f0784697d330e5db85d1e8f51cfea02d1882dd48c2a52281dfcb5b43f9",
     "app/yun_jin_hotkeys.py": "27607558ec1748c13f69e9dfc921a5bf5f3670894ca793f3a1bdc422c67e3ab8",
@@ -97,8 +97,8 @@
     "app/yun_jin_music_panel.py": "5bd9386c3751ccb04690325bf5101b4cd7bfbf0d8baf0c88db0e911d6df8d7cd",
     "app/yun_jin_panel.py": "b8b03f234a0d218a1cd55ab764b08ca7b74d5f87e2230967ab264b17b642a903",
     "app/yun_jin_pet.py": "e1d2a9681726a4685200dd76b853e8a07e6d70e7f59c481a73a0ea9e245367b3",
-    "app/yun_jin_platform.py": "99625668d7b4839c1c0d1675d4e84050458bbeb8073418dd428d2f6d16c6c98e",
-    "app/yun_jin_speech.py": "f5b57c88b65c30318657566216de791635c0b2776cc7a1bee3a4d31fb447d369",
+    "app/yun_jin_platform.py": "867e9fb48ac52f46b659606980b5178947f171cfd7eb2f1aa868df73611efeb7",
+    "app/yun_jin_speech.py": "7ba2b56bba39928b2dbb1fb039257b06519f8da5131d8b132031c4fa0aa0ba77",
     "app/yun_jin_srs.py": "d5aafde165ebd861a5fb04968505d8eb3b4232a5f103a19ff310623c89a94e69",
     "app/yun_jin_srs_worker.py": "aa527148332924e94f8581db88176978d6aa97c38950cf1f717ea5d548080f9b",
     "app/yun_jin_study.py": "11e21c084b41be10f6d5ae67056ef412181ed196c54095a9f6fd959870c053c6",
@@ -112,7 +112,7 @@
     "app/yun_jin_weather.py": "f1d615729e8962c99140ba1dceb9a1526b04b19b3b796c49442267052537af73",
     "app/yun_jin_windows.py": "8af355688c6c5f0e506b985731146aad9876704d991f8b97f9ba92524e7d1af3",
     "installer/install-mac-bundle.sh": "478d4016acdb8351080b3fb601b258bffcaf46c177da0b93c9f01fdfdef70420",
-    "installer/install.py": "f5cb57004a62c1d5584489567753f8c95deccaf1531cb607078e76d73a88ba16",
+    "installer/install.py": "474170927cec2f0bc28e4ad00954a18a4099716f42c30b3195ee07b743011da5",
     "installer/requirements.txt": "1cc92d4cf8a32933edd667c8fc6f5fb4ad10dd9f38b8d02733ca3654e9bc61c4",
     "installer/shortcut.ps1": "edaeda8c74e858c62657b89696cb19cb1a524d1ff1aa676f5796b09c7f23481c",
     "installer/windows.ps1": "77e3cae150334e963d5dedc87e4e65d46b9af013fe12129a98d279349e9df66c"

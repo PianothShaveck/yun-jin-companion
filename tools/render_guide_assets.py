@@ -37,7 +37,7 @@ def main():
         context_card=panel.context_checks['greeting'].parentWidget()
         panel.show_page(2);app.processEvents();context_card.grab().save(str(out/'orario-meteo.png'))
         from yun_jin_updates_ui import UpdateDialog
-        pet.updates.release=dict(version='1.3.0',notes='## Novità\n\n- Miglioramenti alle funzioni.\n- Correzioni e ottimizzazioni.',automatic=True,url='https://github.com/PianothShaveck/yun-jin-companion/releases')
+        pet.updates.release=dict(version='1.3.1',notes='## Novità\n\n- Miglioramenti alle funzioni.\n- Correzioni e ottimizzazioni.',automatic=True,url='https://github.com/PianothShaveck/yun-jin-companion/releases')
         dialog=UpdateDialog(pet.updates);dialog.refresh();dialog.show();app.processEvents()
         dialog.grab().save(str(out/'aggiornamento.png'));dialog.hide();dialog.deleteLater()
         panel.show_page(4);app.processEvents()

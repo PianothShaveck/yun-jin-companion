@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'app'))
 from PyQt6 import sip
-from PyQt6.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMessageBox, QMenu
 from PyQt6.QtCore import QPointF, QSettings, QTimer, Qt
 from yun_jin_core import YunJinPet, ANIMATIONS
 from yun_jin_app import Sounds, Companion
@@ -41,6 +41,55 @@ class BehaviorTests(unittest.TestCase):
   self.pet.paused=False;self.pet.begin_follow()
   with patch.object(self.pet,'cursor_target',return_value=None):self.pet.move_step(.1,time.monotonic())
   self.assertTrue(self.pet.following)
+ def test_spontaneous_walk_and_follow_can_be_enabled_independently(self):
+  now=time.monotonic();self.pet.next_sleep=now+1000;self.pet.last_cursor_motion=now
+  for walk in (True,False):
+   for follow in (True,False):
+    with self.subTest(walk=walk,follow=follow):
+     self.pet.set_walk(walk);self.pet.set_follow(follow);self.pet.previous_action=None
+     with patch('yun_jin_core.random.choices',return_value=['idle']) as choose:self.pet.decide(now)
+     choices,weights=choose.call_args.args
+     self.assertEqual(weights[choices.index('walk')]>0,walk)
+     self.assertEqual(weights[choices.index('follow')]>0,follow)
+ def test_motion_toggles_stop_only_their_spontaneous_movement(self):
+  now=time.monotonic();self.pet.next_sleep=now+1000;self.pet.last_cursor_motion=now
+  for movement in ('walk','follow'):
+   self.pet.set_walk(True);self.pet.set_follow(True);self.pet.previous_action=None
+   with patch('yun_jin_core.random.choices',return_value=[movement]):self.pet.decide(now)
+   self.assertEqual(self.pet.state,'move')
+   if movement=='walk':
+    self.pet.set_follow(False);self.assertEqual(self.pet.state,'move');self.pet.set_walk(False)
+   else:
+    self.pet.set_walk(False);self.assertTrue(self.pet.following);self.pet.set_follow(False)
+   self.assertEqual(self.pet.state,'idle')
+  self.pet.call_later();self.pet.set_follow(False)
+  self.assertTrue(self.pet.call_timer.isActive())
+  self.pet.begin_follow();self.pet.set_follow(False);self.assertTrue(self.pet.following)
+  self.pet.wander();self.pet.set_walk(False);self.assertEqual(self.pet.state,'move')
+ def test_legacy_movement_preference_migrates_and_new_choices_persist(self):
+  for old_walk in (False,True):
+   settings=QSettings(str(Path(self.tmp.name)/f'legacy-{old_walk}.ini'),QSettings.Format.IniFormat)
+   settings.setValue('walk',old_walk)
+   pet=YunJinPet(settings);pet.timer.stop()
+   try:
+    self.assertEqual(pet.allow_follow,old_walk)
+    pet.set_walk(True);pet.set_follow(False)
+   finally:pet.close();pet.deleteLater()
+   reloaded=YunJinPet(settings);reloaded.timer.stop()
+   try:
+    self.assertTrue(reloaded.allow_walk);self.assertFalse(reloaded.allow_follow)
+   finally:reloaded.close();reloaded.deleteLater()
+ def test_movement_menu_has_independent_checkboxes(self):
+  self.pet.set_walk(True);self.pet.set_follow(True)
+  menu=QMenu();self.pet.populate_context_menu(menu)
+  behavior=next(a.menu() for a in menu.actions() if a.text()=='Comportamento')
+  actions={a.text():a for a in behavior.actions()}
+  walk=actions['Passeggiate spontanee'];follow=actions['Segui spontaneamente il cursore']
+  self.assertTrue(walk.isCheckable());self.assertTrue(follow.isCheckable())
+  follow.trigger();self.assertFalse(self.pet.allow_follow);self.assertTrue(self.pet.allow_walk)
+  walk.trigger();self.assertFalse(self.pet.allow_walk)
+  self.assertFalse(self.pet.settings.value('follow',True,type=bool))
+  menu.deleteLater()
  def test_sleep_three_phases_and_manual_exit(self):
   self.assertTrue(self.pet.start_sleep(2))
   self.assertEqual(self.pet.state,'sleep_enter')

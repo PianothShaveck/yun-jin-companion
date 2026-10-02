@@ -16,7 +16,7 @@ from PyQt6.QtCore import QEventLoop, QTimer, QProcess, QSettings
 from PyQt6.QtWidgets import QApplication
 from yun_jin_app import Companion
 from yun_jin_data import Store
-from yun_jin_context import Context, time_period, GREETINGS
+from yun_jin_context import Context, time_period, GREETINGS, WEATHER_REACTIONS
 from yun_jin_weather import fetch_weather, read_json, weather_kind, WEATHER_TTL, MAX_RESPONSE
 import yun_jin_context as context_module
 
@@ -134,6 +134,9 @@ class ContextTests(unittest.TestCase):
                 self.speak.reset_mock()
                 with patch.object(self.pet, 'sequence') as sequence:
                     self.ctx.start(); self.ctx.start(); self.ctx.poll()
+                    sequence.assert_not_called()
+                    tag=self.speak.call_args.kwargs['tag']
+                    self.ctx.play_speech_animation(tag);self.ctx.play_speech_animation(tag)
                     sequence.assert_called_once_with([(animation, 1)])
                 self.speak.assert_called_once()
                 self.assertEqual(self.speak.call_args.args[0], GREETINGS['it'][period])
@@ -293,6 +296,86 @@ class ContextTests(unittest.TestCase):
         self.pet.sequence([('celebrate16',1)])
         self.pet.voice_animation(True);self.pet.speech_status_animation()
         self.assertEqual(self.pet.animation,'celebrate16');self.assertEqual(self.pet.state,'action')
+
+    def weather_speech_job(self, kind='rain'):
+        self.speech_patch.stop()
+        self.pet.speech.stop(False);self.pet.cancel();self.pet.idle()
+        self.ctx.started=True;self.ctx.enabled.update(greeting=False,weather=True)
+        self.ctx.last_reaction=-1e10
+        self.ctx.pending={'weather':(self.now.mono+300,kind)}
+        speech=self.pet.speech;speech.player=Mock();speech.output=Mock()
+        speech.player.duration.return_value=6000;speech.player.position.return_value=0
+        speech.player.errorString.return_value='Audio unavailable'
+        audio=speech.cache/'weather.mp3';audio.write_bytes(b'test')
+        process=Mock();process.readAllStandardOutput.return_value=json.dumps({'ok':True,'path':str(audio)}).encode()
+        with patch('yun_jin_speech.QProcess',return_value=process):self.ctx.dispatch()
+        self.assertTrue(speech.busy)
+        return process
+
+    def test_weather_animation_starts_with_delayed_audio_and_only_once(self):
+        from PyQt6.QtMultimedia import QMediaPlayer
+        for extra in (True,False):
+            self.pet.use_extra_animations=extra
+            for kind,(animation,fallback) in WEATHER_REACTIONS.items():
+                with self.subTest(kind=kind,extra=extra):
+                    process=self.weather_speech_job(kind)
+                    # More time than a whole gesture can pass before TTS is ready.
+                    self.pet.animate(30)
+                    self.pet.speech.generated(process,0)
+                    self.pet.speech.playback_state(QMediaPlayer.PlaybackState.PlayingState)
+                    self.assertEqual(self.pet.animation,animation if extra else fallback)
+                    self.assertEqual(self.pet.state,'action')
+                    self.pet.animate(.5);frame=self.pet.frame;serial=self.pet.action_serial
+                    self.pet.speech.playback_state(QMediaPlayer.PlaybackState.PlayingState)
+                    self.assertEqual((self.pet.frame,self.pet.action_serial),(frame,serial))
+
+    def test_ambient_preparation_does_not_start_random_actions(self):
+        from yun_jin_core import YunJinPet
+        self.weather_speech_job()
+        with patch.object(YunJinPet,'decide') as decide,patch('yun_jin_app.random.random',return_value=1.):
+            self.pet.decide(time.monotonic())
+        decide.assert_not_called()
+
+    def test_completed_manual_action_discards_late_weather_audio(self):
+        process=self.weather_speech_job()
+        self.pet.sequence([('jump',1)]);self.pet.animate(30)
+        self.assertEqual(self.pet.state,'idle')
+        self.pet.speech.generated(process,0)
+        self.pet.speech.player.play.assert_not_called()
+        self.assertFalse(self.pet.speech.busy)
+
+    def test_manual_action_between_audio_ready_and_playback_keeps_priority(self):
+        from PyQt6.QtMultimedia import QMediaPlayer
+        process=self.weather_speech_job()
+        self.pet.speech.generated(process,0)
+        self.pet.sequence([('jump',1)])
+        self.pet.speech.playback_state(QMediaPlayer.PlaybackState.PlayingState)
+        self.assertFalse(self.pet.speech.busy)
+        self.assertEqual(self.pet.animation,'jump')
+        self.assertFalse(self.pet.bubble.isVisible())
+
+    def test_failed_weather_speech_keeps_a_single_silent_gesture(self):
+        for failure in ('generation','timeout','process','playback'):
+            with self.subTest(failure=failure):
+                process=self.weather_speech_job()
+                if failure=='generation':
+                    process.readAllStandardOutput.return_value=b'{"ok":false,"error":"Offline"}'
+                    self.pet.speech.generated(process,1)
+                elif failure=='timeout':self.pet.speech.timed_out()
+                elif failure=='process':self.pet.speech.process_error(process,QProcess.ProcessError.FailedToStart)
+                else:
+                    self.pet.speech.generated(process,0);self.pet.speech.playback_error()
+                self.assertEqual(self.pet.animation,'rain16')
+                self.assertFalse(self.pet.speech.busy)
+                serial=self.pet.action_serial
+                self.pet.speech.playback_error()
+                self.assertEqual(self.pet.action_serial,serial)
+
+    def test_weather_without_speech_still_animates_immediately(self):
+        self.speak.return_value=False
+        self.ctx.started=True;self.ctx.enabled.update(greeting=False,weather=True)
+        self.ctx.pending={'weather':(self.now.mono+300,'rain')};self.ctx.dispatch()
+        self.assertEqual(self.pet.animation,'rain16')
 
 
 if __name__=='__main__': unittest.main(verbosity=2)

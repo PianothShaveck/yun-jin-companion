@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.3.0: desktop companion and practice tools."""
+"""Yun Jin Companion 1.3.1: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -266,6 +266,9 @@ class Companion(YunJinPet):
             return
         if self.mode=='asleep':
             super().decide(now)
+            return
+        if self.speech.busy and self.speech.category=='ambient':
+            self.next_decision=now+5
             return
         from yun_jin_core import ANIMATIONS
         dances=[name for name in ('dance16','pirouette16')

@@ -151,7 +151,7 @@ story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, 
     h('Muovi e controlla Yun Jin'),table(['Comando','Azione'],[
         ['Trascina il personaggio','Sposta Yun Jin sullo schermo.'],
         ['Doppio clic','Apre il pannello.'],['Clic destro / Ctrl-clic su Mac','Apre strumenti, comportamento, animazioni e aspetto.'],
-        ['Comportamento','Pausa, ripresa, passeggiata, esibizione e carattere. Seguimi parte dopo 2 secondi e dura 9 secondi.'],
+        ['Comportamento','Passeggiate spontanee e Segui spontaneamente il cursore si attivano separatamente. Seguimi parte dopo 2 secondi e dura 9 secondi.'],
         ['Animazioni','Scegli una categoria e un gesto. Per un ciclo continuo usa Ripeti; Termina lo interrompe.'],
         ['Aspetto','Dimensioni, opacità, monitor e recupero del pet fuori schermo.']]),
     p('Le scorciatoie si personalizzano in <b>Impostazioni → Scorciatoie</b>. Su Windows e macOS funzionano anche mentre usi altre app. Su Linux funzionano nelle finestre di Yun Jin.','small'),
@@ -243,7 +243,7 @@ story += [picture('orario-meteo.png',390),Spacer(1,8),
     p('Ogni cambio di fascia produce al massimo una reazione. Al ritorno dalla sospensione considera solo la fascia attuale, senza recuperare tutte quelle trascorse. Puoi provarle da <b>Animazioni → Orario oppure Meteo</b>. Con le animazioni aggiuntive disattivate usa i gesti originali.','small'),
     p('<b>Applauso</b>, in <b>Animazioni → Gesti</b>, si esegue solo su comando: non è un comportamento casuale.','small'),
     h('Il tempo fuori'),
-    p('Dopo circa un minuto, poi ogni <b>ora</b>, cerca il meteo in background. Sole, nuvole, pioggia, neve, nebbia e temporali possono provocare un gesto e una breve frase nella lingua scelta. Al sole si ripara gli occhi; segue una nuvola, cerca riparo dalla pioggia o raccoglie un fiocco di neve. Reagisce ai cambiamenti, con almeno <b>due ore</b> tra due commenti meteo.'),
+    p('Dopo circa un minuto, poi ogni <b>ora</b>, cerca il meteo in background. Sole, nuvole, pioggia, neve, nebbia e temporali attivano un gesto sincronizzato con la breve frase nella lingua scelta. Al sole si ripara gli occhi; segue una nuvola, cerca riparo dalla pioggia o raccoglie un fiocco di neve. Reagisce ai cambiamenti, con almeno <b>due ore</b> tra due commenti meteo.'),
     p('La posizione è approssimativa, ricavata dall’IP con <b>ipwho.is</b> e conservata fino a 24 ore. VPN e reti mobili possono indicare un’altra zona. I dati di <link href="https://open-meteo.com/" color="#3e777e">Open-Meteo</link> sono stime, conservate per un’ora. Non usa GPS, account o chiavi API.','small'),
     call('Puoi disattivare separatamente saluto, reazioni all’ora e meteo. Durante comandi manuali, sonno, pausa, focus, metronomo o promemoria queste reazioni aspettano brevemente o vengono saltate. Senza dati o connessione, Yun Jin continua normalmente e non mostra errori.'),PageBreak()]
 # Study
@@ -298,7 +298,7 @@ story += [table(['Problema','Controllo'],[
     p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts, gTTS e FSRS mantengono le rispettive licenze. FSRS 6 è di Open Spaced Repetition; le licenze sono in app/licenses. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
     p('Meteo: <link href="https://open-meteo.com/" color="#3e777e">Open-Meteo</link>, dati CC BY 4.0. Posizione approssimativa: <link href="https://ipwhois.io/" color="#3e777e">ipwho.is</link>. Per la voce, il testo viene inviato al servizio selezionato; per il meteo, i servizi ricevono l’indirizzo IP e le coordinate approssimative necessarie.','small'),
     h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small'),
-    p('Revisione della guida: 1 ottobre 2026.','small')]
+    p('Revisione della guida: 2 ottobre 2026.','small')]
 
 doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion - Guida',author='Yun Jin Companion',pageCompression=1)
 frame=Frame(44,53,BW,666,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)

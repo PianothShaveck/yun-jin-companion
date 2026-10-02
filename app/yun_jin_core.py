@@ -350,6 +350,8 @@ class YunJinPet(QWidget):
         if self.mode not in ('normal', 'lively', 'quiet', 'asleep'):
             self.mode = 'normal'
         self.allow_walk = self.settings.value('walk', True, type=bool)
+        # Preserve a previous opt-out from both kinds of spontaneous movement.
+        self.allow_follow = self.settings.value('follow', self.allow_walk, type=bool)
         self.allow_gaze = self.settings.value('gaze', True, type=bool)
         self.pet_width = max(80, min(260, self.settings.value('size', 130, type=int)))
         self.setFixedSize(self.pet_width, round(self.pet_width * self.sheet.ratio))
@@ -367,6 +369,7 @@ class YunJinPet(QWidget):
         self.target = None
         self.follow_until = 0.0
         self.following = False
+        self.spontaneous_move = False
         self.sleep_cycles = None
         self.sleep_after = None
         self.wake_requested = False
@@ -444,6 +447,7 @@ class YunJinPet(QWidget):
         self.target = None
         self.following = False
         self.follow_until = 0.
+        self.spontaneous_move = False
         self.sleep_after = None
         self.wake_requested = False
         self.arrival = None
@@ -456,6 +460,7 @@ class YunJinPet(QWidget):
         self.state = 'idle'
         self.target = None
         self.following = False
+        self.spontaneous_move = False
         self.play('idle')
         self.next_decision = time.monotonic() + random.uniform(5, 10)
         if self.mode == 'asleep':
@@ -606,15 +611,19 @@ class YunJinPet(QWidget):
         if self.mode == 'quiet':
             weights = [55, 3, 17, 18, 0, 7, 0, 0, 0]
         if not self.allow_walk:
-            weights[6] = weights[7] = 0
+            weights[6] = 0
+        if not self.allow_follow:
+            weights[7] = 0
         if self.previous_action in choices and self.previous_action != 'idle':
             weights[choices.index(self.previous_action)] = 0
         action = random.choices(choices, weights)[0]
         self.previous_action = action
         if action == 'walk':
             self.wander()
+            self.spontaneous_move = True
         elif action == 'follow':
             self.begin_follow()
+            self.spontaneous_move = True
         elif action == 'combo':
             self.sequence([('idle', 1), ('jump', 1), ('idle', 1), ('wave', 1)])
         elif action == 'work':
@@ -813,8 +822,14 @@ class YunJinPet(QWidget):
         self.last_tick = time.monotonic()
 
     def set_walk(self, value):
-        self.allow_walk = value
-        if not value and self.state == 'move':
+        self.allow_walk = bool(value)
+        if not value and self.state == 'move' and self.spontaneous_move and not self.following:
+            self.cancel()
+        self.save_settings()
+
+    def set_follow(self, value):
+        self.allow_follow = bool(value)
+        if not value and self.state == 'move' and self.spontaneous_move and self.following:
             self.cancel()
         self.save_settings()
 
@@ -866,6 +881,7 @@ class YunJinPet(QWidget):
             group.addAction(action)
             action.triggered.connect(lambda checked, k=key: self.set_mode(k))
         for label, value, callback in [('Passeggiate spontanee', self.allow_walk, self.set_walk),
+                                       ('Segui spontaneamente il cursore', self.allow_follow, self.set_follow),
                                        ('Sguardo sul cursore', self.allow_gaze, self.set_gaze)]:
             action = behavior.addAction(label)
             action.setCheckable(True)
@@ -958,7 +974,8 @@ class YunJinPet(QWidget):
 
     def save_settings(self):
         for key, value in [('position', self.pos()), ('size', self.width()), ('mode', self.mode),
-                           ('walk', self.allow_walk), ('gaze', self.allow_gaze), ('opacity', self.windowOpacity())]:
+                           ('walk', self.allow_walk), ('follow', self.allow_follow),
+                           ('gaze', self.allow_gaze), ('opacity', self.windowOpacity())]:
             self.settings.setValue(key, value)
         self.settings.sync()
 

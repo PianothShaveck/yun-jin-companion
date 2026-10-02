@@ -1,6 +1,6 @@
 # Yun Jin Companion
 
-Una piccola Yun Jin sul desktop, con flashcard, appunti, promemoria e strumenti musicali. **Versione 1.3** per Windows, macOS e Linux.
+Una piccola Yun Jin sul desktop, con flashcard, appunti, promemoria e strumenti musicali. **Versione 1.3.1** per Windows, macOS e Linux.
 
 [Scarica l'app](https://github.com/PianothShaveck/yun-jin-companion/releases/latest) · [Guida illustrata](Guida.pdf)
 
@@ -20,7 +20,7 @@ Una piccola Yun Jin sul desktop, con flashcard, appunti, promemoria e strumenti 
 
 ## Installazione
 
-Scarica **Yun-Jin-Companion-1.3.0.zip** dalla release ed estrai tutta la cartella.
+Scarica **Yun-Jin-Companion-1.3.1.zip** dalla release ed estrai tutta la cartella.
 
 | Sistema | Avvio dell'installazione |
 | --- | --- |
@@ -28,7 +28,7 @@ Scarica **Yun-Jin-Companion-1.3.0.zip** dalla release ed estrai tutta la cartell
 | macOS 13+, Intel o Apple Silicon | Esegui `bash Mac.command` dal Terminale nella cartella estratta. |
 | Linux desktop | Esegui `bash Linux.sh`; servono Python e venv. |
 
-Anche per aggiornare alla 1.3, chiudi Yun Jin ed esegui l’installer: installa i componenti FSRS e conserva i dati. Poi usa il collegamento creato. Su macOS, se l'apertura viene bloccata, autorizza il pacchetto in **Impostazioni di Sistema → Privacy e Sicurezza → Apri comunque**.
+L’installer prepara i componenti necessari e conserva i dati. Poi usa il collegamento creato. Puoi aggiornare anche dall’app; se servono nuove dipendenze, verrà richiesto l’installer. Su macOS, se l'apertura viene bloccata, autorizza il pacchetto in **Impostazioni di Sistema → Privacy e Sicurezza → Apri comunque**.
 
 Fai doppio clic su Yun Jin per aprire il pannello; il clic destro apre il menu. La [guida PDF](Guida.pdf) è disponibile anche nell'app.
 
