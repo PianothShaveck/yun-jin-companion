@@ -16,9 +16,11 @@ import venv
 
 SOURCE = Path(__file__).resolve().parent.parent
 NAME = 'Yun Jin Companion'
-VERSION = '1.3.1'
+VERSION = '1.3.2'
 MAC_APPLICATIONS = Path('/Applications')
 MAC_BUNDLE_ID = 'pianoth.yunjin.desktoppet.v1'
+RUNTIME_CHECK = 'import csv, ctypes, hashlib, json, pip, sqlite3, ssl, zipfile'
+DEPENDENCY_CHECK = 'import PyQt6.QtMultimedia, edge_tts, gtts, fsrs, fsrs_rs_python'
 
 
 def location():
@@ -34,26 +36,47 @@ def run(args, **kwargs):
     subprocess.run([str(x) for x in args], check=True, **kwargs)
 
 
+def python_works(executable, code):
+    """A venv executable can survive removal of its base Python's libraries."""
+    try:
+        return subprocess.run([str(executable), '-I', '-c', code],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                              timeout=30).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
 def environment(root):
     env = root/'runtime'/('python-%s.%s' % sys.version_info[:2])
     executable = env/('Scripts/python.exe' if sys.platform=='win32' else 'bin/python')
     requirements = SOURCE/'installer/requirements.txt'
     signature = hashlib.sha256(requirements.read_bytes()+str(sys.version_info[:2]).encode()+platform.machine().encode()).hexdigest()
     marker = env/'installed.json'
-    if not executable.exists():
-        print('Creo l’ambiente privato di Yun Jin…', flush=True)
-        if env.exists(): shutil.rmtree(env)
+    base = os.path.normcase(os.path.realpath(sys.base_prefix))
+    runtime_check = (RUNTIME_CHECK + '; import os, sys; '
+                     f'sys.exit(0 if os.path.normcase(os.path.realpath(sys.base_prefix)) == {base!r} else 1)')
+    if not python_works(executable, runtime_check):
+        print('Preparo l’ambiente Python di Yun Jin…', flush=True)
+        # Recreate at its final path: venv launchers contain absolute paths.
+        # Only the disposable environment is removed, never program or data.
+        if env.is_symlink(): env.unlink()
+        elif env.exists(): shutil.rmtree(env)
         venv.EnvBuilder(with_pip=True, clear=False).create(env)
+        if not python_works(executable, runtime_check):
+            raise RuntimeError('Python non funziona. Reinstalla Python e riapri il programma di installazione.')
     ready = False
     try:
         ready = json.loads(marker.read_text())['requirements']==signature
-    except (OSError,ValueError,KeyError):
+    except (OSError,ValueError,KeyError,TypeError):
         pass
     if ready:
-        ready = subprocess.run([str(executable),'-c','import PyQt6.QtMultimedia, edge_tts, gtts, fsrs, fsrs_rs_python'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0
+        ready = python_works(executable, DEPENDENCY_CHECK)
     if not ready:
         print('Installo le dipendenze. Al primo avvio serve Internet…', flush=True)
-        run([executable,'-m','pip','install','--disable-pip-version-check','--only-binary=:all:','-r',requirements])
+        marker.unlink(missing_ok=True)
+        run([executable,'-I','-m','pip','install','--disable-pip-version-check','--only-binary=:all:','-r',requirements])
+        if not python_works(executable, DEPENDENCY_CHECK):
+            raise RuntimeError('Verifica delle dipendenze non riuscita. Riapri il programma di installazione.')
         marker.write_text(json.dumps({'requirements':signature}),encoding='utf-8')
     return executable
 

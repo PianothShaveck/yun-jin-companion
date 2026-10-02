@@ -38,6 +38,7 @@ jobs:
       - run: python tests/test_updater.py
       - run: python tests/test_windows_encoding.py
       - run: python tests/test_windows_identity.py
+      - run: python tests/test_installer_runtime.py
       - name: Parse Windows installers
         if: runner.os == 'Windows'
         shell: powershell
