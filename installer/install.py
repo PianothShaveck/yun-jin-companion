@@ -16,7 +16,7 @@ import venv
 
 SOURCE = Path(__file__).resolve().parent.parent
 NAME = 'Yun Jin Companion'
-VERSION = '1.3.2'
+VERSION = '1.3.3'
 MAC_APPLICATIONS = Path('/Applications')
 MAC_BUNDLE_ID = 'pianoth.yunjin.desktoppet.v1'
 RUNTIME_CHECK = 'import csv, ctypes, hashlib, json, pip, sqlite3, ssl, zipfile'
@@ -154,11 +154,16 @@ def write_mac_bundle(bundle,executable,program,root):
     info={'CFBundleName':NAME,'CFBundleDisplayName':NAME,'CFBundleIdentifier':MAC_BUNDLE_ID,
           'CFBundleVersion':VERSION,'CFBundleShortVersionString':VERSION,'CFBundleExecutable':'YunJin',
           'CFBundlePackageType':'APPL','CFBundleIconFile':'YunJin.icns','LSMinimumSystemVersion':'13.0',
-          'NSHighResolutionCapable':True}
+          'NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication','LSUIElement':True}
     (contents/'Info.plist').write_bytes(plistlib.dumps(info))
     launcher=binary/'YunJin'
-    launcher.write_text('#!/bin/sh\nexec '+shlex.quote(str(executable))+' '+shlex.quote(str(program/'app/yun_jin_pet.py'))+
-                        ' >> '+shlex.quote(str(root/'launcher.log'))+' 2>&1\n',encoding='utf-8')
+    # Finish LaunchServices' bundle activation instead of replacing the launcher
+    # with Python. The latter can leave NSStatusItem windows at zero height even
+    # though the same application works when started directly from Terminal.
+    launcher.write_text('#!/bin/bash\nexport QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM=1\n'
+                        '/usr/bin/nohup '+shlex.quote(str(executable))+' '+shlex.quote(str(program/'app/yun_jin_pet.py'))+
+                        ' </dev/null >> '+shlex.quote(str(root/'launcher.log'))+' 2>&1 &\n'
+                        'disown\nexit 0\n',encoding='utf-8')
     launcher.chmod(0o755)
 
 

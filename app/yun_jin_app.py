@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.3.2: desktop companion and practice tools."""
+"""Yun Jin Companion 1.3.3: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -35,19 +35,17 @@ class Sounds(QObject):
         self.last_play = 0.
         self.effects = {}
         self.status = ''
+        self.prepared = False
+        self.effect_type = None
+
+    def prepare(self):
+        if self.prepared:return
+        self.prepared = True
         try:
             from PyQt6.QtMultimedia import QSoundEffect, QMediaDevices
             if not QMediaDevices.audioOutputs():
                 self.status = 'Nessuna uscita audio.'
-            for name in ['hello','saved','reminder','done']:
-                path = BASE/'assets'/'sounds'/(name+'.wav')
-                if not path.is_file():
-                    raise FileNotFoundError(path.name)
-                effect = QSoundEffect(self)
-                effect.setSource(QUrl.fromLocalFile(str(path)))
-                effect.setLoopCount(1)
-                effect.setVolume(self.volume)
-                self.effects[name] = effect
+            self.effect_type = QSoundEffect
         except Exception as exc:
             self.status = 'Suoni non disponibili: '+str(exc)
             logging.exception('Audio initialization')
@@ -65,7 +63,19 @@ class Sounds(QObject):
                 return
         effect=self.effects.get(name)
         if effect is None:
-            return
+            if name not in ('hello','saved','reminder','done'):return
+            self.prepare()
+            if self.effect_type is None:return
+            try:
+                path=BASE/'assets'/'sounds'/(name+'.wav')
+                if not path.is_file():raise FileNotFoundError(path.name)
+                effect=self.effect_type(self)
+                effect.setSource(QUrl.fromLocalFile(str(path)))
+                effect.setLoopCount(1)
+                self.effects[name]=effect
+            except Exception as exc:
+                self.status='Suoni non disponibili: '+str(exc)
+                logging.exception('Audio initialization');return
         for other in self.effects.values():
             other.stop()
         effect.setVolume(self.volume)
@@ -75,8 +85,9 @@ class Sounds(QObject):
 
 class ReminderCard(QDialog):
     def __init__(self, pet):
-        super().__init__(pet, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        super().__init__(None, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         self.pet=pet
+        pet.destroyed.connect(self.deleteLater)
         self.rid=None
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setStyleSheet(STYLE)
@@ -103,6 +114,8 @@ class ReminderCard(QDialog):
         rect=self.pet.current_screen().availableGeometry()
         x=max(rect.left(),min(self.pet.x()-self.width()+30,rect.right()+1-self.width()))
         y=max(rect.top(),min(self.pet.y()-self.height()-8,rect.bottom()+1-self.height()))
+        if self.pet.character_hidden or self.pet.fullscreen_hidden:
+            x,y=self.pet.notification_position(self)
         self.move(x,y)
         self.show()
 
@@ -131,8 +144,15 @@ class Companion(YunJinPet):
         self.announced=set()
         self.due_count=0
         self.closing=False
+        self.character_hidden=not bool(store.preference('character_visible',True))
+        self.fullscreen_hidden=False
+        self.hidden_since=None
+        self.hidden_deadlines={}
+        self.hidden_call=None
         self.reminder_dialog=None
         self.mac_overlay=None
+        self.mac_access=None
+        self.windows_overlay=None
         self.updates=None
         self.context=None
         super().__init__()
@@ -157,19 +177,28 @@ class Companion(YunJinPet):
         self.metronome.active_changed.connect(self.music_animation)
         self.checkpoint_timer=QTimer(self)
         self.checkpoint_timer.timeout.connect(lambda:self.stopwatch.save() if self.stopwatch.running else None)
-        self.checkpoint_timer.start(5000)
+        self.checkpoint_timer.setInterval(5000)
+        self.stopwatch.changed.connect(self.sync_checkpoint_timer)
         self.hotkeys=Hotkeys(self)
         self.card=ReminderCard(self)
-        self.tray=QSystemTrayIcon(self.windowIcon(),self)
+        tray_icon=self.windowIcon()
+        if sys.platform=='darwin':
+            from yun_jin_macos_access import status_icon
+            tray_icon=status_icon()
+        self.tray=QSystemTrayIcon(tray_icon,QApplication.instance())
+        self.destroyed.connect(self.tray.deleteLater)
         self.tray.setToolTip('Yun Jin')
-        tray_menu=QMenu(self)
+        tray_menu=QMenu()
+        self.destroyed.connect(tray_menu.deleteLater)
         self.populate_context_menu(tray_menu)
         tray_menu.aboutToShow.connect(lambda: self.populate_context_menu(tray_menu))
         self.tray.setContextMenu(tray_menu)
         self.tray_menu=tray_menu
         self.tray.activated.connect(self.tray_activated)
         self.tray.messageClicked.connect(lambda: self.open_panel(tab=1))
-        if QSystemTrayIcon.isSystemTrayAvailable():
+        # Register even if the system's menu bar is not ready yet. Qt can then
+        # attach the item when it appears; a one-time availability check cannot.
+        if not (sys.platform=='darwin' and QApplication.platformName()=='cocoa'):
             self.tray.show()
         self.reminder_timer=QTimer(self)
         self.reminder_timer.timeout.connect(self.poll_reminders)
@@ -181,15 +210,90 @@ class Companion(YunJinPet):
         self.context=Context(self)
         from yun_jin_study import StudyTools
         self.study_tools=StudyTools(self)
+        if self.character_hidden:
+            self.apply_character_visibility()
 
     def tray_activated(self, reason):
+        # Cocoa opens the tray's context menu on a normal click. Opening the
+        # panel at the same time would steal focus from that menu.
+        if sys.platform=='darwin' and self.tray.contextMenu() is not None:return
         if reason in (QSystemTrayIcon.ActivationReason.Trigger,QSystemTrayIcon.ActivationReason.DoubleClick):
             self.open_panel()
 
+    def sync_checkpoint_timer(self):
+        if self.stopwatch.running and not self.checkpoint_timer.isActive():self.checkpoint_timer.start()
+        elif not self.stopwatch.running:self.checkpoint_timer.stop()
+
     def reveal(self):
-        self.show()
-        self.ensure_visible()
-        self.raise_()
+        self.set_character_visible(True)
+
+    def set_character_visible(self,visible):
+        self.character_hidden=not bool(visible)
+        self.store.set_preference('character_visible',not self.character_hidden)
+        if self.windows_overlay:
+            self.windows_overlay.sync_visibility()
+            self.windows_overlay.refresh()
+        self.apply_character_visibility()
+        if self.panel:
+            self.panel.sync_character_visibility()
+        if sys.platform!='darwin' and self.character_hidden and not self.mac_access and not self.has_tray_access():
+            self.open_panel(tab=2)
+
+    def has_tray_access(self):
+        if self.mac_access:return self.mac_access.is_available()
+        if sys.platform=='darwin' and QApplication.platformName()=='cocoa':
+            return self.tray.isVisible() and not self.tray.geometry().isEmpty()
+        return QSystemTrayIcon.isSystemTrayAvailable()
+
+    def toggle_character_visibility(self):
+        self.set_character_visible(self.character_hidden)
+
+    def set_fullscreen_hidden(self,hidden):
+        if self.fullscreen_hidden!=bool(hidden):
+            self.fullscreen_hidden=bool(hidden)
+            self.apply_character_visibility()
+
+    def apply_character_visibility(self):
+        if self.closing:return
+        if self.mac_overlay:
+            try:self.mac_overlay.sync_accessory()
+            except Exception as exc:self.mac_overlay.fail(exc)
+        if self.mac_access:self.mac_access.visibility_changed()
+        now=time.monotonic()
+        if self.character_hidden or self.fullscreen_hidden:
+            if self.hidden_since is None:
+                self.hidden_since=now
+                self.hidden_deadlines={name:getattr(self,name) for name in
+                    ('follow_until','next_decision','next_sleep','next_blink','blink_until','last_cursor_motion')}
+                self.hidden_call=(self.action_serial,self.call_timer.remainingTime()) if self.call_timer.isActive() else None
+            self.timer.stop();self.click_timer.stop();self.call_timer.stop()
+            self.drag_anchor=None
+            self.hide()
+        else:
+            if self.hidden_since is not None:
+                elapsed=now-self.hidden_since
+                for name,value in self.hidden_deadlines.items():
+                    if value and getattr(self,name)==value:setattr(self,name,value+elapsed)
+                if self.hidden_call and self.hidden_call[0]==self.action_serial and self.state=='follow_pending':
+                    self.call_timer.start(max(1,self.hidden_call[1]))
+                self.hidden_since=None;self.hidden_deadlines={};self.hidden_call=None
+            self.last_tick=now
+            self.ensure_visible();self.show();self.timer.start(33)
+        for notification in (getattr(self,'card',None),getattr(getattr(self,'study_tools',None),'prompt',None)):
+            if notification and notification.isVisible():
+                notification.move(*self.notification_position(notification))
+
+    def notification_position(self,widget):
+        rect=self.current_screen().availableGeometry()
+        x,y=(rect.right()+1-widget.width()-16,rect.bottom()+1-widget.height()-16) if (
+            self.character_hidden or self.fullscreen_hidden) else (self.x()-widget.width()+50,self.y()-widget.height()-10)
+        return (max(rect.left(),min(x,rect.right()+1-widget.width())),
+                max(rect.top(),min(y,rect.bottom()+1-widget.height())))
+
+    def wake_up(self,after=None,leave_mode=False):
+        if (self.character_hidden or self.fullscreen_hidden) and self.is_sleeping():
+            self.cancel();self.idle()
+        super().wake_up(after,leave_mode)
 
     def focus_row(self):
         if not self.focus_reminder:
@@ -345,6 +449,7 @@ class Companion(YunJinPet):
         elif action=='focus_toggle':
             text=f'Focus · {self.store.preference("focus_minutes",25)} min' if self.focus_active() else 'Focus interrotto'
         elif action=='pet_pause':text='Yun Jin in pausa' if self.paused else 'Yun Jin riprende'
+        elif action=='pet_visibility':text='Yun Jin nascosta' if self.character_hidden else 'Yun Jin visibile'
         elif action=='quiet':text='Silenzio per un’ora' if time.time()<self.sound.quiet_until else 'Silenzio disattivato'
         elif action=='stop':text='Voce interrotta'
         else:return
@@ -475,11 +580,15 @@ class Companion(YunJinPet):
         success=self.mac_overlay.set_enabled(enabled)
         if success:
             self.store.set_preference(PREFERENCE,bool(enabled))
-        if not self.mac_overlay.enabled:
-            mac_dock_icon(BASE/'favicon.icns')
         if self.panel:
             self.panel.sync_mac_overlay()
         return success
+
+    def set_windows_overlay(self,enabled):
+        from yun_jin_windows_overlay import PREFERENCE
+        self.store.set_preference(PREFERENCE,bool(enabled))
+        if self.windows_overlay:self.windows_overlay.set_enabled(enabled)
+        if self.panel:self.panel.sync_windows_overlay()
 
     def panel_closed(self):
         self.last_tick=time.monotonic()
@@ -503,7 +612,7 @@ class Companion(YunJinPet):
 
     def queue_feedback(self,event,fallback):
         # Defer feedback while editing, without interrupting explicit pauses.
-        if self.locked or self.paused:
+        if self.character_hidden or self.fullscreen_hidden or self.locked or self.paused:
             return
         self.pending_feedback=(event,fallback)
         self.flush_feedback()
@@ -540,9 +649,10 @@ class Companion(YunJinPet):
                     self.queue_feedback('break','wave')
                 elif not self.paused and not self.menu_open and self.drag_anchor is None and not self.locked and not self.following and not self.is_sleeping() and self.state not in ('voice','voice_wait','conducting','follow_pending'):
                     self.sequence([(self.event_animation('reminder','wave'),2),('wait',1)])
-                if self.tray.isVisible():
+                if self.mac_access or self.tray.isVisible():
                     message=new[0]['title'][:200]+(f' (+{len(new)-1} altri)' if len(new)>1 else '')
-                    self.tray.showMessage('Yun Jin · Promemoria',message,QSystemTrayIcon.MessageIcon.Information,10000)
+                    if self.mac_access:self.mac_access.native.show_message('Yun Jin · Promemoria',message)
+                    else:self.tray.showMessage('Yun Jin · Promemoria',message,QSystemTrayIcon.MessageIcon.Information,10000)
             if self.panel and self.panel.isVisible():
                 self.panel.refresh_reminders()
                 self.panel.refresh_focus()
@@ -704,6 +814,9 @@ class Companion(YunJinPet):
 
     def add_companion_footer(self,menu):
         menu.addSeparator()
+        action=menu.addAction(self.hotkeys.label('Mostra Yun Jin' if self.character_hidden else 'Nascondi Yun Jin',
+                                               'pet_visibility'),self.toggle_character_visibility)
+        action.setObjectName('character_visibility')
         menu.addAction('Impostazioni…',lambda:self.open_panel(tab=2))
         menu.addAction('Guida',self.open_guide)
 
@@ -716,7 +829,9 @@ class Companion(YunJinPet):
                 event.ignore()
                 return
         self.closing=True
+        if self.mac_access:self.mac_access.close()
         self.shortcut_timer.stop()
+        self.bubble.hide()
         if getattr(self,"study_tools",None):self.study_tools.shutdown()
         if self.context:
             self.context.shutdown()
@@ -745,6 +860,7 @@ def main():
     logging.basicConfig(filename=str(root/'yun-jin.log'),level=logging.WARNING,
                         format='%(asctime)s %(levelname)s %(message)s')
     if sys.platform=='darwin':
+        os.environ['QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM']='1'
         # Qt-owned file dialogs can follow the same fullscreen/layer rules.
         QApplication.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeDialogs)
     app=QApplication(sys.argv)
@@ -772,15 +888,26 @@ def main():
                 pet.mac_overlay=MacOverlay(app,pet)
             except Exception:
                 logging.exception('Unable to initialize macOS overlay')
+            from yun_jin_macos_access import MacAccess
+            try:pet.mac_access=MacAccess(app,pet)
+            except Exception:
+                logging.exception('Unable to initialize native macOS menu bar')
+                pet.tray.show()
         if sys.platform=='win32':
             app._yun_jin_taskbar_icons.apply(pet)
-        pet.show()
+            from yun_jin_windows_overlay import install_windows_overlay
+            try:
+                pet.windows_overlay=install_windows_overlay(app,pet)
+            except Exception:
+                logging.exception('Unable to initialize Windows overlay')
+        pet.apply_character_visibility()
+        if sys.platform!='darwin' and pet.character_hidden and not pet.mac_access and not pet.has_tray_access():
+            pet.open_panel(tab=2)
         pet.context.start()
-        mac_all_spaces(pet)
         if pet.mac_overlay:
             pet.mac_overlay.set_enabled(store.preference(PREFERENCE,True))
-        mac_dock_icon(BASE/'favicon.icns')
-        QTimer.singleShot(0,lambda:mac_dock_icon(BASE/'favicon.icns'))
+        else:
+            mac_all_spaces(pet)
         # The update helper only commits the successful restart after the GUI
         # has reached its event loop with the new code and loaded all sprites.
         ready=os.environ.pop('YUN_JIN_UPDATE_READY','')
@@ -795,6 +922,8 @@ def main():
         Messages.critical(pet,'Yun Jin · avvio non riuscito',str(exc)+'\n\nCartella dati: '+str(root))
         return 1
     finally:
+        if pet is not None and pet.windows_overlay is not None:
+            pet.windows_overlay.close()
         if store:
             store.close()
         lock.unlock()

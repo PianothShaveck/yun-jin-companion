@@ -233,12 +233,14 @@ class SpriteSheet:
     def load_clip(self, path, spec, use_cache=True):
         count = int(spec['count'])
         if use_cache:
-            normalized = path.parent / 'normalized' / (spec['name'] + '-' + animation_fingerprint(path, spec) + '.png')
-            if normalized.is_file():
-                pix = read_pixmap(normalized)
-                ref = self.frames[0, 5]
-                if pix.width() == ref.width()*4 and pix.height() == ref.height()*math.ceil(count/4):
-                    return [pix.copy((i%4)*ref.width(), (i//4)*ref.height(), ref.width(), ref.height()) for i in range(count)]
+            stem = spec['name'] + '-' + animation_fingerprint(path, spec)
+            for extension in ('.webp','.png'):
+                normalized = path.parent / 'normalized' / (stem + extension)
+                if normalized.is_file():
+                    pix = read_pixmap(normalized)
+                    ref = self.frames[0, 5]
+                    if pix.width() == ref.width()*4 and pix.height() == ref.height()*math.ceil(count/4):
+                        return [pix.copy((i%4)*ref.width(), (i//4)*ref.height(), ref.width(), ref.height()) for i in range(count)]
         pix = read_pixmap(path)
         if pix.isNull():
             raise ValueError('Immagine animazione non leggibile: ' + path.name)

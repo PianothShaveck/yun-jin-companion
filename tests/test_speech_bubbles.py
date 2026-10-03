@@ -16,6 +16,7 @@ from yun_jin_data import Store
 from yun_jin_speech import caption_pages
 from yun_jin_context import GREETINGS, WEATHER_LINES, contextual_line
 from yun_jin_macos import MacOverlay
+from yun_jin_tts_worker import cache_key
 
 app = QApplication.instance() or QApplication([])
 app.setQuitOnLastWindowClosed(False)
@@ -49,6 +50,42 @@ class CaptionTests(unittest.TestCase):
 
     def play(self):
         self.speech.playback_state(QMediaPlayer.PlaybackState.PlayingState)
+
+    def cached_audio(self,text):
+        language=self.speech.pref('language','it')
+        from yun_jin_speech import VOICES
+        job=dict(text=text,provider='edge',language=language,
+                 voice=VOICES[language][0][1],rate=20,pitch=15)
+        path=self.speech.cache/(cache_key(job)+'.mp3');path.write_bytes(b'cached audio'*20)
+        return path
+
+    def test_cached_speech_reuses_audio_without_starting_an_interpreter(self):
+        path=self.cached_audio('Buongiorno!')
+        with patch('yun_jin_speech.QProcess') as process:
+            self.assertTrue(self.speech.speak('Buongiorno!'))
+            self.assertTrue(self.speech.busy);process.assert_not_called()
+            self.speech.player.play.assert_not_called()
+            app.processEvents()
+            self.speech.player.play.assert_called_once()
+            self.assertEqual(self.speech.player.setSource.call_args.args[0].toLocalFile(),str(path))
+        self.play();self.assertEqual(self.pet.bubble.label.text(),'Buongiorno!')
+
+    def test_stop_or_replacement_cancels_pending_cached_speech(self):
+        self.cached_audio('Primo testo');self.cached_audio('Secondo testo')
+        with patch('yun_jin_speech.QProcess') as process:
+            self.speech.speak('Primo testo');self.speech.stop(False);app.processEvents()
+            self.speech.player.play.assert_not_called()
+            self.assertFalse(self.speech.busy)
+            self.speech.speak('Primo testo');self.speech.speak('Secondo testo');app.processEvents()
+            self.speech.player.play.assert_called_once();process.assert_not_called()
+        self.play();self.assertEqual(self.pet.bubble.label.text(),'Secondo testo')
+
+    def test_voice_changes_and_missing_cache_still_use_the_worker(self):
+        self.cached_audio('Buongiorno!')
+        self.store.set_preference('tts_rate',15)
+        with patch('yun_jin_speech.QProcess') as process:
+            self.assertTrue(self.speech.speak('Buongiorno!'));process.assert_called_once()
+        self.speech.process=None
 
     def test_caption_starts_with_playback_for_manual_preview_and_reminders(self):
         for category in ('manual', 'reminder'):

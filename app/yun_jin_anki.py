@@ -19,6 +19,9 @@ import tempfile
 import time
 from yun_jin_study_selection import select_pool
 
+READ_SECONDS=8
+SNAPSHOT_SECONDS=6
+
 
 class CollectionBusy(RuntimeError):
     pass
@@ -225,7 +228,7 @@ def read_candidates(collection, now=None, limit=36, scratch=None, include_suspen
     except sqlite3.OperationalError as exc:
         if getattr(exc,'sqlite_errorcode',0)&255 not in (sqlite3.SQLITE_BUSY,sqlite3.SQLITE_LOCKED):raise
     with tempfile.TemporaryDirectory(prefix='yun-jin-anki-',dir=scratch) as folder:
-        snapshot=snapshot_collection(collection,folder,time.monotonic()+6)
+        snapshot=snapshot_collection(collection,folder,time.monotonic()+SNAPSHOT_SECONDS)
         return _read_candidates(snapshot,collection,now,limit,validate=True,**options)
 
 
@@ -254,7 +257,12 @@ def anki_decks(db,tables,legacy):
 
 def _read_candidates(database,collection,now,limit,validate=False,include_suspended=False,
                      exclude_notes=(),seen_day=None,restart=False):
-    deadline=time.monotonic()+3
+    deadline=time.monotonic()+READ_SECONDS
+    timed_out=False
+    def progress():
+        nonlocal timed_out
+        timed_out=time.monotonic()>deadline
+        return int(timed_out)
     db=sqlite3.connect(database.as_uri()+'?mode=ro',uri=True,timeout=.3)
     db.row_factory=sqlite3.Row
     try:
@@ -263,7 +271,7 @@ def _read_candidates(database,collection,now,limit,validate=False,include_suspen
         # Our queries never use it to compare, filter or look up names.
         db.create_collation('unicase',lambda a,b:(a.casefold()>b.casefold())-(a.casefold()<b.casefold()))
         db.execute('PRAGMA query_only=ON');db.execute('PRAGMA trusted_schema=OFF')
-        db.set_progress_handler(lambda: int(time.monotonic()>deadline),10000)
+        db.set_progress_handler(progress,10000)
         db.execute('BEGIN')
         if validate:
             # quick_check does not compare text through Anki's custom collation.
@@ -342,6 +350,10 @@ def _read_candidates(database,collection,now,limit,validate=False,include_suspen
                 unsupported+=1;issues.add(str(exc)[:180]);skipped.append(row['note_id']);consumed+=1
         return dict(cards=result,total=len(pool),more=consumed<len(selected),restarted=restarted,skipped=skipped,
             unsupported=unsupported,issues=sorted(issues)[:3],checked=now,study_start=start,study_end=end)
+    except sqlite3.OperationalError as exc:
+        if timed_out and getattr(exc,'sqlite_errorcode',0)&255==sqlite3.SQLITE_INTERRUPT:
+            raise CollectionBusy('Lettura Anki troppo lenta. Riprova.') from exc
+        raise
     finally:
         db.close()
 

@@ -17,10 +17,12 @@ def prune(root=ROOT):
         digest = hashlib.sha256(b'yun-jin-normalized-v1\0')
         digest.update(json.dumps(spec, sort_keys=True).encode('utf-8'))
         digest.update((assets/spec['file']).read_bytes())
-        expected[spec['name']] = spec['name']+'-'+digest.hexdigest()[:24]+'.png'
+        stem=spec['name']+'-'+digest.hexdigest()[:24]
+        webp=assets/'normalized'/(stem+'.webp')
+        expected[spec['name']] = stem+('.webp' if webp.is_file() else '.png')
     removed = []
-    for path in list((assets/'normalized').glob('*.png')):
-        match = re.fullmatch(r'(.+)-[0-9a-f]{24}\.png', path.name)
+    for path in list((assets/'normalized').iterdir()):
+        match = re.fullmatch(r'(.+)-[0-9a-f]{24}\.(png|webp)', path.name)
         if match and match[1] in expected and path.name != expected[match[1]]:
             path.unlink(); removed.append(path.name)
     return removed

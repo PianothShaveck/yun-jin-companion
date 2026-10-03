@@ -39,6 +39,11 @@ class StudyUiTests(unittest.TestCase):
             loop=QEventLoop();QTimer.singleShot(20,loop.quit);loop.exec()
         self.assertTrue(predicate(),'Async operation timed out')
 
+    def test_anki_worker_deadline_leaves_time_for_snapshot_and_read(self):
+        from yun_jin_anki import READ_SECONDS,SNAPSHOT_SECONDS
+        self.assertGreater(self.pet.study_tools.anki_timeout.interval(),
+                           (READ_SECONDS+SNAPSHOT_SECONDS+1)*1000)
+
     def test_answer_hidden_ratings_wait_for_reveal_and_undo_final_answer(self):
         cid=self.add();dialog=self.open();self.assertFalse(dialog.rating_box.isVisible())
         dialog.rate(3);self.assertEqual(self.s.card(cid)['reps'],0)

@@ -15,8 +15,9 @@ ACTIONS={'panel':'Pannello','reminder':'Nuovo promemoria','read':'Leggi testo co
          'metronome_toggle':'Metronomo · Avvia / Ferma','metronome_open':'Apri metronomo',
          'focus_toggle':'Focus · Avvia / Interrompi','focus_open':'Apri focus',
          'note':'Nuovo appunto','capture':'Importa appunti copiati',
-         'pet_pause':'Pausa / Riprendi Yun Jin','quiet':'Silenzio per un’ora / Riattiva'}
-GROUPS=(('Generali',('panel','note','capture','reminder','study','pet_pause')),
+         'pet_pause':'Pausa / Riprendi Yun Jin','quiet':'Silenzio per un’ora / Riattiva',
+         'pet_visibility':'Mostra / Nascondi Yun Jin'}
+GROUPS=(('Generali',('panel','note','capture','reminder','study','pet_pause','pet_visibility')),
         ('Voce',('read','stop','quiet')),
         ('Cronometro',('stopwatch_toggle','stopwatch_lap','stopwatch_reset','stopwatch_open')),
         ('Metronomo',('metronome_toggle','metronome_open')),('Focus',('focus_toggle','focus_open')))
@@ -258,7 +259,8 @@ class Hotkeys:
                       IDENTS['focus_open']:lambda:pet.open_panel(tab=4),
                       IDENTS['note']:lambda:pet.new_note(),IDENTS['capture']:lambda:pet.capture_clipboard(),
                       IDENTS['pet_pause']:lambda:pet.set_paused(not pet.paused),
-                      IDENTS['quiet']:lambda:pet.toggle_quiet()}
+                      IDENTS['quiet']:lambda:pet.toggle_quiet(),
+                      IDENTS['pet_visibility']:lambda:pet.toggle_character_visibility()}
         saved=pet.store.preference('shortcuts_'+sys.platform,{})
         if sys.platform=='darwin' and saved==LEGACY_DEFAULTS:
             saved=dict(DEFAULTS);pet.store.set_preference('shortcuts_'+sys.platform,saved)
@@ -340,7 +342,7 @@ class Hotkeys:
 class ShortcutDialog(QDialog):
     def __init__(self,pet,parent=None):
         super().__init__(parent);self.pet=pet;self.setWindowTitle('Scorciatoie');self.setStyleSheet(STYLE)
-        self.resize(680,425);layout=QVBoxLayout(self);layout.setContentsMargins(20,20,20,18);layout.setSpacing(16)
+        self.resize(680,490);layout=QVBoxLayout(self);layout.setContentsMargins(20,20,20,18);layout.setSpacing(16)
         self.tabs=QTabWidget();layout.addWidget(self.tabs,1)
         self.edits={};self.clear_buttons={}
         self.validation=QTimer(self);self.validation.setSingleShot(True);self.validation.setInterval(180)

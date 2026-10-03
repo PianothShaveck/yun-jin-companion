@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """One cancellable network request per subprocess; JSON input/output, no shell."""
-import asyncio
 import hashlib
 import json
 import os
@@ -30,6 +29,7 @@ def synthesize(job):
     part=target.with_suffix('.part')
     try:
         if job['provider']=='edge':
+            import asyncio
             import edge_tts
             async def generate():
                 speaker=edge_tts.Communicate(text,voice=job['voice'],

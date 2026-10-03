@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Platform-specific shortcuts and release information."""
 import sys
-VERSION = '1.3.2'
+VERSION = '1.3.3'
 
 def shortcut(key):
     return ('Ctrl+Alt+'+key.upper()) if sys.platform=='win32' else ''

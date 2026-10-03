@@ -42,6 +42,42 @@ class ResourceTests(unittest.TestCase):
         size+=sum(p.width()*p.height()*4 for clip in frames.cache.values() for p in clip)
         self.assertLess(size,16*1024*1024)
 
+    def test_every_animation_uses_the_lossless_cache_without_runtime_alignment(self):
+        sheet=self.pet.sheet
+        with patch.object(sheet,'align_sequence',side_effect=AssertionError('Cache unavailable')), \
+             patch.object(sheet,'align_frame',side_effect=AssertionError('Cache unavailable')):
+            for spec in json.loads((BASE/'assets/animations.json').read_text())['animations']:
+                frames=sheet.load_clip(BASE/'assets'/spec['file'],spec)
+                self.assertEqual(len(frames),spec['count'])
+                self.assertTrue(all(not frame.isNull() for frame in frames),spec['name'])
+
+    def test_unused_audio_allocates_no_players_and_effects_are_reused(self):
+        sound=self.pet.sound;speech=self.pet.speech
+        self.assertEqual(sound.effects,{})
+        self.assertFalse(sound.prepared);self.assertIsNone(speech.player)
+        with patch('PyQt6.QtMultimedia.QSoundEffect') as effects, \
+             patch('PyQt6.QtMultimedia.QMediaDevices.audioOutputs',return_value=[object()]):
+            sound.enabled=False;sound.play('reminder');effects.assert_not_called()
+            sound.play('reminder',preview=True);sound.play('reminder',preview=True)
+            effects.assert_called_once_with(sound)
+            self.assertEqual(set(sound.effects),{'reminder'})
+            sound.play('saved',preview=True);self.assertEqual(effects.call_count,2)
+        with patch('PyQt6.QtMultimedia.QMediaPlayer') as player, \
+             patch('PyQt6.QtMultimedia.QAudioOutput'):
+            self.assertTrue(speech.ensure_player());self.assertTrue(speech.ensure_player())
+            player.assert_called_once_with(speech)
+
+    def test_checkpoint_timer_runs_only_with_stopwatch_without_reset_on_lap(self):
+        p=self.pet
+        self.assertFalse(p.checkpoint_timer.isActive())
+        p.stopwatch.start();self.assertTrue(p.checkpoint_timer.isActive())
+        with patch.object(p.checkpoint_timer,'start') as start:
+            p.stopwatch.lap();start.assert_not_called()
+        p.stopwatch.pause();self.assertFalse(p.checkpoint_timer.isActive())
+        self.assertEqual(len(self.store.preference('stopwatch',{})['laps']),1)
+        p.stopwatch.start();self.assertTrue(p.checkpoint_timer.isActive())
+        p.stopwatch.reset();self.assertFalse(p.checkpoint_timer.isActive())
+
     def test_baked_frames_use_same_dimensions_and_fallback_without_cache(self):
         sheet=self.pet.sheet;spec=json.loads((BASE/'assets/animations.json').read_text())['animations'][0]
         path=BASE/'assets'/spec['file']

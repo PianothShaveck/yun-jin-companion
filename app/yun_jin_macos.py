@@ -27,6 +27,13 @@ def overlay_behavior(previous):
             JOIN_SPACES | FULLSCREEN_AUXILIARY | JOIN_APPLICATIONS)
 
 
+def windowed_behavior(previous):
+    # Accessory apps can join fullscreen Spaces even at normal window levels.
+    # Opt out through the window flags, independently of the Dock policy.
+    return (previous & ~(FULLSCREEN_PRIMARY | FULLSCREEN_AUXILIARY | PRIMARY |
+                          AUXILIARY | JOIN_APPLICATIONS)) | FULLSCREEN_NONE
+
+
 class AppKit:
     def __init__(self):
         self.framework = ctypes.CDLL('/System/Library/Frameworks/AppKit.framework/AppKit')
@@ -46,10 +53,20 @@ class AppKit:
         return fn(receiver, self.objc.sel_registerName(selector.encode()), *args)
 
     def set_accessory(self, enabled):
-        ok = self.send(self.application, 'setActivationPolicy:', ctypes.c_bool,
-                       (ctypes.c_long,), (1 if enabled else 0,))
-        if not ok:
-            raise RuntimeError('macOS non ha accettato la modalità overlay.')
+        requested = 1 if enabled else 0
+        current = self.send(self.application, 'activationPolicy', ctypes.c_long)
+        # Tray and overlay share NSApplication. A repeated request need not
+        # perform a switch; its Boolean reply alone does not describe the
+        # effective policy. In particular, do not disable a working overlay
+        # just because the tray already selected Accessory.
+        if current == requested:
+            return
+        reply = self.send(self.application, 'setActivationPolicy:', ctypes.c_bool,
+                          (ctypes.c_long,), (requested,))
+        current = self.send(self.application, 'activationPolicy', ctypes.c_long)
+        if current != requested:
+            raise RuntimeError(f'Modalità applicazione macOS: richiesta {requested}, '
+                               f'attuale {current}, risposta {bool(reply)}.')
 
     def window(self, widget):
         return self.send(int(widget.winId()), 'window')
@@ -80,6 +97,12 @@ class AppKit:
     def focus(self, widget):
         self.send(self.window(widget), 'makeKeyAndOrderFront:', None,
                   (ctypes.c_void_p,), (None,))
+
+    def windowed(self, widget):
+        window=self.window(widget)
+        if window:
+            previous=self.send(window,'collectionBehavior',ctypes.c_ulong)
+            self.send(window,'setCollectionBehavior:',None,(ctypes.c_ulong,),(windowed_behavior(previous),))
 
     def restore(self, widget, snapshot):
         window, level, behavior = snapshot
@@ -153,8 +176,8 @@ class MacOverlay(QObject):
     def set_enabled(self, enabled):
         self.error = ''
         try:
-            self.native.set_accessory(bool(enabled))
             self.enabled = bool(enabled)
+            self.sync_accessory()
             if self.enabled:
                 for widget in self.app.topLevelWidgets():
                     if widget.isVisible():
@@ -167,11 +190,19 @@ class MacOverlay(QObject):
             self.fail(exc)
             return False
 
+    def sync_accessory(self):
+        # The application lives in the menu bar whether the avatar or the
+        # fullscreen overlay is enabled. Neither option may create a Dock tile.
+        self.native.set_accessory(True)
+
     def restore_windows(self):
         for widget, snapshot in list(self.snapshots.items()):
             if not sip.isdeleted(widget):
-                self.native.restore(widget, snapshot)
+                handle,level,behavior=snapshot
+                self.native.restore(widget,(handle,level,windowed_behavior(behavior)))
         self.snapshots.clear()
+        for widget in self.app.topLevelWidgets():
+            if widget.isVisible():self.native.windowed(widget)
 
     def fail(self, exc):
         self.enabled = False
@@ -179,7 +210,7 @@ class MacOverlay(QObject):
         logging.error('macOS overlay unavailable: %s', exc)
         try:
             self.restore_windows()
-            self.native.set_accessory(False)
+            self.native.set_accessory(True)
         except Exception:
             logging.exception('Could not fully restore macOS window state')
         if self.pet.panel:
@@ -191,8 +222,9 @@ class MacOverlay(QObject):
         try:
             if event.type() == QEvent.Type.Polish:
                 self.prepare(obj)
-            elif self.enabled and event.type() == QEvent.Type.Show:
-                self.apply(obj)
+            elif event.type() == QEvent.Type.Show:
+                if self.enabled:self.apply(obj)
+                else:self.native.windowed(obj)
                 # Qt may update native flags as show() finishes.
                 ref = weakref.ref(obj)
                 QTimer.singleShot(0, lambda: self.apply_later(ref))
@@ -205,6 +237,7 @@ class MacOverlay(QObject):
         if widget is None or sip.isdeleted(widget) or not widget.isVisible():
             return
         try:
-            self.apply(widget)
+            if self.enabled:self.apply(widget)
+            else:self.native.windowed(widget)
         except Exception as exc:
             self.fail(exc)

@@ -236,10 +236,15 @@ class Panel(QDialog):
         options.addLayout(row); sounds.addWidget(self.sound_options)
         self.sound_options.setEnabled(self.sound_enabled.isChecked())
         self.sound_enabled.toggled.connect(self.set_sound)
+        self.pet.sound.prepare()
         self.sound_status=plain_label(self.pet.sound.status,'alert'); sounds.addWidget(self.sound_status)
         self.sound_status.setVisible(bool(self.pet.sound.status))
         _,character=card(layout)
         character.addWidget(plain_label('Personaggio','section'))
+        self.character_visible=QCheckBox('Mostra Yun Jin')
+        self.sync_character_visibility()
+        self.character_visible.toggled.connect(self.pet.set_character_visible)
+        character.addWidget(self.character_visible)
         extras=QCheckBox('Animazioni aggiuntive'); extras.setChecked(self.pet.use_extra_animations)
         extras.toggled.connect(self.pet.set_extra_animations); character.addWidget(extras)
         if sys.platform=='darwin':
@@ -248,6 +253,12 @@ class Panel(QDialog):
             character.addWidget(self.mac_fullscreen)
             self.sync_mac_overlay()
             self.mac_fullscreen.toggled.connect(self.pet.set_mac_overlay)
+        elif sys.platform=='win32':
+            from yun_jin_windows_overlay import LABEL
+            self.windows_fullscreen=QCheckBox(LABEL)
+            character.addWidget(self.windows_fullscreen)
+            self.sync_windows_overlay()
+            self.windows_fullscreen.toggled.connect(self.pet.set_windows_overlay)
         _,context=card(layout)
         context.addWidget(plain_label('Orario e meteo','section'))
         self.context_checks={}
@@ -304,6 +315,18 @@ class Panel(QDialog):
             self.hotkey_status.setText(self.pet.hotkey_status)
             self.hotkey_status.setVisible(bool(self.pet.hotkeys.errors))
 
+    def sync_character_visibility(self):
+        self.character_visible.blockSignals(True)
+        self.character_visible.setChecked(not self.pet.character_hidden)
+        self.character_visible.blockSignals(False)
+
+    def sync_windows_overlay(self):
+        if not hasattr(self,'windows_fullscreen'):return
+        from yun_jin_windows_overlay import PREFERENCE
+        self.windows_fullscreen.blockSignals(True)
+        self.windows_fullscreen.setChecked(self.pet.store.preference(PREFERENCE,True))
+        self.windows_fullscreen.blockSignals(False)
+
     def sync_mac_overlay(self):
         if not hasattr(self,'mac_fullscreen'):
             return
@@ -312,7 +335,7 @@ class Panel(QDialog):
         self.mac_fullscreen.setChecked(bool(controller and controller.enabled))
         self.mac_fullscreen.setEnabled(controller is not None)
         self.mac_fullscreen.blockSignals(False)
-        text='Quando è attiva, usa Yun Jin o il menu nella barra in alto: l’icona nel Dock è nascosta.'
+        text='L’icona nella barra dei menu resta disponibile anche con Yun Jin nascosta.'
         if controller is None or controller.error:
             text='Modalità overlay non disponibile. '+(controller.error if controller else 'Riavvia l’app e controlla il log nella cartella dati.')
         self.mac_fullscreen.setToolTip(text)
@@ -670,6 +693,8 @@ class Panel(QDialog):
             Messages.warning(self,'Appunto non salvato',str(exc))
             event.ignore()
             return
-        self.hide()
+        if sys.platform!='darwin' and self.pet.character_hidden and not self.pet.has_tray_access():
+            self.showMinimized()
+        else:self.hide()
         event.ignore()
         self.pet.panel_closed()

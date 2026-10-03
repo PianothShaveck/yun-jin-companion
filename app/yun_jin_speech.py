@@ -44,6 +44,7 @@ class Speech(QObject):
         self.process=None
         self.player=None
         self.output=None
+        self.player_attempted=False
         self.busy=False
         self.closed=False
         self.current_tag=None
@@ -59,6 +60,15 @@ class Speech(QObject):
         self.timeout=QTimer(self)
         self.timeout.setSingleShot(True)
         self.timeout.timeout.connect(self.timed_out)
+        self.cached_timer=QTimer(self)
+        self.cached_timer.setSingleShot(True)
+        self.cached_timer.timeout.connect(self.play_cached)
+        self.cached_path=None
+
+    def ensure_player(self):
+        if self.player is not None and self.output is not None:return True
+        if self.player_attempted:return False
+        self.player_attempted=True
         try:
             from PyQt6.QtMultimedia import QMediaPlayer,QAudioOutput
             self.player=QMediaPlayer(self)
@@ -71,6 +81,9 @@ class Speech(QObject):
             self.player.errorOccurred.connect(self.playback_error)
         except Exception as exc:
             self.status='Riproduzione vocale non disponibile: '+str(exc)
+            if self.player is not None:self.player.deleteLater();self.player=None
+            if self.output is not None:self.output.deleteLater();self.output=None
+        return self.player is not None and self.output is not None
 
     def pref(self,key,default):
         return self.pet.store.preference('tts_'+key,default)
@@ -103,7 +116,7 @@ class Speech(QObject):
 
     def speak(self,text,category='manual',tag=None,preview=False,language=None):
         if category == 'ambient':
-            if self.busy or self.player is None or not self.ambient_allowed(tag):
+            if self.busy or not self.ambient_allowed(tag):
                 return False
         elif self.category == 'ambient':
             # User actions and reminders always take precedence over ambient speech.
@@ -121,7 +134,7 @@ class Speech(QObject):
             return False
         if category=='reminder' and (self.busy or (getattr(self.pet,'metronome',None) and self.pet.metronome.running) or not self.pref('auto_reminders',True)):
             return False
-        if self.player is None:
+        if not self.ensure_player():
             self.report('Qt Multimedia non è disponibile: reinstalla le dipendenze.')
             return False
         self.stop(announce=False)
@@ -142,6 +155,18 @@ class Speech(QObject):
              'rate':(int(self.pref('rate',20)) if provider=='edge' else (-1 if self.pref('google_slow',0) else 0)),
              'pitch':(int(self.pref('pitch',15)) if provider=='edge' else 0),
              'cache':str(self.cache)}
+        # Reuse the worker's key, but do not start an interpreter for local audio.
+        from yun_jin_tts_worker import cache_key
+        cached=self.cache/(cache_key(job)+'.mp3')
+        try:
+            usable=cached.is_file() and cached.stat().st_size>128
+        except OSError:
+            usable=False
+        if usable:
+            self.cached_path=cached
+            self.cached_timer.start(0)
+            self.report('Preparazione…')
+            return True
         process=QProcess(self)
         self.process=process
         executable=Path(sys.executable)
@@ -187,10 +212,23 @@ class Speech(QObject):
             reply=json.loads(raw.decode('utf-8'))
             if code!=0 or not reply.get('ok'):
                 raise ValueError(reply.get('error','Il servizio non ha restituito una risposta.'))
-            path=Path(reply['path']).resolve()
+        except Exception as exc:
+            self.audio_error(exc)
+            return
+        self.play_file(reply.get('path',''))
+
+    def play_cached(self):
+        path,self.cached_path=self.cached_path,None
+        if self.closed or not self.busy or path is None:return
+        self.play_file(path,refresh=True)
+
+    def play_file(self,path,refresh=False):
+        try:
+            path=Path(path).resolve()
             path.relative_to(self.cache.resolve())
             if not path.is_file() or path.suffix!='.mp3':
                 raise ValueError('File vocale non valido.')
+            if refresh:path.touch()
             if self.category=='reminder' and self.current_tag:
                 active={r['id'] for r in self.pet.store.reminders()}
                 if self.current_tag not in active:
@@ -205,10 +243,13 @@ class Speech(QObject):
             self.player.play()
             self.report('Lettura…')
         except Exception as exc:
-            self.animate_ambient()
-            self.busy=False
-            self.current_tag=None
-            self.report('Voce non disponibile: '+str(exc)+' Riprova o cambia servizio.')
+            self.audio_error(exc)
+
+    def audio_error(self,exc):
+        self.animate_ambient()
+        self.busy=False
+        self.current_tag=None
+        self.report('Voce non disponibile: '+str(exc)+' Riprova o cambia servizio.')
 
     def clear_caption(self):
         if self.caption_index != -1:
@@ -270,6 +311,8 @@ class Speech(QObject):
         self.caption_pages=[]
         self.caption_ends=[]
         self.timeout.stop()
+        self.cached_timer.stop()
+        self.cached_path=None
         process,self.process=self.process,None
         if process:
             process.kill()

@@ -26,8 +26,10 @@ def owner_window(owner):
         if modal is not None:
             return modal
         panel = getattr(pet, 'panel', None)
-        if panel is not None and panel.isVisible():
+        if panel is not None and panel.isVisible() and not panel.isMinimized():
             return panel
+        if pet is not None and (getattr(pet,'character_hidden',False) or getattr(pet,'fullscreen_hidden',False)):
+            return None
         if owner is None:
             return QApplication.activeWindow()
     return owner.window() if owner is not None else None
@@ -81,7 +83,8 @@ def exec_dialog(dialog, pet=None):
 def show_dialog(dialog, pet, quiet=False):
     prepare_dialog(dialog, pet)
     dialog.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, quiet)
-    dialog.show()
+    if dialog.isMinimized():dialog.showNormal()
+    else:dialog.show()
     if not quiet:
         bring_forward(dialog, pet)
 

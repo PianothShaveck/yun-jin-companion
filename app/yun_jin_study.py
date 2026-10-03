@@ -16,7 +16,8 @@ from yun_jin_dialogs import show_dialog,bring_forward
 class StudyPrompt(QDialog):
     def __init__(self,controller):
         pet=controller.pet
-        super().__init__(pet,Qt.WindowType.Tool|Qt.WindowType.FramelessWindowHint|Qt.WindowType.WindowStaysOnTopHint)
+        super().__init__(None,Qt.WindowType.Tool|Qt.WindowType.FramelessWindowHint|Qt.WindowType.WindowStaysOnTopHint)
+        pet.destroyed.connect(self.deleteLater)
         self.controller=controller;self.pet=pet;self.candidates=[];self.external=False
         self.setStyleSheet(STYLE);self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setFixedWidth(340)
@@ -40,9 +41,7 @@ class StudyPrompt(QDialog):
             text=CLOZE.sub(lambda m: '['+(m[3] or '…')+']' if int(m[1])==ordinal else m[2],text)
         self.preview.setText(text[:90] or 'Immagine / audio')
         self.open_button.setText('Ripassa'+(f' · {len(candidates)} carte' if len(candidates)>1 else ' · 1 carta'))
-        self.adjustSize();rect=self.pet.current_screen().availableGeometry()
-        self.move(max(rect.left(),min(self.pet.x()-self.width()+50,rect.right()+1-self.width())),
-                  max(rect.top(),min(self.pet.y()-self.height()-10,rect.bottom()+1-self.height())))
+        self.adjustSize();self.move(*self.pet.notification_position(self))
         show_dialog(self,self.pet,quiet=True);self.timeout.start()
 
     def open(self):
@@ -74,7 +73,9 @@ class StudyTools(QObject):
         self.timer.timeout.connect(self.poll)
         if self.enabled or self.anki_enabled:self.timer.start()
         self.fit_delay=QTimer(self);self.fit_delay.setSingleShot(True);self.fit_delay.setInterval(1200);self.fit_delay.timeout.connect(self.start_fit)
-        self.anki_timeout=QTimer(self);self.anki_timeout.setSingleShot(True);self.anki_timeout.setInterval(12000)
+        # Leave room for a locked database, its private copy and the bounded
+        # reader (6 + 8 seconds), plus interpreter startup. All run off the UI.
+        self.anki_timeout=QTimer(self);self.anki_timeout.setSingleShot(True);self.anki_timeout.setInterval(20000)
         self.anki_timeout.timeout.connect(self.anki_timed_out)
         self.fit_timeout=QTimer(self);self.fit_timeout.setSingleShot(True);self.fit_timeout.setInterval(15000)
         self.fit_timeout.timeout.connect(self.cancel_fit)
@@ -94,7 +95,8 @@ class StudyTools(QObject):
 
     def can_prompt(self):
         return (not self.closed and not (self.active_dialog and self.active_dialog.isVisible())
-                and self.pet.context.can_react() and not (getattr(self.pet,'bubble',None) and self.pet.bubble.isVisible()))
+                and self.pet.context.can_react(ignore_character=self.pet.character_hidden or self.pet.fullscreen_hidden)
+                and not (getattr(self.pet,'bubble',None) and self.pet.bubble.isVisible()))
 
     def poll(self):
         if self.closed:return

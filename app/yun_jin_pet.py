@@ -3,6 +3,9 @@
 """Windows launcher: keep the companion modules and assets in this folder."""
 import sys
 import os
+if sys.platform == 'darwin':
+    # Qt must not turn the Python launcher into a foreground/Dock application.
+    os.environ['QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM']='1'
 try:
     import certifi
     os.environ.setdefault("SSL_CERT_FILE", certifi.where())

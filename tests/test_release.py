@@ -63,7 +63,7 @@ class GuiTests(unittest.TestCase):
   self.pet.panel.close()
   menu=QMenu();self.pet.populate_context_menu(menu)
   entries=[a for a in menu.actions() if not a.isSeparator()]
-  self.assertEqual(len(entries),9)
+  self.assertEqual(len(entries),10)
   submenus={a.text():a.menu() for a in entries if a.menu()}
   self.assertEqual(set(submenus),{'Strumenti','Voce','Comportamento','Animazioni','Aspetto'})
   music=next(a for a in submenus['Strumenti'].actions() if a.text()=='Metronomo…')
@@ -85,7 +85,7 @@ class GuiTests(unittest.TestCase):
    return result
   for label in ['Nuovo promemoria…','Importa appunti copiati','Riprendi','Riporta sullo schermo']:
    self.assertTrue(any(t.startswith(label) for t in labels(menu)))
-  self.pet.populate_context_menu(menu);self.assertEqual(len([a for a in menu.actions() if not a.isSeparator()]),9)
+  self.pet.populate_context_menu(menu);self.assertEqual(len([a for a in menu.actions() if not a.isSeparator()]),10)
   menu.deleteLater()
  @unittest.skipUnless(sys.platform=='darwin','Requires native macOS AppKit')
  def test_native_dock_icon(self):

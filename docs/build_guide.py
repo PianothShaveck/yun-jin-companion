@@ -142,18 +142,19 @@ story += [p('Una compagna per imparare, ricordare e fare musica.'),
     h('Dopo l’installazione'),p('Apri <b>Yun Jin Companion</b> dal collegamento. Un doppio clic sul personaggio apre il pannello; il clic destro apre il menu. Scegli uno strumento dalla barra laterale.'),
     picture('appunti.png',390),Spacer(1,9),
     p('Chiudere il pannello lascia Yun Jin aperta; <b>Chiudi</b> nel menu termina l’app.','small'),
-    p('Se nella barra delle applicazioni resta la vecchia icona Python, rimuovi quel collegamento fissato e fissa <b>Yun Jin Companion</b> dal menu Start, dopo aver eseguito il nuovo Windows.cmd.','small'),PageBreak()]
+    p('In <b>Impostazioni</b>, <b>Mostra anche sopra le app a schermo intero</b> è attivo inizialmente. Disattivandolo, Yun Jin scompare quando l’app in primo piano occupa tutto il suo monitor e torna quando esci dallo schermo intero o cambi app.','small'),PageBreak()]
 # 2
 story += [h('macOS'),p('Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, estrai lo ZIP e apri <b>Mac.command</b>. Se Python manca, completa l’installer ufficiale proposto. In seguito usa <b>Yun Jin Companion.app</b> in <b>/Applications</b> o sulla Scrivania. macOS può chiedere il permesso per la copia.'),
     p('<b>Se macOS blocca l’apertura perché lo sviluppatore non è verificato:</b> dopo il tentativo vai in <b>Impostazioni di Sistema → Privacy e Sicurezza → Apri comunque</b>, quindi conferma <b>Apri</b>. Autorizza solo il pacchetto ottenuto dalla release ufficiale. Il doppio clic, da solo, può non bastare.','small'),
-    p('Yun Jin appare anche sopra le app a schermo intero. In questa modalità l’icona nel Dock scompare: usa il personaggio o il menu nella barra in alto. In <b>Impostazioni</b> puoi disattivare <b>Mostra anche sopra le app a schermo intero</b> e ripristinare il Dock. La scelta viene salvata.','small'),
+    p('L’icona di Yun Jin è sempre nella barra dei menu, anche con Yun Jin nascosta: scegli <b>Mostra Yun Jin</b> per farla riapparire o <b>Pannello</b> per usare gli strumenti. L’app non compare nel Dock. In <b>Impostazioni</b> puoi disattivare <b>Mostra anche sopra le app a schermo intero</b>, attivo inizialmente.','small'),
     h('Linux'),p('Servono un desktop grafico, Python 3.11-3.14 a 64 bit e il modulo venv. Dalla cartella estratta esegui <b>bash Linux.sh</b>; poi usa il menu applicazioni. Su Wayland la posizione del personaggio dipende dal compositor; X11 offre maggiore compatibilità.'),
     h('Muovi e controlla Yun Jin'),table(['Comando','Azione'],[
         ['Trascina il personaggio','Sposta Yun Jin sullo schermo.'],
         ['Doppio clic','Apre il pannello.'],['Clic destro / Ctrl-clic su Mac','Apre strumenti, comportamento, animazioni e aspetto.'],
         ['Comportamento','Passeggiate spontanee e Segui spontaneamente il cursore si attivano separatamente. Seguimi parte dopo 2 secondi e dura 9 secondi.'],
         ['Animazioni','Scegli una categoria e un gesto. Per un ciclo continuo usa Ripeti; Termina lo interrompe.'],
-        ['Aspetto','Dimensioni, opacità, monitor e recupero del pet fuori schermo.']]),
+        ['Aspetto','Dimensioni, opacità, monitor e recupero del pet fuori schermo.'],
+        ['Nascondi / Mostra Yun Jin','Dal menu dell’icona o da Impostazioni. Strumenti, scorciatoie e richiami di studio restano attivi; i fumetti compaiono nell’angolo in basso a destra.']]),
     p('Le scorciatoie si personalizzano in <b>Impostazioni → Scorciatoie</b>. Su Windows e macOS funzionano anche mentre usi altre app. Su Linux funzionano nelle finestre di Yun Jin.','small'),
     PageBreak()]
 # 3
@@ -276,17 +277,17 @@ story += [p('<b>FSRS 6</b> stima difficoltà, stabilità della memoria e probabi
     h('Piccoli richiami'),p('Ogni 90-150 minuti, al massimo tre volte al giorno, può comparire un fumetto. Sceglie tra i <b>passaggi ostinati</b> e il <b>10% più difficile</b> di ogni mazzo studiato oggi, considerando anche gli errori recenti. Aspetta almeno 30 minuti dall’ultimo ripasso della carta e alterna le note. <b>Ripassa</b> apre fino a tre carte; <b>×</b> ignora e <b>Non oggi</b> sospende i richiami. Scompare dopo 18 secondi.'),
     p('Durante il focus o altre attività non interrompe. Puoi disattivare i richiami in <b>Studio → menu → Richiami e Anki</b>. I ripassi extra delle carte native vengono registrati e FSRS ne tiene conto.','small'),PageBreak()]
 # Shortcuts and optional Anki
-story += [h('Scegli i tuoi tasti'),p('Apri <b>Impostazioni → Scorciatoie</b>, scegli la funzione, clicca una combinazione e premi i tasti. <b>Salva</b> applica; <b>×</b> disattiva; <b>Ripristina</b> torna ai valori iniziali. I nuovi comandi sono senza combinazione finché ne assegni una.'),
-    picture('scorciatoie.png',420),Spacer(1,10),
-    p('Puoi controllare cronometro, metronomo e focus anche a pannello chiuso. Avvia / Pausa conserva il tempo del cronometro; Parziale registra un giro; Azzera cancella tempo e parziali. Metronomo e focus usano le impostazioni correnti o le ultime salvate.','small'),
+story += [h('Scegli i tuoi tasti'),p('Apri <b>Impostazioni → Scorciatoie</b>, scegli la funzione e premi la combinazione. <b>Salva</b> applica; <b>×</b> disattiva; <b>Ripristina</b> torna ai valori iniziali.'),
+    picture('scorciatoie.png',400),Spacer(1,10),
+    p('Puoi mostrare o nascondere Yun Jin e controllare cronometro, metronomo e focus anche a pannello chiuso. Avvia / Pausa conserva il tempo; Parziale registra un giro; Azzera cancella tempo e parziali. Metronomo e focus usano le impostazioni correnti o le ultime salvate.','small'),
     p('Su Windows e macOS, le combinazioni occupate vengono segnalate mentre le imposti. Il controllo legge le scorciatoie di sistema e verifica quelle registrate dalle altre app; le app che intercettano direttamente i tasti possono sfuggirgli. Su Linux le scorciatoie funzionano nelle finestre di Yun Jin.','small'),
     h('Collega Anki, se vuoi'),p('In <b>Studio → menu → Richiami e Anki</b> abilita <b>Includi le carte di Anki</b>. Se c’è un solo profilo viene selezionato; con più profili scegli quello da usare. <b>Sfoglia</b> apre la cartella di Anki, se devi selezionare una collezione diversa. Non servono plugin.'),
     call('Anki viene <b>solo letto</b>. I richiami includono passaggi ostinati e carte difficili dei <b>mazzi studiati nella sua giornata corrente</b>. Puoi includere i passaggi ostinati sospesi con l’apposita spunta: restano sospesi in Anki. Carte nuove, sepolte e nei mazzi filtrati sono escluse. Sono esercizi liberi: non cambiano la pianificazione di Anki.'),Spacer(1,7),
-    p('La lettura si aggiorna ogni 15 minuti, anche con Anki aperto. Sono supportati fronte/retro e cloze, con immagini e audio locali. Gli script decorativi vengono ignorati; i modelli che non hanno contenuto statico leggibile vengono segnalati. Puoi scollegare Anki in qualsiasi momento.','small'),PageBreak()]
+    p('La lettura si aggiorna ogni 15 minuti, anche con Anki aperto. Supporta fronte/retro e cloze, immagini e audio locali. Gli script non vengono eseguiti; i modelli senza contenuto statico leggibile vengono segnalati. Puoi scollegare Anki quando vuoi.','small'),PageBreak()]
 # 12
 story += [table(['Problema','Controllo'],[
-    ['Yun Jin non si vede','Menu dell’area di notifica → Aspetto → Riporta sullo schermo.'],
-    ['Mac: icona Dock assente','È normale con la modalità sopra le app a schermo intero. Puoi disattivarla in Impostazioni.'],
+    ['Yun Jin non si vede','Menu dell’icona → Mostra Yun Jin. Se è fuori schermo: Aspetto → Riporta sullo schermo. Controlla anche la preferenza per le app a schermo intero.'],
+    ['Mac: aprire l’app nascosta','Clicca l’icona di Yun Jin nella barra dei menu: Mostra Yun Jin oppure Pannello. L’app non usa il Dock.'],
     ['La voce non parte','Controlla Internet, volume e uscita audio. In Voce prova l’altro servizio o svuota la cache.'],
     ['Promemoria senza voce','In Voce abilita Leggi i promemoria alla scadenza; termina il silenzio dal menu o ferma il metronomo.'],
     ['Il metronomo non suona','Controlla l’uscita audio del sistema. Dopo aver cambiato dispositivo, premi Ferma e Avvia.'],
@@ -294,11 +295,11 @@ story += [table(['Problema','Controllo'],[
     ['Avvio bloccato','Controlla la provenienza del pacchetto e le autorizzazioni del sistema. Su dispositivi gestiti rivolgiti all’amministratore.'],
     ['Installazione interrotta','Conserva il messaggio, verifica connessione e spazio libero, poi ripeti l’avvio. Il log è yun-jin.log nella cartella dati.']]),
     h('Requisiti e accesso alla rete'),p('Prima installazione, voce, meteo e controllo aggiornamenti richiedono Internet. Studio, appunti, promemoria, focus, cronometro e metronomo funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
-    h('Crediti e licenze'),p('Progetto fan non ufficiale. Yun Jin è un personaggio di Genshin Impact; personaggio e marchi appartengono ai rispettivi titolari. Lo sprite originale fornito dall’utente è conservato. Le animazioni aggiuntive sono generate da riferimenti e revisionate. Le immagini della guida provengono dai file definitivi dell’app.','small'),
+    h('Crediti e licenze'),p('Progetto fan non ufficiale. Yun Jin è un personaggio di Genshin Impact; personaggio e marchi appartengono ai rispettivi titolari.','small'),
     p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts, gTTS e FSRS mantengono le rispettive licenze. FSRS 6 è di Open Spaced Repetition; le licenze sono in app/licenses. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
     p('Meteo: <link href="https://open-meteo.com/" color="#3e777e">Open-Meteo</link>, dati CC BY 4.0. Posizione approssimativa: <link href="https://ipwhois.io/" color="#3e777e">ipwho.is</link>. Per la voce, il testo viene inviato al servizio selezionato; per il meteo, i servizi ricevono l’indirizzo IP e le coordinate approssimative necessarie.','small'),
     h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small'),
-    p('Revisione della guida: 2 ottobre 2026.','small')]
+    p('Revisione della guida: 3 ottobre 2026.','small')]
 
 doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion - Guida',author='Yun Jin Companion',pageCompression=1)
 frame=Frame(44,53,BW,666,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)

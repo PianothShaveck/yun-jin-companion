@@ -3,14 +3,14 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'app'))
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QWidget, QDialog, QMenu, QComboBox, QMessageBox
-from yun_jin_macos import (MacOverlay, AppKit, PREFERENCE, overlay_behavior,
+from yun_jin_macos import (MacOverlay, AppKit, PREFERENCE, overlay_behavior, windowed_behavior,
     MOVE_TO_ACTIVE_SPACE, FULLSCREEN_PRIMARY, FULLSCREEN_NONE, PRIMARY, AUXILIARY,
     JOIN_SPACES, FULLSCREEN_AUXILIARY, JOIN_APPLICATIONS)
 from yun_jin_data import Store
@@ -39,6 +39,42 @@ class FakeNative:
 
     def restore(self, widget, state):
         self.states[widget] = state
+
+    def windowed(self,widget):
+        handle,level,behavior=self.snapshot(widget)
+        self.states[widget]=(handle,level,windowed_behavior(behavior))
+
+
+class ActivationPolicyTests(unittest.TestCase):
+    def bridge(self, policies, result=False):
+        bridge=object.__new__(AppKit);bridge.application=123
+        remaining=iter(policies)
+        bridge.send=Mock(side_effect=lambda _receiver,selector,*args:
+            next(remaining) if selector=='activationPolicy' else result)
+        return bridge
+
+    def test_already_accessory_is_success_without_requesting_another_transition(self):
+        bridge=self.bridge([1])
+        bridge.set_accessory(True)
+        self.assertEqual([c.args[1] for c in bridge.send.call_args_list],['activationPolicy'])
+
+    def test_effective_policy_decides_success_even_with_a_false_reply(self):
+        bridge=self.bridge([0,1])
+        bridge.set_accessory(True)
+        self.assertEqual([c.args[1] for c in bridge.send.call_args_list],
+                         ['activationPolicy','setActivationPolicy:','activationPolicy'])
+
+    def test_actual_policy_failure_is_not_ignored(self):
+        for reply in (False,True):
+            with self.subTest(reply=reply):
+                bridge=self.bridge([2,2],reply)
+                with self.assertRaisesRegex(RuntimeError,'richiesta 1, attuale 2'):
+                    bridge.set_accessory(True)
+
+    def test_policy_is_read_again_if_another_component_changes_it(self):
+        bridge=self.bridge([1,0,1])
+        bridge.set_accessory(True);bridge.set_accessory(True)
+        self.assertEqual(sum(c.args[1]=='setActivationPolicy:' for c in bridge.send.call_args_list),1)
 
 
 class OverlayTests(unittest.TestCase):
@@ -82,8 +118,17 @@ class OverlayTests(unittest.TestCase):
             self.assertTrue(self.native.accessory)
             self.assertEqual(self.native.snapshot(self.pet)[1], 1000)
             self.assertTrue(self.controller.set_enabled(False))
-            self.assertFalse(self.native.accessory)
-            self.assertEqual(self.native.snapshot(self.pet), before)
+            self.assertTrue(self.native.accessory)
+            self.assertEqual(self.native.snapshot(self.pet), (*before[:2],windowed_behavior(before[2])))
+
+    def test_fullscreen_toggles_when_tray_already_selected_accessory_policy(self):
+        bridge=ActivationPolicyTests().bridge([1]*8)
+        self.native.set_accessory=bridge.set_accessory
+        for enabled in (True,False,True):
+            self.assertTrue(self.controller.set_enabled(enabled),self.controller.error)
+            self.assertEqual(self.controller.enabled,enabled)
+            self.assertEqual(self.controller.error,'')
+            self.assertEqual(bool(self.native.snapshot(self.pet)[2]&FULLSCREEN_AUXILIARY),enabled)
 
     def test_dialogs_and_popups_stay_above_character(self):
         self.controller.set_enabled(True)
@@ -96,15 +141,15 @@ class OverlayTests(unittest.TestCase):
             self.controller.apply(widget)
             self.assertEqual(self.native.snapshot(widget)[1], expected)
 
-    def test_failure_restores_dock_and_existing_window_levels(self):
+    def test_failure_keeps_dock_hidden_and_restores_window_levels(self):
         before = self.native.snapshot(self.pet)
         self.controller.set_enabled(True)
         self.native.fail_widget = self.pet
         self.assertFalse(self.controller.set_enabled(True))
-        self.assertFalse(self.native.accessory)
+        self.assertTrue(self.native.accessory)
         self.assertFalse(self.controller.enabled)
         self.assertIn('native failure', self.controller.error)
-        self.assertEqual(self.native.snapshot(self.pet), before)
+        self.assertEqual(self.native.snapshot(self.pet), (*before[:2],windowed_behavior(before[2])))
 
     def test_window_modal_message_becomes_tool_not_splash_screen(self):
         self.controller.set_enabled(True)
@@ -181,7 +226,7 @@ class OverlayTests(unittest.TestCase):
         self.assertTrue(self.controller.set_enabled(True), self.controller.error)
         self.assertEqual(native.snapshot(self.pet)[1], 1000)
         self.assertTrue(self.controller.set_enabled(False), self.controller.error)
-        self.assertEqual(native.snapshot(self.pet), before)
+        self.assertEqual(native.snapshot(self.pet), (*before[:2],windowed_behavior(before[2])))
 
 
 if __name__ == '__main__':

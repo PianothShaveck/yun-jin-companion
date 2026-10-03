@@ -1,10 +1,13 @@
 import importlib.util
+import json
 import os
 from pathlib import Path
 import plistlib
 import shlex
 import subprocess
+import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -56,10 +59,47 @@ class InstallerTests(unittest.TestCase):
             info = plistlib.loads((bundle / 'Contents/Info.plist').read_bytes())
             self.assertEqual(info['CFBundleIdentifier'], i.MAC_BUNDLE_ID)
             self.assertEqual(info['CFBundleShortVersionString'], i.VERSION)
+            self.assertIs(info['LSUIElement'],True)
+            self.assertEqual(info['NSPrincipalClass'],'NSApplication')
             launcher = bundle / 'Contents/MacOS/YunJin'
             self.assertTrue(launcher.stat().st_mode & 0o111)
-            subprocess.run(['sh', '-n', str(launcher)], check=True)
+            self.assertIn('export QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM=1',launcher.read_text())
+            subprocess.run(['bash', '-n', str(launcher)], check=True)
             self.assertFalse(list(self.apps.glob('.yun-jin-install.*')))
+
+    def test_launcher_exits_while_python_survives_with_closed_input_and_logging(self):
+        ready=self.root/'ready.json';release=self.root/'release';done=self.root/'done'
+        # The temporary installation contains spaces, Unicode and an apostrophe.
+        # A handshake distinguishes a detached child from a launcher that execs it.
+        (self.program/'app/yun_jin_pet.py').write_text(
+            'import json,os,sys,time\nfrom pathlib import Path\n'
+            f'root=Path({str(self.root)!r})\n'
+            'state={"stdin":sys.stdin.read(),"foreground":os.environ.get("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM")}\n'
+            '(root/"ready.tmp").write_text(json.dumps(state))\n'
+            '(root/"ready.tmp").replace(root/"ready.json")\n'
+            'print("Yun Jin started",flush=True)\n'
+            'end=time.monotonic()+10\n'
+            'while not (root/"release").exists() and time.monotonic()<end: time.sleep(.02)\n'
+            'print("Yun Jin stopped",flush=True)\n'
+            '(root/"done").write_text("finished")\n',encoding='utf-8')
+        i.write_mac_bundle(self.bundle,Path(sys.executable),self.program,self.root)
+        def wait_for(path):
+            end=time.monotonic()+5
+            while not path.exists() and time.monotonic()<end:time.sleep(.02)
+            self.assertTrue(path.exists(),f'Child did not write {path.name}')
+        try:
+            result=subprocess.run([str(self.bundle/'Contents/MacOS/YunJin')],
+                                  input='not for the child',capture_output=True,text=True,timeout=3)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(result.stdout,'');self.assertEqual(result.stderr,'')
+            wait_for(ready)
+            self.assertFalse(done.exists(),'Launcher waited for Python instead of detaching it')
+            state=json.loads(ready.read_text())
+            self.assertEqual(state,{'stdin':'','foreground':'1'})
+        finally:
+            release.touch();wait_for(done)
+        self.assertEqual((self.root/'launcher.log').read_text().splitlines(),
+                         ['Yun Jin started','Yun Jin stopped'])
 
     def test_migrate_legacy_and_desktop_link(self):
         i.write_mac_bundle(self.legacy, self.exe, self.program, self.root)

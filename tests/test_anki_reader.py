@@ -251,6 +251,23 @@ class AnkiTests(unittest.TestCase):
         self.assertTrue(restarted['restarted']);self.assertEqual(restarted['cards'],first['cards'])
         self.assertEqual(self.fingerprint(),before)
 
+    def test_read_past_three_seconds_is_allowed_and_does_not_change_collection(self):
+        from itertools import chain,repeat
+        self.large_collection();before=self.fingerprint()
+        with patch('yun_jin_anki.time.monotonic',side_effect=chain([100.],repeat(104.))):
+            result=read_candidates(self.path,self.now)
+        self.assertEqual(result['total'],520);self.assertEqual(len(result['cards']),36)
+        self.assertEqual(self.fingerprint(),before)
+
+    def test_reader_timeout_is_retryable_not_reported_as_an_unreadable_collection(self):
+        from itertools import chain,repeat
+        from yun_jin_anki import READ_SECONDS
+        self.large_collection();before=self.fingerprint()
+        with patch('yun_jin_anki.time.monotonic',side_effect=chain([100.],repeat(101.+READ_SECONDS))):
+            with self.assertRaisesRegex(CollectionBusy,'troppo lenta'):
+                read_candidates(self.path,self.now)
+        self.assertEqual(self.fingerprint(),before)
+
     def test_suspended_leeches_increase_total_without_replacing_active_percentile(self):
         self.large_collection(suspended=60);before=self.fingerprint()
         active=read_candidates(self.path,self.now);mixed=read_candidates(self.path,self.now,include_suspended=True)

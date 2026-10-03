@@ -147,17 +147,19 @@ class Context(QObject):
                     self.request_weather()
         self.dispatch()
 
-    def can_react(self, ignore_speech=False, serial=None):
+    def can_react(self, ignore_speech=False, serial=None, ignore_character=False):
         p = self.pet
         allowed_state = p.state == 'idle' or (serial is not None and p.state == 'action' and serial == p.action_serial)
-        return bool(not self.closed and not p.closing and allowed_state
-                    and (serial is None or serial == p.action_serial) and not p.paused and not p.locked
-                    and not p.menu_open and p.drag_anchor is None and not p.following and p.mode != 'asleep'
-                    and not p.is_sleeping() and not p.metronome.running and not p.focus_active()
-                    and not p.due_count and not p.pending_feedback and not p.reminder_dialog
+        character_ready=(allowed_state and not p.paused and not p.locked and p.drag_anchor is None
+                         and not p.following and p.mode!='asleep' and not p.is_sleeping() and not p.pending_feedback
+                         and not getattr(p,'character_hidden',False) and not getattr(p,'fullscreen_hidden',False))
+        return bool(not self.closed and not p.closing and (ignore_character or character_ready)
+                    and (serial is None or serial == p.action_serial) and not p.menu_open
+                    and not p.metronome.running and not p.focus_active()
+                    and not p.due_count and not p.reminder_dialog
                     and not (getattr(p,'study_tools',None) and p.study_tools.active_dialog and p.study_tools.active_dialog.isVisible())
                     and not (getattr(p,'study_tools',None) and p.study_tools.prompt and p.study_tools.prompt.isVisible())
-                    and not (p.panel and p.panel.isVisible()) and QApplication.activeModalWidget() is None and QApplication.activePopupWidget() is None
+                    and not (p.panel and p.panel.isVisible() and not p.panel.isMinimized()) and QApplication.activeModalWidget() is None and QApplication.activePopupWidget() is None
                     and (ignore_speech or not p.speech.busy))
 
     def dispatch(self):

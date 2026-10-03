@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Bake lossless, already aligned clips. Original artwork is never modified."""
+"""Bake lossless aligned clips. Pillow is required only for this build tool."""
+import io
 import json
 import argparse
 import math
@@ -16,6 +17,7 @@ from yun_jin_core import SpriteSheet, animation_fingerprint
 
 
 def build(names=None):
+    from PIL import Image
     app = QApplication.instance() or QApplication([])
     sheet = SpriteSheet(ROOT/'app/spritesheet-yun-jin-v2.png')
     assets = ROOT/'app/assets'
@@ -31,15 +33,21 @@ def build(names=None):
         painter = QPainter(atlas)
         for i, pix in enumerate(frames): painter.drawPixmap(QPoint(i%4*w, i//4*h), pix)
         painter.end()
-        target = output/(spec['name']+'-'+animation_fingerprint(source, spec)+'.png')
+        target = output/(spec['name']+'-'+animation_fingerprint(source, spec)+'.webp')
         payload = QByteArray(); buffer = QBuffer(payload)
         if not buffer.open(QIODevice.OpenModeFlag.WriteOnly) or not atlas.save(buffer, 'PNG'):
             raise RuntimeError('Unable to encode '+str(target))
         buffer.close()
-        raw = bytes(payload)
+        original=bytes(payload)
+        encoded=io.BytesIO()
+        # exact=True also preserves RGB underneath fully transparent pixels.
+        Image.open(io.BytesIO(original)).save(encoded,'WEBP',lossless=True,quality=100,exact=True,method=6)
+        raw=encoded.getvalue()
         if QImage.fromData(raw).isNull():
-            raise AssertionError('Encoded PNG is invalid: '+spec['name'])
-        temporary = target.with_suffix('.png.tmp')
+            raise AssertionError('Encoded image is invalid: '+spec['name'])
+        if QImage.fromData(raw)!=QImage.fromData(original):
+            raise AssertionError('Lossless encoding changed pixels: '+spec['name'])
+        temporary = target.with_suffix('.webp.tmp')
         try:
             with temporary.open('wb') as stream:
                 stream.write(raw); stream.flush(); os.fsync(stream.fileno())
@@ -51,7 +59,8 @@ def build(names=None):
             raise AssertionError('Pixels changed: '+spec['name'])
         # Snapshot before deleting: directory iterators can skip entries when
         # their backing directory changes during traversal.
-        for old in list(output.glob(spec['name']+'-*.png')):
+        for old in list(output.glob(spec['name']+'-*')):
+            if old.suffix not in ('.png','.webp'):continue
             if old != target: old.unlink()
     print(f'{checked} animation clips: exact pixel round-trip verified.')
 
