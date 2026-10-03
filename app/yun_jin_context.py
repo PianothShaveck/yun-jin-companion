@@ -5,10 +5,10 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from PyQt6.QtCore import QObject, QProcess, QTimer, Qt
+from PyQt6.QtCore import QObject, QProcess, QTimer, Qt, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 from yun_jin_core import BASE, ANIMATIONS
-from yun_jin_weather import fresh, location_valid, WEATHER_TTL
+from yun_jin_weather import fresh, location_valid, selected_location, WEATHER_TTL
 
 GREETINGS = {
     'it': {
@@ -83,6 +83,7 @@ def time_period(now):
 
 
 class Context(QObject):
+    location_changed=pyqtSignal()
     def __init__(self, pet, clock=datetime.now, monotonic=time.monotonic, wall=time.time):
         super().__init__(pet)
         self.pet = pet
@@ -92,6 +93,15 @@ class Context(QObject):
         self.started = False; self.closed = False; self.period = None
         self.pending = {}; self.process = None; self.generation = 0
         self.next_weather = 0.; self.weather_result = None; self.last_weather_kind = None
+        self.weather_location=selected_location(pet.store.preference('context_weather_location',None))
+        # Discard the old IP estimate; never promote it to a chosen city.
+        if pet.store.preference('context_location_cache',None) is not None:
+            pet.store.set_preference('context_location_cache',None)
+        cache=pet.store.preference('context_weather_cache',None)
+        if cache is not None and (not isinstance(cache,dict)
+                or not isinstance(cache.get('location'),dict)
+                or cache['location'].get('source')!='manual'):
+            pet.store.set_preference('context_weather_cache',None)
         self.last_reaction = -1e10
         self.timer = QTimer(self); self.timer.setInterval(60000)
         self.timer.setTimerType(Qt.TimerType.VeryCoarseTimer); self.timer.timeout.connect(self.poll)
@@ -134,7 +144,7 @@ class Context(QObject):
                     self.pending['time'] = (now+300, period)
         except Exception:
             pass
-        if self.enabled['weather']:
+        if self.enabled['weather'] and self.weather_location is not None:
             if initial:
                 self.next_weather = now+60  # Never compete with app startup / its greeting.
                 cache = self.pet.store.preference('context_weather_cache', None)
@@ -201,10 +211,31 @@ class Context(QObject):
         tag['serial'] = self.pet.action_serial
 
     def valid_weather(self, result):
-        return (isinstance(result, dict) and isinstance(result.get('kind'), str) and result['kind'] in WEATHER_REACTIONS
+        valid=(isinstance(result, dict) and isinstance(result.get('kind'), str) and result['kind'] in WEATHER_REACTIONS
                 and fresh(result.get('checked'), self.wall(), WEATHER_TTL)
                 and fresh(result.get('observed'), self.wall(), 7200)
                 and location_valid(result.get('location')))
+        if not valid or self.weather_location is None:return False
+        location=result['location']
+        return (location.get('source')=='manual' and all(location[key]==self.weather_location[key]
+                for key in ('latitude','longitude')))
+
+    def set_weather_location(self, location):
+        choice=selected_location(location)
+        if location is not None and choice is None:raise ValueError('Città non valida.')
+        if choice==self.weather_location:return
+        self.cancel_request()
+        self.weather_location=choice
+        self.pet.store.set_preference('context_weather_location',choice)
+        self.pet.store.set_preference('context_weather_cache',None)
+        self.pet.store.set_preference('context_weather_reaction',None)
+        self.weather_result=None;self.last_weather_kind=None;self.pending.pop('weather',None)
+        speech=self.pet.speech
+        if speech.category=='ambient' and speech.current_tag and speech.current_tag.get('kind')=='weather':
+            speech.stop(announce=False)
+        self.next_weather=self.monotonic()
+        self.location_changed.emit()
+        if choice is not None and self.started and self.enabled['weather'] and not self.closed:self.request_weather()
 
     def queue_weather(self, result):
         if self.last_weather_kind == result['kind']: return
@@ -219,7 +250,7 @@ class Context(QObject):
         self.pending['weather'] = (self.monotonic()+300, result['kind'])
 
     def request_weather(self):
-        if self.closed or self.process is not None or not self.enabled['weather']: return
+        if self.closed or self.process is not None or not self.enabled['weather'] or self.weather_location is None: return
         self.next_weather = self.monotonic()+WEATHER_TTL  # One attempt/hour, including failures.
         self.generation += 1; generation = self.generation
         process = QProcess(self); self.process = process
@@ -228,8 +259,7 @@ class Context(QObject):
             candidate = executable.with_name('python.exe')
             if candidate.is_file(): executable = candidate
         process.setProgram(str(executable)); process.setArguments([str(BASE/'yun_jin_weather.py')])
-        location = self.pet.store.preference('context_location_cache', None)
-        payload = json.dumps({'location': location}).encode('utf-8')
+        payload = json.dumps({'location':self.weather_location}).encode('utf-8')
         def send():
             if process is self.process:
                 process.write(payload); process.closeWriteChannel()
@@ -254,7 +284,6 @@ class Context(QObject):
             if not self.valid_weather(result): return
             self.weather_result = result
             self.pet.store.set_preference('context_weather_cache', result)
-            self.pet.store.set_preference('context_location_cache', result['location'])
             self.queue_weather(result)
             self.dispatch()
         except Exception:

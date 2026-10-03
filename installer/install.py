@@ -155,13 +155,22 @@ def write_mac_bundle(bundle,executable,program,root):
           'CFBundleVersion':VERSION,'CFBundleShortVersionString':VERSION,'CFBundleExecutable':'YunJin',
           'CFBundlePackageType':'APPL','CFBundleIconFile':'YunJin.icns','LSMinimumSystemVersion':'13.0',
           'NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication','LSUIElement':True}
+    command=[str(executable),str(program/'app/yun_jin_pet.py')]
+    if sys.platform=='darwin':
+        # LaunchServices may start a shell bundle under Rosetta. Match the
+        # interpreter that installed the wheels, even with universal Python.
+        architecture=platform.machine().lower()
+        if architecture not in ('arm64','x86_64'):
+            raise RuntimeError('Architettura macOS non supportata: '+architecture)
+        info['LSArchitecturePriority']=[architecture]
+        command=['/usr/bin/arch','-'+architecture,*command]
     (contents/'Info.plist').write_bytes(plistlib.dumps(info))
     launcher=binary/'YunJin'
     # Finish LaunchServices' bundle activation instead of replacing the launcher
     # with Python. The latter can leave NSStatusItem windows at zero height even
     # though the same application works when started directly from Terminal.
     launcher.write_text('#!/bin/bash\nexport QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM=1\n'
-                        '/usr/bin/nohup '+shlex.quote(str(executable))+' '+shlex.quote(str(program/'app/yun_jin_pet.py'))+
+                        '/usr/bin/nohup '+shlex.join(command)+
                         ' </dev/null >> '+shlex.quote(str(root/'launcher.log'))+' 2>&1 &\n'
                         'disown\nexit 0\n',encoding='utf-8')
     launcher.chmod(0o755)

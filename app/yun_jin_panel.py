@@ -265,7 +265,7 @@ class Panel(QDialog):
         for key, label, hint in (
                 ('greeting', 'Saluto all’avvio', 'Una sola volta, secondo l’ora locale. Usa lingua, servizio e volume scelti in Voce.'),
                 ('time', 'Animazioni secondo l’ora', 'Una reazione al cambio di fascia: mattina, pomeriggio, sera e notte.'),
-                ('weather', 'Reazioni al meteo locale', 'Animazioni e brevi commenti nella lingua scelta in Voce. Meteo ogni ora da Open-Meteo; posizione approssimativa dall’indirizzo IP (ipwho.is).')):
+                ('weather', 'Reazioni al meteo locale', 'Animazioni e brevi commenti nella lingua scelta in Voce. Meteo ogni ora per la località selezionata.')):
             check=QCheckBox(label); check.setChecked(self.pet.context.enabled[key]); check.setToolTip(hint)
             check.toggled.connect(lambda value, key=key:self.pet.context.set_enabled(key,value))
             if key == 'weather':
@@ -276,8 +276,13 @@ class Panel(QDialog):
         credit=plain_label('<a href="https://open-meteo.com/" style="color:#b8b2c8">Open-Meteo</a>', 'muted')
         credit.setTextFormat(Qt.TextFormat.RichText); credit.setOpenExternalLinks(False)
         credit.linkActivated.connect(lambda url:self.pet.open_external(QUrl(url),self))
-        credit.setToolTip('Dati meteo: Open-Meteo · CC BY 4.0. Posizione approssimativa: ipwho.is.')
+        credit.setToolTip('Meteo: Open-Meteo · CC BY 4.0. Città: GeoNames.')
         weather_row.addWidget(credit)
+        from yun_jin_weather_ui import WeatherLocationRow
+        self.weather_location_row=WeatherLocationRow(self.pet)
+        context.addWidget(self.weather_location_row)
+        self.weather_location_row.setEnabled(self.pet.context.enabled['weather'])
+        self.context_checks['weather'].toggled.connect(self.weather_location_row.setEnabled)
         _,updates=card(layout)
         updates.addWidget(plain_label('Aggiornamenti','section'))
         self.updates_enabled=QCheckBox('Aggiornamenti automatici')

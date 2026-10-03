@@ -36,7 +36,7 @@ Puoi nascondere il personaggio dal menu, dalle impostazioni o con una scorciatoi
 
 ## Dati e connessione
 
-Mazzi, ripassi, allegati e impostazioni sono conservati localmente in SQLite. Lo studio funziona offline. Il collegamento opzionale propone carte Anki difficili dei mazzi studiati oggi, senza modificarne la collezione. La sintesi vocale invia il testo al servizio selezionato. Il meteo usa [Open-Meteo](https://open-meteo.com/) e una posizione approssimativa ricavata dall'IP tramite [ipwho.is](https://ipwhois.io/). Saluti, reazioni meteo e ricerca automatica degli aggiornamenti sono disattivabili nelle impostazioni.
+Mazzi, ripassi, allegati e impostazioni sono conservati localmente in SQLite. Lo studio funziona offline. Il collegamento opzionale propone carte Anki difficili dei mazzi studiati oggi, senza modificarne la collezione. La sintesi vocale invia il testo al servizio selezionato. Il meteo usa [Open-Meteo](https://open-meteo.com/): scegli la città nelle impostazioni per attivarlo. La ricerca delle città usa dati [GeoNames](https://www.geonames.org/). Saluti, reazioni meteo e ricerca automatica degli aggiornamenti sono disattivabili nelle impostazioni.
 
 ## Crediti e licenza
 

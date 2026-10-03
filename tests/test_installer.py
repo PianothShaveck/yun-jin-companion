@@ -101,6 +101,19 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual((self.root/'launcher.log').read_text().splitlines(),
                          ['Yun Jin started','Yun Jin stopped'])
 
+    def test_mac_launcher_pins_the_architecture_used_for_installed_wheels(self):
+        for architecture in ('arm64','x86_64'):
+            with self.subTest(architecture=architecture),patch.object(i.sys,'platform','darwin'), \
+                 patch.object(i.platform,'machine',return_value=architecture):
+                i.write_mac_bundle(self.bundle,self.exe,self.program,self.root)
+                info=plistlib.loads((self.bundle/'Contents/Info.plist').read_bytes())
+                self.assertEqual(info['LSArchitecturePriority'],[architecture])
+                line=next(line for line in (self.bundle/'Contents/MacOS/YunJin').read_text().splitlines()
+                          if line.startswith('/usr/bin/nohup '))
+                self.assertEqual(shlex.split(line)[:5],['/usr/bin/nohup','/usr/bin/arch','-'+architecture,
+                                 str(self.exe),str(self.program/'app/yun_jin_pet.py')])
+                self.assertTrue(line.endswith('2>&1 &'))
+
     def test_migrate_legacy_and_desktop_link(self):
         i.write_mac_bundle(self.legacy, self.exe, self.program, self.root)
         (self.legacy / 'old-file').write_text('old version')

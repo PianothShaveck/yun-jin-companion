@@ -2,6 +2,7 @@
 import ctypes as C
 import importlib.util
 import os
+import platform
 from pathlib import Path
 import subprocess
 import shutil
@@ -199,7 +200,9 @@ class CocoaTests(unittest.TestCase):
                 'os.environ["QT_QPA_PLATFORM"]="cocoa"\n'
                 'print("Native probe:",sys.executable,sys.version,platform.platform(),flush=True)\n'
                 f'sys.argv=[{str(Path(__file__).resolve())!r},"--native"]\n'
-                'try:\n runpy.run_path(sys.argv[0],run_name="__main__")\n'
+                'try:\n'
+                f' assert platform.machine()=={platform.machine()!r},"Launcher changed Python architecture"\n'
+                ' runpy.run_path(sys.argv[0],run_name="__main__")\n'
                 'except BaseException:\n result=traceback.format_exc()\n print(result,flush=True)\n'
                 'else:\n result="PASS"\n'
                 '(root/"result.tmp").write_text(result)\n(root/"result.tmp").replace(root/"result")\n',encoding='utf-8')

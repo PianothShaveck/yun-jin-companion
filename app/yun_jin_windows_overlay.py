@@ -7,11 +7,13 @@ import os
 import sys
 from PyQt6 import sip
 from PyQt6.QtCore import QObject, QEvent, QTimer, Qt
+from PyQt6.QtWidgets import QApplication
 
 HWND_TOPMOST = -1
 WS_EX_TOPMOST = 0x00000008
 GWL_EXSTYLE = -20
 GW_HWNDPREV = 3
+GW_HWNDNEXT = 2
 POSITION_FLAGS = 0x0001 | 0x0002 | 0x0010 | 0x0200  # size, move, activate, owner unchanged
 EVENT_SYSTEM_FOREGROUND = 0x0003
 PREFERENCE = 'windows_fullscreen_overlay'
@@ -34,6 +36,7 @@ class NativeTopmost:
             (self.user.GetForegroundWindow, [], W.HWND),
             (self.user.GetShellWindow, [], W.HWND),
             (self.user.GetDesktopWindow, [], W.HWND),
+            (self.user.GetTopWindow, [W.HWND], W.HWND),
             (self.user.GetWindow, [W.HWND, W.UINT], W.HWND),
             (self.user.GetWindowThreadProcessId, [W.HWND, C.POINTER(W.DWORD)], W.DWORD),
             (self.user.IsWindowVisible, [W.HWND], W.BOOL),
@@ -133,6 +136,28 @@ class NativeTopmost:
             self.hook = None
         # Keep the callback alive until this backend is disposed.
 
+    def raise_companions(self, handles):
+        """Keep visible captions and tools above the pet in their existing order."""
+        wanted=set(handles)
+        if not wanted:return
+        user=self.user
+        current=user.GetTopWindow(None)
+        ordered=[];seen=set()
+        for _ in range(512):
+            if not current or current in seen:break
+            seen.add(current)
+            if current in wanted:ordered.append(current)
+            if len(ordered)==len(wanted):break
+            current=user.GetWindow(current,GW_HWNDNEXT)
+        # Raising only the avatar can cover independent Qt Tool windows.
+        # Bottom to top preserves dialogs/popups above their own owners too.
+        for hwnd in reversed(ordered):
+            if not user.IsWindowVisible(hwnd) or user.IsIconic(hwnd):continue
+            pid=W.DWORD()
+            if not user.GetWindowThreadProcessId(hwnd,C.byref(pid)) or pid.value!=os.getpid():continue
+            if not user.SetWindowPos(hwnd,HWND_TOPMOST,0,0,0,0,POSITION_FLAGS):
+                raise OSError('Unable to restore Yun Jin companion window')
+
 
 class WindowsOverlay(QObject):
     def __init__(self, app, pet, native=None):
@@ -204,7 +229,15 @@ class WindowsOverlay(QObject):
             if hidden:
                 self.failed = False
                 return
-            self.native.restore(int(hwnd))
+            restored=self.native.restore(int(hwnd))
+            if restored or self.failed:
+                handles=[]
+                for widget in QApplication.topLevelWidgets():
+                    if (widget is not self.pet and widget.isVisible() and not widget.isMinimized()
+                            and widget.testAttribute(Qt.WidgetAttribute.WA_WState_Created)):
+                        handle=widget.effectiveWinId()
+                        if handle:handles.append(int(handle))
+                if handles:self.native.raise_companions(handles)
             self.failed = False
         except Exception:
             if not self.failed:

@@ -34,6 +34,8 @@ def main():
             panel.show_page(page,sub)
             if name=='metronomo':panel.music.ramp.setChecked(True)
             app.processEvents();panel.grab().save(str(out/(name+'.png')))
+        pet.context.set_weather_location({'city':'Reggio Calabria','region':'Calabria','country':'Italia',
+                                          'latitude':38.11047,'longitude':15.66129})
         context_card=panel.context_checks['greeting'].parentWidget()
         panel.show_page(2);app.processEvents();context_card.grab().save(str(out/'orario-meteo.png'))
         from yun_jin_updates_ui import UpdateDialog

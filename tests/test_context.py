@@ -30,24 +30,24 @@ class WeatherTests(unittest.TestCase):
         self.location = {'latitude': 45.46, 'longitude': 9.19, 'city': 'Test', 'checked': self.now}
         self.current = {'current': {'weather_code': 61, 'is_day': 1, 'time': self.now-300}}
 
-    def test_minimal_requests_and_coarse_location_cache(self):
-        get = Mock(side_effect=[dict(self.location, success=True, latitude=45.4642), self.current])
-        result = fetch_weather(now=self.now, get=get)
+    def test_weather_uses_only_the_selected_city_and_one_request(self):
+        get = Mock(return_value=self.current)
+        result = fetch_weather(self.location,now=self.now,get=get)
         self.assertEqual(result['kind'], 'rain')
         self.assertEqual(result['location']['latitude'], 45.46)
-        urls = [c.args[0] for c in get.call_args_list]
-        self.assertIn('fields=success,city,latitude,longitude', urls[0])
-        self.assertIn('current=weather_code%2Cis_day', urls[1]); self.assertNotIn('hourly=', urls[1])
-        get.reset_mock(side_effect=True); get.return_value = self.current
+        get.assert_called_once()
+        url=get.call_args.args[0]
+        self.assertIn('current=weather_code%2Cis_day',url);self.assertNotIn('hourly=',url)
+        get.reset_mock()
         self.assertEqual(fetch_weather(result['location'], self.now+60, get)['kind'], 'rain')
         get.assert_called_once()
         self.assertTrue(get.call_args.args[0].startswith('https://api.open-meteo.com/'))
 
-    def test_expired_location_refetched_and_invalid_location_silent(self):
-        for location in (None, {}, dict(self.location, checked=self.now-86401), dict(self.location, latitude=float('nan'))):
-            get = Mock(return_value={'success': False})
-            self.assertIsNone(fetch_weather(location, self.now, get)); get.assert_called_once()
-        self.assertIsNone(fetch_weather(now=self.now, get=Mock(return_value={'success': True, 'latitude': 200, 'longitude': 9})))
+    def test_missing_or_invalid_city_makes_no_request(self):
+        for location in (None,{},dict(self.location,city=''),dict(self.location,latitude=float('nan')),
+                         dict(self.location,latitude=200)):
+            get=Mock()
+            self.assertIsNone(fetch_weather(location,self.now,get));get.assert_not_called()
 
     def test_known_conditions_and_night_is_not_sun(self):
         for code, kind in [(0,'sun'),(1,'sun'),(2,'cloud'),(45,'fog'),(61,'rain'),(56,'rain'),(71,'snow'),(95,'storm')]:
@@ -74,6 +74,7 @@ class ContextTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory(); self.store=Store(self.tmp.name)
         self.store.set_preference('updates_enabled',False)
+        self.store.set_preference('context_weather_location',{'latitude':45.46,'longitude':9.19,'city':'Test'})
         self.pet=Companion(self.store)
         for timer in (self.pet.timer,self.pet.reminder_timer,self.pet.checkpoint_timer): timer.stop()
         self.pet.cancel(); self.pet.idle(); self.pet.mode='normal'; self.pet.paused=False
@@ -97,7 +98,7 @@ class ContextTests(unittest.TestCase):
 
     def weather(self, kind='rain'):
         return {'kind':kind,'checked':self.now.wall,'observed':self.now.wall-300,
-                'location':{'latitude':45.46,'longitude':9.19,'city':'Test','checked':self.now.wall}}
+                'location':{'latitude':45.46,'longitude':9.19,'city':'Test','source':'manual'}}
 
     def wait_until(self, predicate, timeout=5):
         deadline=time.monotonic()+timeout; loop=QEventLoop(); timer=QTimer()

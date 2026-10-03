@@ -25,6 +25,7 @@ class FakeWindows:
         self.order = [self.FRONT, self.PET]
         self.foreground = self.FRONT
         self.pid = os.getpid() + 100
+        self.pids={}
         self.style = overlay.WS_EX_TOPMOST
         self.front_style = 0
         self.monitor_rect = (0, 0, 1920, 1080)
@@ -34,6 +35,7 @@ class FakeWindows:
             GetForegroundWindow=Mock(side_effect=lambda: self.foreground),
             GetShellWindow=Mock(return_value=999),
             GetDesktopWindow=Mock(return_value=998),
+            GetTopWindow=Mock(side_effect=lambda _:self.order[0] if self.order else 0),
             GetWindow=Mock(side_effect=self.previous),
             GetWindowThreadProcessId=Mock(side_effect=self.process),
             GetWindowLongPtrW=Mock(side_effect=lambda h,kind: self.style if kind==overlay.GWL_EXSTYLE else self.front_style),
@@ -55,12 +57,13 @@ class FakeWindows:
         return 1
 
     def previous(self, hwnd, command):
-        assert command == overlay.GW_HWNDPREV
         index = self.order.index(hwnd)
+        if command==overlay.GW_HWNDNEXT:return self.order[index+1] if index+1<len(self.order) else 0
+        assert command == overlay.GW_HWNDPREV
         return self.order[index - 1] if index else 0
 
     def process(self, hwnd, output):
-        C.cast(output, C.POINTER(W.DWORD))[0] = self.pid
+        C.cast(output, C.POINTER(W.DWORD))[0] = self.pids.get(hwnd,self.pid)
         return 77
 
     def rectangle(self, hwnd, output):
@@ -119,6 +122,23 @@ class NativeLogicTests(unittest.TestCase):
         for _ in range(100):
             self.assertFalse(self.native.restore(self.fake.PET))
         self.fake.api.SetWindowPos.assert_called_once()
+
+    def test_captions_and_nested_tools_keep_their_order_without_focus_or_geometry_changes(self):
+        f=self.fake;caption,dialog,hidden,foreign=40,41,42,43
+        f.order=[f.FRONT,dialog,caption,f.PET,hidden,foreign]
+        f.pids.update({h:os.getpid() for h in (caption,dialog,hidden)})
+        f.hidden.add(hidden);before=dict(f.rects)
+        self.native.restore(f.PET)
+        self.native.raise_companions([caption,foreign,hidden,dialog])
+        self.assertEqual(f.order[:4],[dialog,caption,f.PET,f.FRONT])
+        self.assertEqual(f.foreground,f.FRONT);self.assertEqual(f.rects,before)
+        self.assertEqual([c.args[0] for c in f.api.SetWindowPos.call_args_list],[f.PET,caption,dialog])
+
+    def test_companion_scan_is_bounded_when_windows_change(self):
+        self.fake.api.GetWindow.side_effect=lambda hwnd,_:hwnd+1
+        self.native.raise_companions([40])
+        self.assertLessEqual(self.fake.api.GetWindow.call_count,513)
+        self.fake.api.SetWindowPos.assert_not_called()
 
     def test_entering_fullscreen_on_the_same_foreground_window_is_detected(self):
         self.fake.order = [self.fake.PET, self.fake.FRONT]
@@ -240,6 +260,20 @@ class ControllerTests(unittest.TestCase):
         self.pet.showNormal()
         self.app.processEvents()
         self.assertTrue(self.controller.timer.isActive())
+
+    def test_only_visible_created_tools_are_restored_after_the_pet_moves(self):
+        self.show_pet();caption=QWidget(self.pet,Qt.WindowType.Tool);hidden=QWidget(self.pet,Qt.WindowType.Tool)
+        try:
+            caption.show();self.app.processEvents();self.controller.pending.stop()
+            self.native.restore.return_value=True
+            with patch.object(hidden,'winId') as create:
+                self.controller.refresh();create.assert_not_called()
+            handles=self.native.raise_companions.call_args.args[0]
+            self.assertIn(int(caption.effectiveWinId()),handles)
+            self.assertNotIn(int(self.pet.effectiveWinId()),handles)
+            self.native.raise_companions.reset_mock();self.native.restore.return_value=False
+            self.controller.refresh();self.native.raise_companions.assert_not_called()
+        finally:caption.close();caption.deleteLater();hidden.deleteLater()
 
     def test_recreated_native_handle_is_used_and_no_handle_is_forced_for_hidden_pet(self):
         self.show_pet()
