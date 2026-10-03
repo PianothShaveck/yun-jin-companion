@@ -67,7 +67,11 @@ class CaptionTests(unittest.TestCase):
             self.speech.player.play.assert_not_called()
             app.processEvents()
             self.speech.player.play.assert_called_once()
-            self.assertEqual(self.speech.player.setSource.call_args.args[0].toLocalFile(),str(path))
+            source=self.speech.player.setSource.call_args.args[0]
+            self.assertTrue(source.isLocalFile())
+            # Qt normalizes separators and Windows expands short names such as
+            # RUNNER~1. Compare file identity, not the spelling of its path.
+            self.assertTrue(Path(source.toLocalFile()).samefile(path))
         self.play();self.assertEqual(self.pet.bubble.label.text(),'Buongiorno!')
 
     def test_stop_or_replacement_cancels_pending_cached_speech(self):
@@ -192,17 +196,18 @@ class CaptionTests(unittest.TestCase):
         self.assertFalse(self.pet.bubble.isVisible())
 
     def test_mac_overlay_orders_bubble_without_requesting_focus(self):
-        native = Mock(); native.snapshot.return_value = (1, 0, 0, 0)
+        native = Mock(); native.snapshot.return_value = (1, 0, 0)
         overlay = MacOverlay(app, self.pet, native=native)
         self.pet.mac_overlay = overlay
         try:
-            overlay.set_enabled(True)
+            self.assertTrue(overlay.set_enabled(True))
             self.pet.bubble.present('Buonasera!'); app.processEvents()
             native.configure.assert_any_call(self.pet.bubble, 1001)
             native.focus.assert_not_called()
         finally:
-            overlay.set_enabled(False); app.removeEventFilter(overlay)
-            self.pet.mac_overlay = None; overlay.deleteLater()
+            restored=overlay.set_enabled(False);app.removeEventFilter(overlay)
+            self.pet.mac_overlay = None;overlay.deleteLater()
+            self.assertTrue(restored,overlay.error)
 
     def test_context_uses_selected_language_provider_and_voice(self):
         context = self.pet.context

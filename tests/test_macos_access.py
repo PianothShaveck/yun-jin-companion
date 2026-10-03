@@ -194,12 +194,13 @@ class CocoaTests(unittest.TestCase):
             shutil.copyfile(ROOT/'app/favicon.icns',program/'app/favicon.icns')
             bundle=root/'Yun Jin Test.app';done=root/'result';pid=root/'pid'
             (program/'app/yun_jin_pet.py').write_text(
-                'import os,runpy,sys,traceback\nfrom pathlib import Path\n'
+                'import os,platform,runpy,sys,traceback\nfrom pathlib import Path\n'
                 f'root=Path({str(root)!r})\n(root/"pid").write_text(str(os.getpid()))\n'
                 'os.environ["QT_QPA_PLATFORM"]="cocoa"\n'
+                'print("Native probe:",sys.executable,sys.version,platform.platform(),flush=True)\n'
                 f'sys.argv=[{str(Path(__file__).resolve())!r},"--native"]\n'
                 'try:\n runpy.run_path(sys.argv[0],run_name="__main__")\n'
-                'except BaseException:\n result=traceback.format_exc()\n'
+                'except BaseException:\n result=traceback.format_exc()\n print(result,flush=True)\n'
                 'else:\n result="PASS"\n'
                 '(root/"result.tmp").write_text(result)\n(root/"result.tmp").replace(root/"result")\n',encoding='utf-8')
             with patch.object(installer,'MAC_BUNDLE_ID','pianoth.yunjin.desktoppet.tests'):
@@ -210,7 +211,12 @@ class CocoaTests(unittest.TestCase):
                 while not done.exists() and time.monotonic()<end:time.sleep(.05)
                 log=root/'launcher.log'
                 self.assertTrue(done.exists(),log.read_text(errors='replace') if log.exists() else 'Bundle did not start Python')
-                self.assertEqual(done.read_text(),'PASS')
+                result=done.read_text(encoding='utf-8')
+                if result!='PASS':
+                    # assertEqual truncates a subprocess traceback as a string
+                    # diff, hiding the only useful diagnosis from the CI log.
+                    launcher_log=log.read_text(errors='replace') if log.exists() else '(no launcher log)'
+                    self.fail('Native Cocoa probe failed:\n'+result+'\nLauncher log:\n'+launcher_log)
             finally:
                 if not done.exists() and pid.exists():
                     try:os.kill(int(pid.read_text()),signal.SIGTERM)
