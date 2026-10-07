@@ -85,7 +85,7 @@ class Panel(QDialog):
         side.addLayout(brand); side.addSpacing(20)
         self.nav={}
         for label,glyph,page,sub in [('Appunti','note',0,None),('Promemoria','bell',1,None),
-                ('Studio','cards',6,None),('Focus','focus',4,None),('Metronomo','metro',5,0),('Cronometro','clock',5,1)]:
+                ('Studio','cards',6,None),('Meteo','sun',7,None),('Focus','focus',4,None),('Metronomo','metro',5,0),('Cronometro','clock',5,1)]:
             self.add_navigation(side,label,glyph,page,sub)
         side.addStretch()
         self.add_navigation(side,'Voce','voice',3,None)
@@ -101,6 +101,9 @@ class Panel(QDialog):
         self.music=MusicPanel(pet); self.tabs.addTab(self.music,'Musica')
         from yun_jin_study_ui import StudyPanel
         self.study=StudyPanel(pet);self.tabs.addTab(self.study,'Studio')
+        self.weather_host=QWidget();self.weather_view=None;self.tabs.addTab(self.weather_host,'Meteo')
+        pet.context.location_changed.connect(self.sync_weather)
+        self.sync_weather()
         self.music.tabs.currentChanged.connect(self.sync_navigation)
         self.tabs.currentChanged.connect(self.sync_navigation)
         content.addWidget(self.status)
@@ -118,7 +121,17 @@ class Panel(QDialog):
 
     def sync_navigation(self,*_):
         page=self.tabs.currentIndex(); sub=self.music.tabs.currentIndex() if page==5 else None
+        if page==7 and self.weather_view is None and self.pet.context.weather_location:
+            from yun_jin_forecast_ui import WeatherPanel
+            layout=QVBoxLayout(self.weather_host);layout.setContentsMargins(0,0,0,0)
+            self.weather_view=WeatherPanel(self.pet);layout.addWidget(self.weather_view)
         for key,b in self.nav.items():b.setChecked(key==(page,sub))
+
+    def sync_weather(self):
+        available=self.pet.context.weather_location is not None
+        self.nav[(7,None)].setVisible(available)
+        if not available and self.tabs.currentIndex()==7:self.tabs.setCurrentIndex(2)
+        self.tabs.setTabVisible(7,available)
 
     def build_notes(self):
         tab=QWidget(); main=QVBoxLayout(tab); main.setContentsMargins(0,0,0,0); main.setSpacing(12)

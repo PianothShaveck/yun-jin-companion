@@ -242,7 +242,7 @@ class StudyUiTests(unittest.TestCase):
             tools.anki_requested=True;tools.refresh_anki(force=True)
             self.wait_until(lambda:tools.anki_process is None,10)
             self.assertEqual(tools.anki_total,600);self.assertEqual(len(tools.anki_cards),36)
-            self.assertEqual(tools.active_dialog.row['id'],5480)
+            self.assertIn(tools.active_dialog.row['id'],range(5401,5481))
             self.assertEqual(len(tools.anki_seen),1523)
         finally:fixture.tearDown()
 

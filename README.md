@@ -1,6 +1,6 @@
 # Yun Jin Companion
 
-Una piccola Yun Jin sul desktop, con flashcard, appunti, promemoria e strumenti musicali. **Versione 1.3.3** per Windows, macOS e Linux.
+Una piccola Yun Jin sul desktop, con flashcard, appunti, promemoria e strumenti musicali. **Versione 1.4.0** per Windows, macOS e Linux.
 
 [Scarica l'app](https://github.com/PianothShaveck/yun-jin-companion/releases/latest) · [Guida illustrata](Guida.pdf)
 
@@ -16,11 +16,12 @@ Una piccola Yun Jin sul desktop, con flashcard, appunti, promemoria e strumenti 
 - Voce tramite Edge TTS o Google Translate, con fumetti durante il parlato.
 - Animazioni, passeggiate, inseguimento del cursore e sonnellini.
 - Saluti nella lingua scelta e reazioni all'ora del giorno e al meteo.
+- Previsioni orarie e a sette giorni, con illustrazioni di Yun Jin.
 - Backup dei dati e aggiornamenti con note di rilascio, rinvio o salto della versione.
 
 ## Installazione
 
-Scarica **Yun-Jin-Companion-1.3.3.zip** dalla release ed estrai tutta la cartella.
+Scarica **Yun-Jin-Companion-1.4.0.zip** dalla release ed estrai tutta la cartella.
 
 | Sistema | Avvio dell'installazione |
 | --- | --- |
@@ -36,7 +37,7 @@ Puoi nascondere il personaggio dal menu, dalle impostazioni o con una scorciatoi
 
 ## Dati e connessione
 
-Mazzi, ripassi, allegati e impostazioni sono conservati localmente in SQLite. Lo studio funziona offline. Il collegamento opzionale propone carte Anki difficili dei mazzi studiati oggi, senza modificarne la collezione. La sintesi vocale invia il testo al servizio selezionato. Il meteo usa [Open-Meteo](https://open-meteo.com/): scegli la città nelle impostazioni per attivarlo. La ricerca delle città usa dati [GeoNames](https://www.geonames.org/). Saluti, reazioni meteo e ricerca automatica degli aggiornamenti sono disattivabili nelle impostazioni.
+Mazzi, ripassi, allegati e impostazioni sono conservati localmente in SQLite. Lo studio funziona offline. Il collegamento opzionale propone carte Anki difficili dei mazzi studiati oggi, senza modificarne la collezione. I richiami variano tra le carte selezionate ed evitano quelle già proposte oggi o ieri. La sintesi vocale invia il testo al servizio selezionato. Il meteo usa [Open-Meteo](https://open-meteo.com/): scegli la città nelle impostazioni per attivarlo. La ricerca delle città usa dati [GeoNames](https://www.geonames.org/). Saluti, reazioni meteo e ricerca automatica degli aggiornamenti sono disattivabili nelle impostazioni.
 
 ## Crediti e licenza
 

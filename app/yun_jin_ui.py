@@ -114,6 +114,10 @@ def icon(name, color='#c8bfd7'):
         p.drawRoundedRect(QRectF(5,3,14,18),2,2)
         if name=='note':
             for y in (8,12,16): line(8,y,16,y)
+    elif name=='sun':
+        p.drawEllipse(QRectF(7,7,10,10))
+        for a,b,c,d in ((12,2,12,4),(12,20,12,22),(2,12,4,12),(20,12,22,12),
+                        (5,5,6,6),(18,18,19,19),(5,19,6,18),(18,6,19,5)):line(a,b,c,d)
     elif name=='bell':
         path=QPainterPath(QPointF(5,17));path.lineTo(7,14);path.lineTo(7,10)
         path.cubicTo(7,3,17,3,17,10);path.lineTo(17,14);path.lineTo(19,17);path.closeSubpath()

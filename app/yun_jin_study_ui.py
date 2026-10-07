@@ -90,6 +90,8 @@ class ReviewDialog(QDialog):
             return
         self.progress.setText(f'{self.answered} '+('risposta' if self.answered==1 else 'risposte') if self.answered else '')
         self.face.present(self.row,external=self.external);self.started=time.monotonic();self.reveal_button.setFocus()
+        if self.external or self.quick_ids is not None:
+            self.pet.study_tools.remember_practice([self.row],self.external)
 
     def wait_tick(self):
         if self.finished_session: self.wait_timer.stop();return
@@ -111,6 +113,8 @@ class ReviewDialog(QDialog):
             except Exception as exc:
                 self.detail.setText(str(exc));return
         self.answer=True;self.revealed_at=time.monotonic();self.face.present(self.row,True,self.external)
+        if self.external or self.quick_ids is not None:
+            self.pet.study_tools.remember_practice([self.row],self.external,reviewed=True)
         self.reveal_button.hide()
         if self.external:
             self.external_next.show();return

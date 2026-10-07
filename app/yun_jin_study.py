@@ -66,6 +66,7 @@ class StudyTools(QObject):
         self.anki_more=False;self.anki_total=0
         self.anki_path=pet.store.preference('study_anki_path','');self.anki_cards=[];self.anki_valid_until=0;self.anki_requested=False;self.anki_status='Anki non collegato'
         self.anki_detail=''
+        self._practice=None
         self.anki_process=None;self.fit_process=None;self.fit_queue=[];self.last_anki=0
         self.next_prompt=pet.store.preference('study_next_prompt',0.)
         if not time.time()<self.next_prompt<time.time()+3*3600:self.schedule_prompt()
@@ -93,6 +94,22 @@ class StudyTools(QObject):
     def hide_prompt(self):
         if self.prompt:self.prompt.hide()
 
+    def practice_source(self,external=False):
+        from yun_jin_study_rotation import source_key
+        return (source_key(self.anki_path) if self.anki_path else 'anki:unlinked') if external else 'native'
+
+    def practice_history(self):
+        if self._practice is None:
+            from yun_jin_study_rotation import PracticeHistory
+            self._practice=PracticeHistory(self.pet.store,self.anki_path)
+        return self._practice
+
+    def practice_options(self,external=False,now=None):
+        return self.practice_history().options(self.practice_source(external),now)
+
+    def remember_practice(self,cards,external=False,reviewed=False,now=None):
+        self.practice_history().record(self.practice_source(external),cards,now,reviewed)
+
     def can_prompt(self):
         return (not self.closed and not (self.active_dialog and self.active_dialog.isVisible())
                 and self.pet.context.can_react(ignore_character=self.pet.character_hidden or self.pet.fullscreen_hidden)
@@ -113,14 +130,18 @@ class StudyTools(QObject):
         # Don't initialize any SRS tables just to discover an empty collection.
         exists=self.pet.store.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sr_decks'").fetchone()
         native=self.pet.store.study.hard_candidates(now,3,exclude=[int(i[2:]) for i in history['ids'] if i.startswith('n:')],
-            exclude_notes=[int(i[2:]) for i in history.get('notes',[]) if i.startswith('n:')]) if exists else []
+            exclude_notes=[int(i[2:]) for i in history.get('notes',[]) if i.startswith('n:')],
+            **self.practice_options(now=now)) if exists else []
+        blocked=set(self.practice_options(True,now)['cooldown_notes']) if self.anki_enabled else set()
         external=[c for c in self.anki_cards if 'a:'+str(c['id']) not in history['ids']
             and 'a:'+str(c.get('note_id',c['id'])) not in history.get('notes',[])
+            and c.get('note_id',c['id']) not in blocked
             and c.get('note_id',c['id']) not in self.anki_seen] if self.anki_enabled and now<self.anki_valid_until else []
-        # Native cards have priority. Neither source chooses random cards.
+        # Both sources are shuffled only AFTER selecting their difficult pool.
         candidates=native or external[:3]
         if not candidates:return
         is_external=not native
+        self.remember_practice(candidates,is_external,now=now)
         history['count']+=1;history['ids'] += [('a:' if is_external else 'n:')+str(c['id']) for c in candidates]
         history.setdefault('notes',[]).extend(('a:' if is_external else 'n:')+str(c.get('note_id',c['id'])) for c in candidates)
         self.pet.store.set_preference('study_prompt_history',history)
@@ -193,7 +214,8 @@ class StudyTools(QObject):
         if process is self.anki_process:
             process.write(json.dumps({'collection':self.anki_path,'scratch':process.scratch.name,
                 'include_suspended':self.anki_include_suspended,'exclude_notes':self.anki_seen,
-                'seen_day':self.anki_day,'restart':self.anki_requested}).encode());process.closeWriteChannel()
+                'seen_day':self.anki_day,'restart':self.anki_requested,
+                **self.practice_options(True)}).encode());process.closeWriteChannel()
 
     def anki_finished(self,process,code):
         if process is not self.anki_process:return

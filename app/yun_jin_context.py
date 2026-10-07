@@ -251,6 +251,9 @@ class Context(QObject):
 
     def request_weather(self):
         if self.closed or self.process is not None or not self.enabled['weather'] or self.weather_location is None: return
+        forecast=getattr(self,'forecast',None)
+        if forecast is not None and forecast.process is not None:
+            self.next_weather=self.monotonic()+60;return
         self.next_weather = self.monotonic()+WEATHER_TTL  # One attempt/hour, including failures.
         self.generation += 1; generation = self.generation
         process = QProcess(self); self.process = process
@@ -297,6 +300,7 @@ class Context(QObject):
 
     def shutdown(self):
         self.closed = True; self.pending.clear(); self.timer.stop()
+        if getattr(self,'forecast',None) is not None:self.forecast.shutdown()
         self.cancel_request()
         # Include a request just cancelled by a checkbox/timeout whose finished
         # signal has not yet been delivered. No child process survives closing.

@@ -27,7 +27,7 @@ S={
 PAGES=[('INIZIA QUI','Windows'),('SUL DESKTOP','macOS, Linux e comandi'),('CONSERVA','Appunti'),
        ('RICORDA','Promemoria'),('ASCOLTA','Voce e suoni'),('ESERCITATI','Metronomo'),
        ('MISURA','Cronometro e focus'),('CONSERVA I DATI','Backup e manutenzione'),('SEMPRE AGGIORNATA','Aggiornamenti'),
-       ('RIPOSA','Il sonno di Yun Jin'),('INTORNO A TE','Orario e meteo'),
+       ('RIPOSA','Il sonno di Yun Jin'),('INTORNO A TE','Orario e meteo'),('GUARDA FUORI','Previsioni meteo'),
        ('IMPARA','Studio e ripassi'),('CREA','Le tue flashcard'),('RICORDA A LUNGO','FSRS e richiami'),
        ('PERSONALIZZA','Scorciatoie e Anki'),('AIUTO','Problemi e crediti')]
 
@@ -233,9 +233,9 @@ story += [h('Tre fasi, un movimento continuo'),
     p('Il sonno non spegne i promemoria: gli avvisi e i suoni restano attivi. Voce e metronomo possono farla svegliare per la propria animazione. Focus e metronomo impediscono nuovi sonnellini spontanei.'),
     call('La modalità <b>Addormentata</b> è sopra <b>Tranquilla</b> nel menu Carattere. Non è la Pausa completa: il respiro continua ad animarsi.'),PageBreak()]
 # 11
-story += [picture('orario-meteo.png',390),Spacer(1,8),
+story += [picture('orario-meteo.png',360),Spacer(1,8),
     h('Un saluto quando apri l’app'),
-    p('Yun Jin ti saluta nella <b>lingua scelta in Voce</b>, secondo l’orologio locale del computer. Il saluto vocale avviene <b>una sola volta all’avvio</b>: riaprire il pannello o cambiare impostazioni non lo ripete. Usa anche il servizio, la voce e il volume che hai selezionato. La frase compare nel fumetto durante il parlato.'),
+    p('Yun Jin ti saluta <b>una sola volta all’avvio</b>, secondo l’orologio del computer, usando lingua, voce e volume scelti in <b>Voce</b>. La frase compare nel fumetto. Riaprire il pannello non ripete il saluto.'),
     table(['Fascia locale','Reazione al cambio di fascia'],[
         ['05:00–11:59 · Mattina','Apre le braccia e saluta.'],
         ['12:00–17:59 · Pomeriggio','Buon pomeriggio: saluta con la mano.'],
@@ -245,9 +245,15 @@ story += [picture('orario-meteo.png',390),Spacer(1,8),
     p('<b>Applauso</b>, in <b>Animazioni → Gesti</b>, si esegue solo su comando: non è un comportamento casuale.','small'),
     h('Il tempo fuori'),
     p('Dopo circa un minuto, poi ogni <b>ora</b>, cerca il meteo in background. Reagisce a sole, nuvole, pioggia, neve, nebbia e temporali con un gesto e una breve frase nella lingua scelta. Commenta i cambiamenti con almeno <b>due ore</b> tra due interventi.'),
-    p('In <b>Impostazioni → Orario e meteo → Città</b>, scegli <b>Scegli città…</b>, cerca il nome e conferma il risultato con <b>Usa città</b>. La scelta resta salvata. Senza una città selezionata, il meteo resta inattivo.','small'),
-    p('Meteo: <link href="https://open-meteo.com/" color="#3e777e">Open-Meteo</link>. Città: GeoNames. Le coordinate della città scelta servono solo a richiedere il meteo.','small'),
-    call('Puoi disattivare separatamente saluto, reazioni all’ora e meteo. Durante comandi manuali, sonno, pausa, focus, metronomo o promemoria queste reazioni aspettano brevemente o vengono saltate. Senza dati o connessione, Yun Jin continua normalmente e non mostra errori.'),PageBreak()]
+    p('Serve una città selezionata in <b>Impostazioni → Orario e meteo</b>. La scheda <b>Meteo</b> mostra anche le previsioni complete.','small'),
+    call('Saluto e reazioni si disattivano separatamente. Non interrompono le altre attività. Senza dati o connessione, Yun Jin continua normalmente e non mostra errori.'),PageBreak()]
+# Forecast
+story += [p('Scegli una città in <b>Impostazioni → Orario e meteo</b>: nella barra laterale compare <b>Meteo</b>. Il pulsante con il nome della città permette di cambiarla.'),
+    picture('meteo.png',440),Spacer(1,10),
+    p('Seleziona un <b>giorno</b> per vedere temperature minime e massime, pioggia e vento. La tabella <b>Ora per ora</b> mostra il dettaglio: clicca un’ora per aggiornare il riquadro illustrato. Gli orari seguono il fuso della città.'),
+    p('<b>Precip.</b> è la probabilità di precipitazioni; <b>mm</b> è la quantità prevista nell’ora. Nel riepilogo giornaliero la probabilità è il massimo delle ore e i millimetri sono il totale. Il simbolo del giorno indica la condizione più intensa prevista.','small'),
+    p('Open-Meteo <b>Best Match</b> seleziona i modelli in base alla località. Anche le condizioni attuali sono stime del modello. Le previsioni possono cambiare, soprattutto nei giorni più lontani.','small'),
+    p('Le previsioni complete si caricano aprendo la scheda e si aggiornano al massimo ogni ora. La freccia circolare richiede un aggiornamento. Senza connessione restano visibili per un massimo di 24 ore, con la dicitura <b>Dati salvati</b> e l’orario del download.','small'),PageBreak()]
 # Study
 story += [p('Apri <b>Studio</b> dalla barra laterale. Crea un mazzo, aggiungi alcune carte e premi <b>Studia</b>.'),
     picture('studio.png',450),Spacer(1,10),
@@ -275,7 +281,7 @@ story += [p('<b>FSRS 6</b> stima difficoltà, stabilità della memoria e probabi
     p('I passi accettano s, m, h e d; senza unità il valore è in minuti. Da rivedere torna al primo passo; Bene avanza, Difficile ripete il passo (sul primo usa una media), Facile passa ai ripassi. Con passi vuoti decide FSRS. I limiti giornalieri ripartono alle 04:00 locali.','small'),
     h('Si adatta al tuo studio'),p('Dopo le sessioni, FSRS si adatta automaticamente ai tuoi risultati quando c’è abbastanza cronologia. Le scadenze già fissate restano invariate.'),
     p('La ritenzione a 30 giorni nel pannello indica quante risposte hai ricordato nei ripassi distanziati di almeno un giorno. I passi brevi sono esclusi.','small'),
-    h('Piccoli richiami'),p('Ogni 90-150 minuti, al massimo tre volte al giorno, può comparire un fumetto. Sceglie tra i <b>passaggi ostinati</b> e il <b>10% più difficile</b> di ogni mazzo studiato oggi, considerando anche gli errori recenti. Aspetta almeno 30 minuti dall’ultimo ripasso della carta e alterna le note. <b>Ripassa</b> apre fino a tre carte; <b>×</b> ignora e <b>Non oggi</b> sospende i richiami. Scompare dopo 18 secondi.'),
+    h('Piccoli richiami'),p('Ogni 90-150 minuti, al massimo tre volte al giorno, può comparire un fumetto. Sceglie tra i <b>passaggi ostinati</b> e il <b>10% più difficile</b> di ogni mazzo studiato oggi, considerando anche gli errori recenti. La scelta varia in tutto questo gruppo e favorisce le note viste meno spesso, senza includere carte più facili. Esclude le note già proposte o ripassate qui oggi e ieri, anche dopo un riavvio. Aspetta almeno 30 minuti dall’ultimo ripasso della carta. <b>Ripassa</b> apre fino a tre carte; <b>×</b> ignora e <b>Non oggi</b> sospende i richiami. Scompare dopo 18 secondi.'),
     p('Durante il focus o altre attività non interrompe. Puoi disattivare i richiami in <b>Studio → menu → Richiami e Anki</b>. I ripassi extra delle carte native vengono registrati e FSRS ne tiene conto.','small'),PageBreak()]
 # Shortcuts and optional Anki
 story += [h('Scegli i tuoi tasti'),p('Apri <b>Impostazioni → Scorciatoie</b>, scegli la funzione e premi la combinazione. <b>Salva</b> applica; <b>×</b> disattiva; <b>Ripristina</b> torna ai valori iniziali.'),

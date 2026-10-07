@@ -441,11 +441,11 @@ class StudyStore:
                   last_review=datetime.fromtimestamp(row['last_review'],timezone.utc))
         return self.scheduler(row['deck_id']).get_card_retrievability(card,datetime.fromtimestamp(now,timezone.utc))
 
-    def hard_candidates(self, now=None, limit=3, exclude=(), exclude_notes=()):
+    def hard_candidates(self, now=None, limit=3, exclude=(), exclude_notes=(),rotation=None,cooldown_notes=(),visits=None):
         """Difficult native cards from today's studied decks; spaced extra reviews."""
         now=time.time() if now is None else now
         start,end=day_bounds(now)
-        rows=self.db.execute('''WITH recent AS (
+        query='''WITH recent AS (
           SELECT card_id,count(*) AS recent_reviews,sum(rating=1) AS recent_failures,
           sum(rating=2) AS recent_hard,max(CASE WHEN rating=1 THEN reviewed ELSE 0 END) AS last_failure
           FROM sr_reviews WHERE reviewed>=? AND reviewed<=? AND undone=0 AND state_before=2
@@ -458,14 +458,19 @@ class StudyStore:
           JOIN sr_decks d ON d.id=n.deck_id WHERE d.archived=0 AND n.deleted=0 AND c.deleted=0
           AND c.suspended=0 AND c.state IN (2,3) AND c.last_review<=?
           AND EXISTS(SELECT 1 FROM sr_reviews r WHERE r.deck_id=d.id AND r.reviewed>=? AND r.reviewed<? AND r.undone=0)
-          ''',(now-30*86400,now,now-1800,start,min(end,now+1)))
+          '''
+        parameters=(now-30*86400,now,now-1800,start,min(end,now+1))
         allowed={}
         def metadata():
-            for row in rows:
+            for row in self.db.execute(query,parameters):
                 deck=row['deck_id']
                 if deck not in allowed:
                     cap=self.deck(deck)['settings']['review_limit'];used=self.usage(deck,now)['reviews']
                     allowed[deck]=cap is None or used<cap
                 if allowed[deck]:yield row
-        from yun_jin_study_selection import select_candidates
-        return [self.card(row['id']) for row in select_candidates(metadata(),limit,exclude,exclude_notes)]
+        from yun_jin_study_selection import select_candidates,select_pool,rotate_pool
+        if rotation is None:chosen=select_candidates(metadata(),limit,exclude,exclude_notes)
+        else:
+            pool=rotate_pool(select_pool(metadata),rotation,visits,set(cooldown_notes)|set(exclude_notes))
+            excluded=set(exclude);chosen=[row for row in pool if row['id'] not in excluded][:limit]
+        return [self.card(row['id']) for row in chosen]

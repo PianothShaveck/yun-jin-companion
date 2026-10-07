@@ -11,11 +11,11 @@ MAX_RESPONSE = 32 * 1024
 WEATHER_TTL = 3600
 
 
-def read_json(url):
-    request = Request(url, headers={'User-Agent': 'Yun-Jin-Companion/1.2', 'Accept': 'application/json'})
+def read_json(url,limit=MAX_RESPONSE):
+    request = Request(url, headers={'User-Agent': 'Yun-Jin-Companion/1.4', 'Accept': 'application/json'})
     with urlopen(request, timeout=5) as response:
-        raw = response.read(MAX_RESPONSE + 1)
-    if len(raw) > MAX_RESPONSE:
+        raw = response.read(limit + 1)
+    if len(raw) > limit:
         raise ValueError('Response too large')
     result = json.loads(raw)
     if not isinstance(result, dict):
@@ -105,6 +105,9 @@ def main():
             job = json.loads(raw)
             if job.get('operation')=='cities':
                 result={'cities':search_cities(job.get('name'))}
+            elif job.get('operation')=='forecast':
+                from yun_jin_forecast import fetch_forecast
+                result=fetch_forecast(job.get('location'))
             else:
                 result = fetch_weather(job.get('location'))
     except Exception:

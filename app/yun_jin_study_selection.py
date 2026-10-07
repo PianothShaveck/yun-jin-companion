@@ -2,6 +2,7 @@
 """Small, deterministic pools for optional practice, independent of scheduling."""
 import heapq
 import math
+import hashlib
 from itertools import zip_longest
 
 
@@ -35,9 +36,27 @@ def select_pool(rows):
     """
     counts={}
     for row in rows():
+        row=dict(row)
         if row.get('relative_eligible',True):
             counts[row['deck_id']]=counts.get(row['deck_id'],0)+1
     return select_candidates(rows(),limit=None,deck_counts=counts)
+
+
+def rotate_pool(pool,seed,visits=None,blocked=()):
+    """Weighted shuffle of the *already qualified* pool, stable within a day.
+
+    Every hard card can appear on the first page. Modest difficulty/leech
+    weights retain relevance; previous exposures reduce the weight. Stable
+    note keys keep paging independent of refreshes and of excluded items.
+    """
+    visits=visits or {};blocked=set(blocked)
+    def key(row):
+        digest=hashlib.blake2b((str(seed)+':'+str(row['note_id'])).encode(),digest_size=8).digest()
+        u=(int.from_bytes(digest,'big')+1)/(2**64+1)
+        weight=(1+max(0,min(10,number(row.get('difficulty'))))*.05+.4*bool(row.get('leech')))
+        weight/=1+.5*max(0,number(visits.get(str(row['note_id']),visits.get(row['note_id'],0))))
+        return -math.log(max(u,1e-20))/weight,row['id']
+    return sorted((row for row in pool if row['note_id'] not in blocked),key=key)
 
 
 def select_candidates(rows, limit=120, exclude=(), exclude_notes=(), *, deck_counts=None):

@@ -218,12 +218,13 @@ def study_window(db, now):
 
 
 def read_candidates(collection, now=None, limit=36, scratch=None, include_suspended=False,
-                    exclude_notes=(), seen_day=None, restart=False):
+                    exclude_notes=(), seen_day=None, restart=False,rotation=None,cooldown_notes=(),visits=None):
     now=time.time() if now is None else now
     limit=max(1,min(120,int(limit)))
     collection=Path(collection).expanduser().resolve(strict=True)
     if collection.name!='collection.anki2': raise ValueError('Seleziona collection.anki2 del tuo profilo Anki.')
-    options=dict(include_suspended=include_suspended,exclude_notes=exclude_notes,seen_day=seen_day,restart=restart)
+    options=dict(include_suspended=include_suspended,exclude_notes=exclude_notes,seen_day=seen_day,restart=restart,
+                 rotation=rotation,cooldown_notes=cooldown_notes,visits=visits)
     try:return _read_candidates(collection,collection,now,limit,**options)
     except sqlite3.OperationalError as exc:
         if getattr(exc,'sqlite_errorcode',0)&255 not in (sqlite3.SQLITE_BUSY,sqlite3.SQLITE_LOCKED):raise
@@ -256,7 +257,7 @@ def anki_decks(db,tables,legacy):
 
 
 def _read_candidates(database,collection,now,limit,validate=False,include_suspended=False,
-                     exclude_notes=(),seen_day=None,restart=False):
+                     exclude_notes=(),seen_day=None,restart=False,rotation=None,cooldown_notes=(),visits=None):
     deadline=time.monotonic()+READ_SECONDS
     timed_out=False
     def progress():
@@ -318,10 +319,17 @@ def _read_candidates(database,collection,now,limit,validate=False,include_suspen
                 row['relative_eligible']=row['queue']>=0
                 yield row
         pool=select_pool(metadata)
+        total=len(pool);qualified=pool
+        if rotation is not None:
+            from yun_jin_study_selection import rotate_pool
+            pool=rotate_pool(pool,rotation,visits,cooldown_notes)
         seen=set(exclude_notes) if seen_day is None or seen_day==start else set()
         selected=[row for row in pool if row['note_id'] not in seen]
-        restarted=bool(restart and pool and not selected)
-        if restarted:selected=pool
+        restarted=bool(restart and qualified and not selected)
+        if restarted:
+            # Explicit practice may repeat an exhausted pool; automatic prompts
+            # always retain the today/yesterday exclusions in their controller.
+            selected=rotate_pool(qualified,rotation,visits) if rotation is not None else qualified
         media_root=collection.parent/'collection.media';result=[];unsupported=0;issues=set();models={};payload_size=0
         skipped=[];consumed=0
         for row in selected:
@@ -348,7 +356,7 @@ def _read_candidates(database,collection,now,limit,validate=False,include_suspen
                 if len(result)>=limit: break
             except (ValueError,KeyError,IndexError,UnicodeError,TypeError,AttributeError) as exc:
                 unsupported+=1;issues.add(str(exc)[:180]);skipped.append(row['note_id']);consumed+=1
-        return dict(cards=result,total=len(pool),more=consumed<len(selected),restarted=restarted,skipped=skipped,
+        return dict(cards=result,total=total,more=consumed<len(selected),restarted=restarted,skipped=skipped,
             unsupported=unsupported,issues=sorted(issues)[:3],checked=now,study_start=start,study_end=end)
     except sqlite3.OperationalError as exc:
         if timed_out and getattr(exc,'sqlite_errorcode',0)&255==sqlite3.SQLITE_INTERRUPT:
@@ -375,7 +383,8 @@ if __name__=='__main__':
         request=json.loads(sys.stdin.buffer.read(2*1024*1024))
         result=read_candidates(request['collection'],scratch=request.get('scratch'),
             include_suspended=bool(request.get('include_suspended',False)),exclude_notes=request.get('exclude_notes',()),
-            seen_day=request.get('seen_day'),restart=bool(request.get('restart',False)))
+            seen_day=request.get('seen_day'),restart=bool(request.get('restart',False)),
+            rotation=request.get('rotation'),cooldown_notes=request.get('cooldown_notes',()),visits=request.get('visits'))
     except FileNotFoundError:
         result=dict(cards=[],error='Collezione non trovata. Seleziona il profilo Anki.')
     except PermissionError:
