@@ -269,7 +269,8 @@ class Context(QObject):
         process.started.connect(send)
         process.finished.connect(lambda code, status: self.received(process, generation, code))
         process.errorOccurred.connect(lambda error: self.failed(process) if error == QProcess.ProcessError.FailedToStart else None)
-        process.start(); self.timeout.start(12000)
+        # start() can emit FailedToStart before returning on Windows.
+        self.timeout.start(12000); process.start()
 
     def failed(self, process):
         if process is self.process:

@@ -38,7 +38,9 @@ class ForecastService(QObject):
         process.finished.connect(lambda code,_:self.received(process,code))
         process.errorOccurred.connect(lambda error:self.received(process,-1)
                                       if error==QProcess.ProcessError.FailedToStart else None)
-        process.start();self.timeout.start(8000);self.changed.emit()
+        # FailedToStart may be emitted synchronously by start() on Windows.
+        # Arm first so every completion path can stop the deadline.
+        self.timeout.start(8000);process.start();self.changed.emit()
 
     def received(self,process,code):
         if self.closed or process is not self.process:process.deleteLater();return

@@ -68,7 +68,8 @@ class CityDialog(QDialog):
         process.finished.connect(lambda code,_:self.received(process,code))
         process.errorOccurred.connect(lambda error:self.received(process,-1)
                                       if error==QProcess.ProcessError.FailedToStart else None)
-        process.start();self.timeout.start(7000)
+        # start() can emit FailedToStart before returning on Windows.
+        self.timeout.start(7000);process.start()
 
     def received(self,process,code):
         if process is not self.process or self.closed:

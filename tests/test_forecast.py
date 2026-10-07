@@ -11,7 +11,7 @@ from unittest.mock import Mock,patch
 from urllib.parse import parse_qs,urlparse
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'app'))
-from PyQt6.QtCore import QTimeZone,QEventLoop,QTimer
+from PyQt6.QtCore import QTimeZone,QEventLoop,QTimer,QObject,QProcess,pyqtSignal
 from PyQt6.QtWidgets import QApplication
 from yun_jin_forecast import fetch_forecast,cache_valid,condition,HOURLY,DAILY,CURRENT
 from yun_jin_app import Companion
@@ -147,6 +147,34 @@ class ForecastUiTests(unittest.TestCase):
             service.request(True);self.wait(lambda:service.process is None)
         self.assertTrue(service.failed);self.assertIsNotNone(service.data)
         self.assertFalse(service.timeout.isActive())
+
+    def test_immediate_start_failure_does_not_leave_a_late_timeout(self):
+        class FailedProcess(QObject):
+            ProcessError=QProcess.ProcessError
+            started=pyqtSignal()
+            finished=pyqtSignal(int,int)
+            errorOccurred=pyqtSignal(object)
+            def setProgram(self,value):pass
+            def setArguments(self,value):pass
+            def start(self):self.errorOccurred.emit(self.ProcessError.FailedToStart)
+            def readAllStandardOutput(self):return b''
+        page=self.page();service=page.service;cached=service.data
+        with patch('yun_jin_forecast_service.QProcess',FailedProcess):service.request(True)
+        self.assertIsNone(service.process);self.assertTrue(service.failed)
+        self.assertIs(service.data,cached);self.assertFalse(service.timeout.isActive())
+        self.assertGreater(service.retry_at,time.monotonic())
+        # The same startup ordering also matters for city search and ambient weather.
+        from yun_jin_weather_ui import CityDialog
+        dialog=CityDialog(self.pet,self.pet.panel)
+        try:
+            dialog.query.setText('Reggio Calabria')
+            with patch('yun_jin_weather_ui.QProcess',FailedProcess):dialog.start_search()
+            self.assertIsNone(dialog.process);self.assertFalse(dialog.timeout.isActive())
+            self.assertTrue(dialog.search.isEnabled())
+        finally:dialog.reject();dialog.deleteLater()
+        context=self.pet.context;context.enabled['weather']=True
+        with patch('yun_jin_context.QProcess',FailedProcess):context.request_weather()
+        self.assertIsNone(context.process);self.assertFalse(context.timeout.isActive())
 
     def test_small_window_fits_days_and_generated_art_cache_stays_bounded(self):
         page=self.page();self.pet.panel.resize(760,550)
