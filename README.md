@@ -1,6 +1,6 @@
 # Yun Jin Companion
 
-Una piccola Yun Jin sul desktop, con flashcard, appunti, promemoria e strumenti musicali. **Versione 1.4.0** per Windows, macOS e Linux.
+Una piccola Yun Jin sul desktop, con flashcard, appunti, promemoria e strumenti musicali. **Versione 1.4.1** per Windows, macOS e Linux.
 
 [Scarica l'app](https://github.com/PianothShaveck/yun-jin-companion/releases/latest) · [Guida illustrata](Guida.pdf)
 
@@ -21,7 +21,7 @@ Una piccola Yun Jin sul desktop, con flashcard, appunti, promemoria e strumenti 
 
 ## Installazione
 
-Scarica **Yun-Jin-Companion-1.4.0.zip** dalla release ed estrai tutta la cartella.
+Scarica **Yun-Jin-Companion-1.4.1.zip** dalla release ed estrai tutta la cartella.
 
 | Sistema | Avvio dell'installazione |
 | --- | --- |

@@ -16,8 +16,8 @@ ACTIONS={'panel':'Pannello','reminder':'Nuovo promemoria','read':'Leggi testo co
          'focus_toggle':'Focus · Avvia / Interrompi','focus_open':'Apri focus',
          'note':'Nuovo appunto','capture':'Importa appunti copiati',
          'pet_pause':'Pausa / Riprendi Yun Jin','quiet':'Silenzio per un’ora / Riattiva',
-         'pet_visibility':'Mostra / Nascondi Yun Jin'}
-GROUPS=(('Generali',('panel','note','capture','reminder','study','pet_pause','pet_visibility')),
+         'pet_visibility':'Mostra / Nascondi Yun Jin','weather_open':'Apri meteo'}
+GROUPS=(('Generali',('panel','note','capture','reminder','study','weather_open','pet_pause','pet_visibility')),
         ('Voce',('read','stop','quiet')),
         ('Cronometro',('stopwatch_toggle','stopwatch_lap','stopwatch_reset','stopwatch_open')),
         ('Metronomo',('metronome_toggle','metronome_open')),('Focus',('focus_toggle','focus_open')))
@@ -260,7 +260,8 @@ class Hotkeys:
                       IDENTS['note']:lambda:pet.new_note(),IDENTS['capture']:lambda:pet.capture_clipboard(),
                       IDENTS['pet_pause']:lambda:pet.set_paused(not pet.paused),
                       IDENTS['quiet']:lambda:pet.toggle_quiet(),
-                      IDENTS['pet_visibility']:lambda:pet.toggle_character_visibility()}
+                      IDENTS['pet_visibility']:lambda:pet.toggle_character_visibility(),
+                      IDENTS['weather_open']:lambda:pet.open_weather()}
         saved=pet.store.preference('shortcuts_'+sys.platform,{})
         if sys.platform=='darwin' and saved==LEGACY_DEFAULTS:
             saved=dict(DEFAULTS);pet.store.set_preference('shortcuts_'+sys.platform,saved)

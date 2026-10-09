@@ -4,6 +4,7 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 import json
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -122,6 +123,72 @@ class AnimationTests(unittest.TestCase):
                 self.pet.last_cursor_motion=time.monotonic()
                 self.pet.decide(time.monotonic())
             self.assertFalse(any(n == 'applause16' for call in sequence.call_args_list for n, _ in call.args[0]))
+
+    def applause_action(self, repeat=False):
+        menu = QMenu(self.pet); self.pet.populate_context_menu(menu)
+        animations = next(a.menu() for a in menu.actions() if a.text() == 'Animazioni')
+        if repeat:
+            animations = next(a.menu() for a in animations.actions() if a.text() == 'Ripeti')
+        gestures = next(a.menu() for a in animations.actions() if a.text() == 'Gesti')
+        return menu, next(a for a in gestures.actions() if a.text() == 'Applauso')
+
+    def test_menu_animation_survives_delayed_voice_and_music_without_stopping_audio(self):
+        for repeat in (False, True):
+            with self.subTest(repeat=repeat):
+                self.pet.cancel(); self.pet.voice_restore = None
+                self.pet.voice_animation(True, preparing=True)
+                menu, action = self.applause_action(repeat)
+                action.trigger()
+                with patch.object(self.pet.speech, 'stop') as stop_voice, patch.object(self.pet.metronome, 'stop') as stop_music:
+                    self.pet.voice_animation(True)
+                    self.pet.music_animation(True)
+                    self.assertEqual(self.pet.animation, 'applause16')
+                    self.assertEqual(self.pet.state, 'pose' if repeat else 'action')
+                    stop_voice.assert_not_called(); stop_music.assert_not_called()
+                self.pet.voice_animation(False); self.pet.music_animation(False)
+                self.assertEqual(self.pet.animation, 'applause16')
+                self.pet.animate(.5); self.assertGreater(self.pet.frame, 0)
+                if not repeat:
+                    self.pet.animate(60); self.assertEqual(self.pet.state, 'idle')
+                    self.pet.voice_animation(True)
+                    self.assertEqual(self.pet.state, 'voice')
+                    self.pet.voice_animation(False)
+                menu.deleteLater()
+
+    def test_menu_animation_replaces_every_animation_pause_and_pending_follow(self):
+        for previous in tuple(ANIMATIONS) + ('pause', 'follow_pending'):
+            with self.subTest(previous=previous):
+                self.pet.cancel(); self.pet.mode = 'normal'; self.pet.paused = False
+                if previous == 'pause': self.pet.set_paused(True)
+                elif previous == 'follow_pending': self.pet.call_later()
+                elif previous.startswith('sleep_'):
+                    self.pet.start_sleep()
+                    if previous != 'sleep_in': self.pet.animate(60)
+                    if previous == 'sleep_out': self.pet.wake_up()
+                else: self.pet.sequence([(previous, 2)])
+                self.pet.next_decision = time.monotonic()-30
+                menu, action = self.applause_action(); action.trigger()
+                for _ in range(2):
+                    if self.pet.is_sleeping(): self.pet.animate(60)
+                self.pet.voice_animation(True)
+                self.assertEqual((self.pet.animation, self.pet.state), ('applause16', 'action'))
+                self.assertFalse(self.pet.paused); self.assertFalse(self.pet.call_timer.isActive())
+                self.pet.last_tick = time.monotonic()-.1; self.pet.tick()
+                self.assertEqual(self.pet.animation, 'applause16')
+                self.pet.voice_animation(False); menu.deleteLater()
+
+    def test_manual_follow_keeps_priority_after_its_delay(self):
+        menu = QMenu(self.pet); self.pet.populate_context_menu(menu)
+        behavior = next(a.menu() for a in menu.actions() if a.text() == 'Comportamento')
+        next(a for a in behavior.actions() if a.text() == 'Seguimi').trigger()
+        self.pet.voice_animation(True)
+        self.assertEqual(self.pet.state, 'follow_pending')
+        self.pet.call_timer.stop(); self.pet.begin_follow()
+        self.pet.voice_animation(True)
+        self.assertTrue(self.pet.following)
+        self.pet.resume(); self.pet.voice_animation(True)
+        self.assertEqual(self.pet.state, 'voice')
+        self.pet.voice_animation(False); menu.deleteLater()
 
 
 if __name__ == '__main__': unittest.main(verbosity=2)

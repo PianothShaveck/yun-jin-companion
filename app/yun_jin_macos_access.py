@@ -5,6 +5,7 @@ import logging
 import platform
 import time
 import weakref
+from collections import deque
 from pathlib import Path
 from PyQt6 import sip
 from PyQt6.QtCore import QObject,QTimer
@@ -188,7 +189,7 @@ class NativeStatusItem(AppKit):
 class MacAccess(QObject):
     def __init__(self,app,pet,native_factory=NativeStatusItem):
         super().__init__(app)
-        self.app=app;self.pet=pet;self.closed=False;self.actions={};self.pending=None;self.opened=None
+        self.app=app;self.pet=pet;self.closed=False;self.actions={};self.pending=deque();self.opened=None
         self.repair_attempted=False
         self.refresh_timer=QTimer(self);self.refresh_timer.setSingleShot(True)
         self.refresh_timer.timeout.connect(self.refresh)
@@ -237,14 +238,24 @@ class MacAccess(QObject):
 
     def queue_action(self,tag):
         if self.closed:return
-        self.pending=(lambda:self.pet.open_panel(tab=1)) if tag==-1 else self.actions.get(tag)
+        action=(lambda:self.pet.open_panel(tab=1)) if tag==-1 else self.actions.get(tag)
+        if action is None:return
+        if not callable(action):
+            if sip.isdeleted(action) or not action.isEnabled():return
+            # A new opening can clear the menu before Qt dispatches this click.
+            action.setParent(self)
+        self.pending.append(action)
         self.action_timer.start(0)  # Let the native menu finish tracking first.
 
     def run_action(self):
-        action=self.pending;self.pending=None
-        if self.closed or self.pet.closing or action is None:return
-        if callable(action):action()
-        elif not sip.isdeleted(action) and action.isEnabled():action.trigger()
+        if self.closed or self.pet.closing or not self.pending:return
+        action=self.pending.popleft()
+        try:
+            if callable(action):action()
+            elif not sip.isdeleted(action) and action.isEnabled():action.trigger()
+        finally:
+            if not callable(action) and not sip.isdeleted(action):action.deleteLater()
+            if self.pending and not self.closed:self.action_timer.start(0)
 
     def is_available(self):
         return not self.closed and self.native.is_available()
@@ -282,4 +293,6 @@ class MacAccess(QObject):
         self.closed=True
         self.menu_closed()
         for timer in (self.refresh_timer,self.retry_timer,self.action_timer):timer.stop()
-        self.pending=None;self.actions.clear();self.native.close()
+        for action in self.pending:
+            if not callable(action) and not sip.isdeleted(action):action.deleteLater()
+        self.pending.clear();self.actions.clear();self.native.close()

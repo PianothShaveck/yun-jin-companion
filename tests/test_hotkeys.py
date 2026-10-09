@@ -115,6 +115,16 @@ class HotkeyTests(unittest.TestCase):
         self.assertEqual(self.backend.registered[IDENTS['stopwatch_toggle']],'Ctrl+Alt+F9')
         self.assertEqual(self.hotkeys.bindings['panel'],DEFAULTS['panel']);dialog.deleteLater()
 
+    def test_weather_shortcut_is_optional_configurable_and_persisted(self):
+        self.assertEqual(DEFAULTS['weather_open'],'')
+        before=dict(self.hotkeys.bindings)
+        dialog=ShortcutDialog(self.pet);dialog.show();app.processEvents()
+        dialog.edits['weather_open'].setKeySequence(QKeySequence('Ctrl+Alt+F8'))
+        dialog.validate_edits();self.assertTrue(dialog.save_button.isEnabled());dialog.save()
+        loaded=Hotkeys(self.pet,Backend())
+        try:self.assertEqual(loaded.bindings,{**before,'weather_open':'Ctrl+Alt+F8'})
+        finally:loaded.close();dialog.deleteLater()
+
     @unittest.skipUnless(sys.platform=='darwin','Requires native macOS Carbon')
     def test_native_mac_registration_and_cleanup(self):
         backend=MacBackend(lambda ident:None)
@@ -267,6 +277,36 @@ class ActionTests(unittest.TestCase):
         self.pet.hotkeys.dispatch(IDENTS['stopwatch_toggle']);self.pet.closing=True
         app.processEvents();self.assertFalse(self.pet.stopwatch.running)
         self.assertFalse(self.pet.shortcut_timer.isActive());self.pet.closing=False
+
+    def test_weather_shortcut_reopens_forecast_and_keeps_character_hidden(self):
+        from yun_jin_forecast_service import ForecastService
+        city=dict(city='Reggio Calabria',latitude=38.11047,longitude=15.66129)
+        self.pet.context.set_weather_location(city)
+        self.pet.set_character_visible(False)
+        with patch.object(ForecastService,'request'):
+            self.fire('weather_open')
+            self.assertEqual(self.pet.panel.tabs.currentIndex(),7)
+            view=self.pet.panel.weather_view
+            self.pet.panel.hide();self.fire('weather_open')
+            self.assertTrue(self.pet.panel.isVisible());self.assertEqual(self.pet.panel.tabs.currentIndex(),7)
+            self.assertIs(self.pet.panel.weather_view,view)
+        self.assertTrue(self.pet.character_hidden);self.assertFalse(self.pet.isVisible())
+
+    def test_weather_shortcut_without_city_offers_choice_then_forecast_or_cancel(self):
+        from yun_jin_forecast_service import ForecastService
+        from yun_jin_weather_ui import WeatherLocationRow
+        city=dict(city='Reggio Calabria',latitude=38.11047,longitude=15.66129)
+        def choose():
+            self.fire('weather_open')  # Repeated shortcut while the chooser is open.
+            self.pet.context.set_weather_location(city)
+        with patch.object(WeatherLocationRow,'choose') as picker:
+            self.fire('weather_open');picker.assert_called_once_with()
+            self.assertEqual(self.pet.panel.tabs.currentIndex(),2)
+            self.assertIsNone(self.pet.panel.weather_view)
+        with patch.object(WeatherLocationRow,'choose',side_effect=choose) as picker,patch.object(ForecastService,'request'):
+            self.fire('weather_open');picker.assert_called_once_with()
+            self.assertEqual(self.pet.panel.tabs.currentIndex(),7)
+            self.assertFalse(self.pet.choosing_weather)
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

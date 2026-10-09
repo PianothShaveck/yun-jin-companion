@@ -16,7 +16,7 @@ import venv
 
 SOURCE = Path(__file__).resolve().parent.parent
 NAME = 'Yun Jin Companion'
-VERSION = '1.4.0'
+VERSION = '1.4.1'
 MAC_APPLICATIONS = Path('/Applications')
 MAC_BUNDLE_ID = 'pianoth.yunjin.desktoppet.v1'
 RUNTIME_CHECK = 'import csv, ctypes, hashlib, json, pip, sqlite3, ssl, zipfile'

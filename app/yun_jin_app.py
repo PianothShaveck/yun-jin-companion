@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.4.0: desktop companion and practice tools."""
+"""Yun Jin Companion 1.4.1: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -457,6 +457,8 @@ class Companion(YunJinPet):
         self.bubble.present(text)
 
     def music_animation(self,active):
+        if active and self.manual_action:
+            return
         if active and self.speech.category == 'ambient':
             self.speech.stop(announce=False)
         if active and self.is_sleeping():
@@ -521,6 +523,8 @@ class Companion(YunJinPet):
     def voice_animation(self,active,preparing=False):
         if self.speech.category == 'ambient':
             return
+        if active and self.manual_action:
+            return
         if active and self.is_sleeping():
             self.wake_up(lambda:self.voice_animation(True,preparing=self.speech.process is not None)
                          if self.speech.busy else None)
@@ -562,6 +566,16 @@ class Companion(YunJinPet):
 
     def new_note(self):
         self.open_panel();self.panel.new_note()
+
+    def open_weather(self):
+        if getattr(self, 'choosing_weather', False):return
+        if not self.context.weather_location:
+            self.open_panel(tab=2)
+            self.choosing_weather=True
+            try:self.panel.weather_location_row.choose()
+            finally:self.choosing_weather=False
+        if self.context.weather_location:
+            self.open_panel(tab=7)
 
     def focus_tool(self, widget):
         if self.mac_overlay and self.mac_overlay.enabled:
@@ -647,7 +661,7 @@ class Companion(YunJinPet):
                 self.speech.speak(message,category='reminder',tag=new[0]['id'])
                 if focus_due:
                     self.queue_feedback('break','wave')
-                elif not self.paused and not self.menu_open and self.drag_anchor is None and not self.locked and not self.following and not self.is_sleeping() and self.state not in ('voice','voice_wait','conducting','follow_pending'):
+                elif not self.paused and not self.manual_action and not self.menu_open and self.drag_anchor is None and not self.locked and not self.following and not self.is_sleeping() and self.state not in ('voice','voice_wait','conducting','follow_pending'):
                     self.sequence([(self.event_animation('reminder','wave'),2),('wait',1)])
                 if self.mac_access or self.tray.isVisible():
                     message=new[0]['title'][:200]+(f' (+{len(new)-1} altri)' if len(new)>1 else '')

@@ -114,6 +114,32 @@ class AccessTests(unittest.TestCase):
         self.assertFalse(self.pet.panel.isVisible())
         self.assertFalse(self.access.refresh_timer.isActive());self.assertFalse(self.access.retry_timer.isActive())
         self.assertTrue(all(self.native.policies))
+
+    def test_selected_command_survives_menu_rebuild_before_dispatch(self):
+        self.pet.timer.stop(); self.pet.cancel()
+        self.native.on_open()
+        tag = next(k for k,a in self.access.actions.items() if a.text() == 'Applauso')
+        self.native.on_action(tag); self.native.on_close()
+        # A second menu opening rebuilds the QActions before the queued slot.
+        self.native.on_open(); self.native.on_close(); app.processEvents()
+        self.assertEqual((self.pet.animation, self.pet.state), ('applause16', 'action'))
+        self.assertFalse(self.pet.menu_open)
+
+        self.native.on_open()
+        tag = next(k for k,a in self.access.actions.items() if a.objectName() == 'character_visibility')
+        self.native.on_action(tag); self.native.on_close()
+        self.native.on_open(); self.native.on_close(); app.processEvents()
+        self.assertTrue(self.pet.character_hidden)
+
+    def test_two_selected_commands_are_both_dispatched(self):
+        self.pet.set_walk(True); self.pet.set_follow(True)
+        for title in ('Passeggiate spontanee', 'Segui spontaneamente il cursore'):
+            self.native.on_open()
+            tag = next(k for k,a in self.access.actions.items() if a.text() == title)
+            self.native.on_action(tag); self.native.on_close()
+        deadline=time.monotonic()+2
+        while self.access.pending and time.monotonic()<deadline:app.processEvents()
+        self.assertFalse(self.pet.allow_walk); self.assertFalse(self.pet.allow_follow)
     def test_regular_refresh_keeps_the_same_menu_bar_item(self):
         for _ in range(4):self.access.visibility_changed();app.processEvents()
         self.assertEqual(self.native.repairs,[])

@@ -366,6 +366,7 @@ class YunJinPet(QWidget):
         self.loops = 0
         self.queue = deque()
         self.locked = False
+        self.manual_action = False
         self.paused = False
         self.menu_open = False
         self.target = None
@@ -443,6 +444,7 @@ class YunJinPet(QWidget):
 
     def cancel(self):
         self.action_serial += 1
+        self.manual_action = False
         self.click_timer.stop()
         self.call_timer.stop()
         self.queue.clear()
@@ -459,6 +461,7 @@ class YunJinPet(QWidget):
         self.play('idle')
 
     def idle(self):
+        self.manual_action = False
         self.state = 'idle'
         self.target = None
         self.following = False
@@ -674,8 +677,10 @@ class YunJinPet(QWidget):
         return clamp_to_screen(point, rect, self.width(), self.height())
 
     def begin_follow(self):
+        manual = self.manual_action
         point = self.cursor_target()
         self.start_move(point if point is not None else QPointF(self.pos()), 'wave')
+        self.manual_action = manual
         self.following = True
         self.follow_until = time.monotonic() + 9
 
@@ -859,6 +864,18 @@ class YunJinPet(QWidget):
     def performance(self):
         self.sequence([('review', 1), ('work', 2), ('jump', 1), ('wave', 2)])
 
+    def perform_manual(self, command):
+        """Keep an explicit character command ahead of delayed audio gestures."""
+        self.click_timer.stop()
+        self.drag_anchor = None
+        self.dragged = False
+        command()
+        # Preserve that priority if the command first waits for her to wake up.
+        if self.sleep_after is not None:
+            after = self.sleep_after
+            self.sleep_after = lambda: self.perform_manual(after)
+        self.manual_action = self.state != 'idle'
+
     def populate_context_menu(self, menu):
         from yun_jin_ui import STYLE
         menu.setStyleSheet(STYLE)
@@ -871,9 +888,9 @@ class YunJinPet(QWidget):
         pause.setCheckable(True)
         pause.setChecked(self.paused)
         pause.triggered.connect(self.set_paused)
-        behavior.addAction('Seguimi', self.call_later)
-        behavior.addAction('Passeggia', self.wander)
-        behavior.addAction('Esibizione', self.performance)
+        behavior.addAction('Seguimi', lambda: self.perform_manual(self.call_later))
+        behavior.addAction('Passeggia', lambda: self.perform_manual(self.wander))
+        behavior.addAction('Esibizione', lambda: self.perform_manual(self.performance))
         modes = behavior.addMenu('Carattere')
         group = QActionGroup(modes)
         for key, label in [('asleep', 'Addormentata'), ('quiet', 'Tranquilla'), ('normal', 'Normale'), ('lively', 'Vivace')]:
@@ -881,7 +898,7 @@ class YunJinPet(QWidget):
             action.setCheckable(True)
             action.setChecked(self.mode == key)
             group.addAction(action)
-            action.triggered.connect(lambda checked, k=key: self.set_mode(k))
+            action.triggered.connect(lambda checked, k=key: self.perform_manual(lambda: self.set_mode(k)))
         for label, value, callback in [('Passeggiate spontanee', self.allow_walk, self.set_walk),
                                        ('Segui spontaneamente il cursore', self.allow_follow, self.set_follow),
                                        ('Sguardo sul cursore', self.allow_gaze, self.set_gaze)]:
@@ -922,16 +939,16 @@ class YunJinPet(QWidget):
             group = menu.addMenu(title)
             for name in available:
                 group.addAction(LABELS[name], lambda checked=False, n=name, r=repeat:
-                                self.hold_pose(n) if r else self.sequence([(n, 1)]))
+                                self.perform_manual(lambda: self.hold_pose(n) if r else self.sequence([(n, 1)])))
             if title == 'Riposo':
                 if repeat:
-                    group.addAction('Sonno', lambda: self.set_mode('asleep'))
-                    group.addAction('Direzioni dello sguardo', self.gaze_demo)
+                    group.addAction('Sonno', lambda: self.perform_manual(lambda: self.set_mode('asleep')))
+                    group.addAction('Direzioni dello sguardo', lambda: self.perform_manual(self.gaze_demo))
                 else:
-                    group.addAction('Sonnellino', lambda: self.start_sleep(6))
+                    group.addAction('Sonnellino', lambda: self.perform_manual(lambda: self.start_sleep(6)))
             if title == 'Movimento' and not repeat:
                 group.addAction('Riposo → salto → riposo',
-                                lambda: self.sequence([('idle', 1), ('jump', 1), ('idle', 1)]))
+                                lambda: self.perform_manual(lambda: self.sequence([('idle', 1), ('jump', 1), ('idle', 1)])))
 
     def add_companion_footer(self, menu):
         pass
