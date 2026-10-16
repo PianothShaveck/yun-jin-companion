@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.4.1: desktop companion and practice tools."""
+"""Yun Jin Companion 1.5.0: desktop companion and practice tools."""
 import ctypes
 import logging
 import os
@@ -8,7 +8,7 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from PyQt6.QtCore import (Qt, QTimer, QUrl, QPoint, QLockFile, QObject, QAbstractNativeEventFilter)
+from PyQt6.QtCore import (Qt, QTimer, QUrl, QPoint, QLockFile, QObject, QAbstractNativeEventFilter, pyqtSignal)
 from PyQt6.QtGui import QIcon, QPainter, QColor, QGuiApplication, QImage, QDesktopServices
 from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QHBoxLayout, QPushButton,
                             QMenu, QMessageBox, QSystemTrayIcon)
@@ -129,6 +129,8 @@ class ReminderCard(QDialog):
 
 
 class Companion(YunJinPet):
+    agenda_changed=pyqtSignal()
+
     def __init__(self, store):
         self.store=store
         self.panel=None
@@ -155,6 +157,8 @@ class Companion(YunJinPet):
         self.windows_overlay=None
         self.updates=None
         self.context=None
+        self.agenda_service=None
+        self.agenda_editor=None
         super().__init__()
         icon=QIcon(str(BASE/'favicon.png'))
         if not icon.isNull():
@@ -210,6 +214,8 @@ class Companion(YunJinPet):
         self.context=Context(self)
         from yun_jin_study import StudyTools
         self.study_tools=StudyTools(self)
+        from yun_jin_agenda_service import AgendaService
+        self.agenda_service=AgendaService(self)
         if self.character_hidden:
             self.apply_character_visibility()
 
@@ -279,7 +285,8 @@ class Companion(YunJinPet):
                 self.hidden_since=None;self.hidden_deadlines={};self.hidden_call=None
             self.last_tick=now
             self.ensure_visible();self.show();self.timer.start(33)
-        for notification in (getattr(self,'card',None),getattr(getattr(self,'study_tools',None),'prompt',None)):
+        for notification in (getattr(self,'card',None),getattr(getattr(self,'study_tools',None),'prompt',None),
+                             getattr(getattr(self,'agenda_service',None),'card',None)):
             if notification and notification.isVisible():
                 notification.move(*self.notification_position(notification))
 
@@ -452,6 +459,7 @@ class Companion(YunJinPet):
         elif action=='pet_visibility':text='Yun Jin nascosta' if self.character_hidden else 'Yun Jin visibile'
         elif action=='quiet':text='Silenzio per un’ora' if time.time()<self.sound.quiet_until else 'Silenzio disattivato'
         elif action=='stop':text='Voce interrotta'
+        elif action=='voice_toggle':text='Voce attiva' if self.speech.enabled else 'Voce disattivata'
         else:return
         self.shortcut_timer.start()
         self.bubble.present(text)
@@ -523,6 +531,8 @@ class Companion(YunJinPet):
     def voice_animation(self,active,preparing=False):
         if self.speech.category == 'ambient':
             return
+        if self.speech.category in ('alarm','calendar') and self.metronome.running:
+            return
         if active and self.manual_action:
             return
         if active and self.is_sleeping():
@@ -566,6 +576,29 @@ class Companion(YunJinPet):
 
     def new_note(self):
         self.open_panel();self.panel.new_note()
+
+    def new_event(self):
+        self.edit_agenda('event')
+
+    def new_alarm(self):
+        self.edit_agenda('alarm')
+
+    def edit_agenda(self,kind):
+        if self.agenda_editor is not None:
+            show_dialog(self.agenda_editor,self); return
+        if kind=='alarm':
+            from yun_jin_alarms_ui import AlarmDialog
+            editor=AlarmDialog(self,self.panel or self)
+        else:
+            from yun_jin_calendar_ui import EventDialog
+            editor=EventDialog(self,self.panel or self)
+        self.agenda_editor=editor
+        try:exec_dialog(editor,self)
+        finally:
+            self.agenda_editor=None; editor.deleteLater()
+
+    def refresh_agenda(self):
+        if self.agenda_service:self.agenda_service.refresh()
 
     def open_weather(self):
         if getattr(self, 'choosing_weather', False):return
@@ -645,6 +678,7 @@ class Companion(YunJinPet):
     def poll_reminders(self):
         if self.closing:
             return
+        if self.agenda_service:self.agenda_service.tick()
         try:
             rows=self.store.mark_due()
             badge_changed = self.due_count != len(rows)
@@ -684,7 +718,7 @@ class Companion(YunJinPet):
         rows=self.store.mark_due()
         self.due_count=len(rows)
         active_due={r['id'] for r in rows}
-        if self.speech.current_tag and self.speech.current_tag not in active_due:
+        if self.speech.category=='reminder' and self.speech.current_tag and self.speech.current_tag not in active_due:
             self.speech.stop(announce=False)
         self.announced.intersection_update(active_due)
         if self.panel:
@@ -811,12 +845,18 @@ class Companion(YunJinPet):
         tools.addSeparator()
         tools.addAction(self.hotkeys.label('Nuovo promemoria…','reminder'),self.new_reminder)
         tools.addAction('Promemoria…',lambda:self.open_panel(tab=1))
+        tools.addAction(self.hotkeys.label('Calendario…','calendar_open'),lambda:self.open_panel(tab=8))
+        tools.addAction(self.hotkeys.label('Sveglie…','alarms_open'),lambda:self.open_panel(tab=9))
         tools.addSeparator()
         tools.addAction(self.hotkeys.label('Studio…','study'),lambda:self.open_panel(tab=6))
         tools.addAction(self.hotkeys.label('Focus…','focus_open'),lambda:self.open_panel(tab=4))
         tools.addAction(self.hotkeys.label('Metronomo…','metronome_open'),lambda:self.open_panel(tab=5,subtab=0))
         tools.addAction(self.hotkeys.label('Cronometro…','stopwatch_open'),lambda:self.open_panel(tab=5,subtab=1))
         voice=menu.addMenu('Voce')
+        enabled=voice.addAction(self.hotkeys.label('Voce attiva','voice_toggle'))
+        enabled.setCheckable(True); enabled.setChecked(self.speech.enabled)
+        enabled.triggered.connect(self.speech.set_enabled)
+        voice.addSeparator()
         voice.addAction(self.hotkeys.label('Leggi testo copiato','read'),self.read_clipboard)
         voice.addAction(self.hotkeys.label('Interrompi','stop'),self.stop_speech)
         voice.addSeparator()
@@ -843,6 +883,7 @@ class Companion(YunJinPet):
                 event.ignore()
                 return
         self.closing=True
+        if self.agenda_service:self.agenda_service.shutdown()
         if self.mac_access:self.mac_access.close()
         self.shortcut_timer.stop()
         self.bubble.hide()

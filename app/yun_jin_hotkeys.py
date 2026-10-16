@@ -2,6 +2,7 @@
 """Configurable native global hotkeys, no keyboard polling or event tap."""
 import ctypes
 import logging
+import sqlite3
 import sys
 from PyQt6.QtCore import Qt, QTimer, QAbstractNativeEventFilter
 from PyQt6.QtGui import QKeySequence, QShortcut
@@ -16,9 +17,14 @@ ACTIONS={'panel':'Pannello','reminder':'Nuovo promemoria','read':'Leggi testo co
          'focus_toggle':'Focus · Avvia / Interrompi','focus_open':'Apri focus',
          'note':'Nuovo appunto','capture':'Importa appunti copiati',
          'pet_pause':'Pausa / Riprendi Yun Jin','quiet':'Silenzio per un’ora / Riattiva',
-         'pet_visibility':'Mostra / Nascondi Yun Jin','weather_open':'Apri meteo'}
+         'pet_visibility':'Mostra / Nascondi Yun Jin','weather_open':'Apri meteo',
+         'calendar_open':'Apri calendario','event_new':'Nuovo impegno',
+         'alarms_open':'Apri sveglie','alarm_new':'Nuova sveglia',
+         'voice_toggle':'Attiva / Disattiva voce',
+         'alarm_stop':'Ferma sveglia','alarm_snooze':'Rinvia sveglia'}
 GROUPS=(('Generali',('panel','note','capture','reminder','study','weather_open','pet_pause','pet_visibility')),
-        ('Voce',('read','stop','quiet')),
+        ('Agenda',('calendar_open','event_new','alarms_open','alarm_new','alarm_stop','alarm_snooze')),
+        ('Voce',('voice_toggle','read','stop','quiet')),
         ('Cronometro',('stopwatch_toggle','stopwatch_lap','stopwatch_reset','stopwatch_open')),
         ('Metronomo',('metronome_toggle','metronome_open')),('Focus',('focus_toggle','focus_open')))
 LEGACY_DEFAULTS=dict(panel='Ctrl+Alt+J',reminder='Ctrl+Alt+R',read='Ctrl+Alt+L',stop='Ctrl+Alt+S',study='Ctrl+Alt+D')
@@ -261,7 +267,14 @@ class Hotkeys:
                       IDENTS['pet_pause']:lambda:pet.set_paused(not pet.paused),
                       IDENTS['quiet']:lambda:pet.toggle_quiet(),
                       IDENTS['pet_visibility']:lambda:pet.toggle_character_visibility(),
-                      IDENTS['weather_open']:lambda:pet.open_weather()}
+                      IDENTS['weather_open']:lambda:pet.open_weather(),
+                      IDENTS['calendar_open']:lambda:pet.open_panel(tab=8),
+                      IDENTS['event_new']:lambda:pet.new_event(),
+                      IDENTS['alarms_open']:lambda:pet.open_panel(tab=9),
+                      IDENTS['alarm_new']:lambda:pet.new_alarm(),
+                      IDENTS['voice_toggle']:lambda:pet.speech.set_enabled(not pet.speech.enabled),
+                      IDENTS['alarm_stop']:lambda:self.control_alarm(),
+                      IDENTS['alarm_snooze']:lambda:self.control_alarm(snooze=True)}
         saved=pet.store.preference('shortcuts_'+sys.platform,{})
         if sys.platform=='darwin' and saved==LEGACY_DEFAULTS:
             saved=dict(DEFAULTS);pet.store.set_preference('shortcuts_'+sys.platform,saved)
@@ -286,6 +299,23 @@ class Hotkeys:
             action()
             feedback=getattr(self.pet,'shortcut_feedback',None)
             if feedback:feedback(next(name for name,value in IDENTS.items() if value==ident))
+
+    def control_alarm(self,snooze=False):
+        """Operate on one active alarm; leave calendar and future snoozes alone."""
+        if self.closed or self.recording or self.pet.closing:return
+        service=getattr(self.pet,'agenda_service',None)
+        if service is None or service.closed:return
+        try:
+            alarms=[row for row in service.model.pending_alerts()
+                    if row['kind']=='alarm' and row['state']=='pending']
+        except (sqlite3.Error,OSError):
+            logging.exception('Alarm shortcut could not read active alerts')
+            return
+        if not alarms:return
+        current=getattr(getattr(service,'card',None),'alert',None)
+        selected=next((row for row in alarms if current and row['id']==current['id']),None)
+        if selected is None:selected=max(alarms,key=lambda row:(row['due_at'],row['id']))
+        (service.snooze if snooze else service.dismiss)(selected['id'])
 
     def register(self,bindings):
         errors={}

@@ -33,6 +33,7 @@ class Speech(QObject):
     status_changed=pyqtSignal(str)
     active_changed=pyqtSignal(bool)
     caption_changed=pyqtSignal(str)
+    enabled_changed=pyqtSignal(bool)
 
     def __init__(self,pet):
         super().__init__(pet)
@@ -64,6 +65,25 @@ class Speech(QObject):
         self.cached_timer.setSingleShot(True)
         self.cached_timer.timeout.connect(self.play_cached)
         self.cached_path=None
+        self.silent_caption=False
+        self.caption_timer=QTimer(self)
+        self.caption_timer.setSingleShot(True)
+        self.caption_timer.timeout.connect(self.advance_silent_caption)
+
+    @property
+    def enabled(self):
+        # tts_enabled belonged to the old reminder-only switch. Reusing it
+        # would unexpectedly mute users who opted out of reading reminders.
+        return bool(self.pref('master_enabled',True))
+
+    def set_enabled(self,value):
+        value=bool(value)
+        if value==self.enabled:return
+        self.pet.store.set_preference('tts_master_enabled',value)
+        if not value:
+            if self.busy and self.caption_pages:self.start_silent_caption()
+            else:self.stop(announce=False)
+        self.enabled_changed.emit(value)
 
     def ensure_player(self):
         if self.player is not None and self.output is not None:return True
@@ -89,8 +109,10 @@ class Speech(QObject):
         return self.pet.store.preference('tts_'+key,default)
 
     def set_pref(self,key,value):
+        if key=='master_enabled':
+            self.set_enabled(value);return
         self.pet.store.set_preference('tts_'+key,value)
-        if key=='auto_reminders' and not value and self.category=='reminder':
+        if key=='auto_reminders' and not value and self.category=='reminder' and not self.silent_caption:
             self.stop()
         if key=='volume' and self.output:
             self.output.setVolume(value/100)
@@ -105,8 +127,8 @@ class Speech(QObject):
         context = getattr(self.pet, 'context', None)
         tag = tag or self.current_tag or {}
         return bool(context and context.enabled.get(tag.get('kind'), False)
-                    and time.time() >= self.pet.sound.quiet_until
-                    and int(self.pref('volume', 70)) > 0
+                    and (not self.enabled or (time.time() >= self.pet.sound.quiet_until
+                         and int(self.pref('volume', 70)) > 0))
                     and context.can_react(ignore_speech=True, serial=tag.get('serial')))
 
     def animate_ambient(self):
@@ -115,6 +137,7 @@ class Speech(QObject):
             context.play_speech_animation(self.current_tag)
 
     def speak(self,text,category='manual',tag=None,preview=False,language=None):
+        if self.closed:return False
         if category == 'ambient':
             if self.busy or not self.ambient_allowed(tag):
                 return False
@@ -129,12 +152,13 @@ class Speech(QObject):
         if len(text)>3000:
             self.report('Massimo 3000 caratteri. Seleziona un passaggio.')
             return False
-        if not preview and time.time()<self.pet.sound.quiet_until:
+        if self.enabled and not preview and time.time()<self.pet.sound.quiet_until:
             self.report('Silenzio attivo. Riattiva i suoni dal menu.')
             return False
-        if category=='reminder' and (self.busy or (getattr(self.pet,'metronome',None) and self.pet.metronome.running) or not self.pref('auto_reminders',True)):
+        if category=='reminder' and (self.busy or (self.enabled and
+                ((getattr(self.pet,'metronome',None) and self.pet.metronome.running) or not self.pref('auto_reminders',True)))):
             return False
-        if not self.ensure_player():
+        if self.enabled and not self.ensure_player():
             self.report('Qt Multimedia non è disponibile: reinstalla le dipendenze.')
             return False
         self.stop(announce=False)
@@ -147,6 +171,9 @@ class Speech(QObject):
         for page in self.caption_pages:
             total += len(page)
             self.caption_ends.append(total)
+        if not self.enabled:
+            self.start_silent_caption()
+            return True
         language=language or self.pref('language','it')
         provider=self.pref('provider','edge')
         default_voice=VOICES.get(language,VOICES['it'])[0][1]
@@ -179,9 +206,9 @@ class Speech(QObject):
         process.finished.connect(lambda code,status,p=process:self.generated(p,code))
         process.errorOccurred.connect(lambda error,p=process:self.process_error(p,error))
         process.started.connect(lambda p=process,j=job:self.write_job(p,j))
-        process.start()
         self.timeout.start(12000 if category == 'ambient' else 45000)
-        self.report('Preparazione…')
+        process.start()
+        if process is self.process:self.report('Preparazione…')
         return True
 
     def write_job(self,process,job):
@@ -223,6 +250,9 @@ class Speech(QObject):
         self.play_file(path,refresh=True)
 
     def play_file(self,path,refresh=False):
+        if self.closed or not self.busy:return
+        if not self.enabled:
+            self.start_silent_caption();return
         try:
             path=Path(path).resolve()
             path.relative_to(self.cache.resolve())
@@ -257,8 +287,41 @@ class Speech(QObject):
             self.caption_changed.emit('')
         self.caption_playing=False
 
+    def start_silent_caption(self):
+        """Keep the current page when muting, with one timer only while reading."""
+        if self.closed or not self.busy or not self.caption_pages:return
+        self.silent_caption=True
+        self.timeout.stop();self.cached_timer.stop();self.cached_path=None
+        process,self.process=self.process,None
+        if process is not None:process.kill()
+        # playbackStateChanged can be synchronous; silent_caption prevents it
+        # from erasing the text or starting a generic talking animation.
+        if self.player is not None:self.player.stop()
+        self.active_changed.emit(False)
+        self.animate_ambient()
+        self.caption_playing=True
+        if self.caption_index<0:
+            self.caption_index=0
+            self.caption_changed.emit(self.caption_pages[0])
+        self.schedule_silent_page()
+        self.report('')
+
+    def schedule_silent_page(self):
+        page=self.caption_pages[self.caption_index]
+        cjk=any('\u3400'<=char<='\u9fff' for char in page)
+        self.caption_timer.start(max(3500,min(15000,1200+len(page)*(160 if cjk else 65))))
+
+    def advance_silent_caption(self):
+        if self.closed or not self.silent_caption or not self.busy:return
+        if self.caption_index+1>=len(self.caption_pages):
+            self.stop(announce=False)
+            return
+        self.caption_index+=1
+        self.caption_changed.emit(self.caption_pages[self.caption_index])
+        self.schedule_silent_page()
+
     def update_caption(self, position=None):
-        if not self.caption_playing or not self.caption_pages or not self.player:
+        if self.silent_caption or not self.caption_playing or not self.caption_pages or not self.player:
             return
         duration=self.player.duration()
         position=self.player.position() if position is None else position
@@ -270,6 +333,7 @@ class Speech(QObject):
             self.caption_changed.emit(self.caption_pages[index])
 
     def playback_state(self,state):
+        if self.closed or self.silent_caption:return
         from PyQt6.QtMultimedia import QMediaPlayer
         playing=state==QMediaPlayer.PlaybackState.PlayingState
         if playing and self.busy and self.category == 'ambient' and not self.ambient_allowed():
@@ -284,6 +348,7 @@ class Speech(QObject):
         self.active_changed.emit(playing)
 
     def media_status(self,status):
+        if self.closed or self.silent_caption:return
         from PyQt6.QtMultimedia import QMediaPlayer
         if status==QMediaPlayer.MediaStatus.EndOfMedia:
             self.clear_caption()
@@ -293,7 +358,7 @@ class Speech(QObject):
             self.report('Lettura terminata.')
 
     def playback_error(self,*args):
-        if not self.closed:
+        if not self.closed and not self.silent_caption:
             self.animate_ambient()
             self.clear_caption()
             self.busy=False
@@ -306,6 +371,9 @@ class Speech(QObject):
         self.report('Nessuna risposta. Riprova o cambia servizio.')
 
     def stop(self,announce=True):
+        self.caption_timer.stop()
+        # Keep this guard through player.stop(), which can emit callbacks.
+        self.silent_caption=True
         self.clear_caption()
         self.current_text=''
         self.caption_pages=[]
@@ -319,6 +387,7 @@ class Speech(QObject):
             # finished disposes it; no GUI wait for network or process shutdown.
         if self.player:
             self.player.stop()
+        self.silent_caption=False
         self.busy=False
         self.current_tag=None
         self.active_changed.emit(False)

@@ -14,7 +14,8 @@ from PyQt6.QtMultimedia import QMediaPlayer
 from yun_jin_app import Companion
 from yun_jin_data import Store
 from yun_jin_speech import caption_pages
-from yun_jin_context import GREETINGS, WEATHER_LINES, contextual_line
+from yun_jin_context import GREETINGS
+from yun_jin_weather_lines import LINES, line_pool
 from yun_jin_macos import MacOverlay
 from yun_jin_tts_worker import cache_key
 
@@ -231,8 +232,8 @@ class CaptionTests(unittest.TestCase):
                     self.play()
                     self.assertEqual(self.pet.bubble.text, job['text'])
                     self.assertEqual(self.store.preference('tts_language', ''), language)
-            for kind in WEATHER_LINES[language]:
-                self.assertEqual(contextual_line(WEATHER_LINES, kind, language), WEATHER_LINES[language][kind])
+            for kind in LINES:
+                self.assertEqual(len(line_pool(kind,language)),15)
 
 
 if __name__ == '__main__': unittest.main(verbosity=2)

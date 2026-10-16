@@ -57,6 +57,10 @@ class CardFace(QWidget):
         self.browser=CardBrowser();layout.addWidget(self.browser,1)
         self.audio_row=QHBoxLayout();self.audio_row.setSpacing(10);layout.addLayout(self.audio_row)
         self.status=plain_label('','alert');self.status.hide();layout.addWidget(self.status)
+        pet.speech.enabled_changed.connect(self.voice_changed)
+
+    def voice_changed(self,enabled):
+        if not enabled and self.player:self.player.stop()
 
     def clear_audio(self):
         if self.player: self.player.stop()
@@ -92,6 +96,8 @@ class CardFace(QWidget):
         self.audio_row.addStretch()
 
     def play(self,path):
+        if not self.pet.speech.enabled:
+            self.status.setText('Voce disattivata');self.status.show();return
         if not self.pet.sound.enabled or time.time()<self.pet.sound.quiet_until:
             self.status.setText('Suoni disattivati');self.status.show();return
         try:

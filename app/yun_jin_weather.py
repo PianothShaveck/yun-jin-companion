@@ -12,7 +12,7 @@ WEATHER_TTL = 3600
 
 
 def read_json(url,limit=MAX_RESPONSE):
-    request = Request(url, headers={'User-Agent': 'Yun-Jin-Companion/1.4', 'Accept': 'application/json'})
+    request = Request(url, headers={'User-Agent': 'Yun-Jin-Companion/1.5', 'Accept': 'application/json'})
     with urlopen(request, timeout=5) as response:
         raw = response.read(limit + 1)
     if len(raw) > limit:
@@ -84,15 +84,39 @@ def weather_kind(code, is_day):
     return None
 
 
+def detailed_weather_kind(code,is_day,rain=None,snowfall=None,wind_speed=None):
+    """One classification for forecast pictures and spoken observations."""
+    if weather_kind(code,1) is None:return None
+    def positive(value):
+        return type(value) in (int,float) and math.isfinite(value) and value>0
+    if code in (61,63,65,71,73,75,80,81,82,85,86) and positive(rain) and positive(snowfall):return 'sleet'
+    if code in (0,1,2,3) and positive(wind_speed) and wind_speed>=50:return 'wind'
+    if code in (0,1):return 'sun' if is_day==1 else 'clear_night' if is_day==0 else None
+    if code==2:return 'partly_cloudy' if is_day==1 else 'partly_cloudy_night' if is_day==0 else 'cloud'
+    if code==3:return 'cloud'
+    if code in (45,48):return 'fog'
+    if code in (51,53,55):return 'drizzle'
+    if code in (56,57,66,67):return 'freezing_rain'
+    if code in (61,63,80,81):return 'rain'
+    if code in (65,82):return 'heavy_rain'
+    if code in (71,73,77,85):return 'snow'
+    if code in (75,86):return 'heavy_snow'
+    if code==95:return 'thunderstorm'
+    return 'storm_hail'
+
+
 def fetch_weather(location=None, now=None, get=read_json):
     now = time.time() if now is None else now
     location=selected_location(location)
     if location is None:return None
     location=dict(location,source='manual')
     query = urlencode({'latitude': location['latitude'], 'longitude': location['longitude'],
-                       'current': 'weather_code,is_day', 'timeformat': 'unixtime', 'forecast_days': 1})
+                       'current': 'weather_code,is_day,rain,snowfall,wind_speed_10m',
+                       'wind_speed_unit':'kmh','timeformat': 'unixtime', 'forecast_days': 1})
     data = get('https://api.open-meteo.com/v1/forecast?' + query).get('current', {})
-    kind = weather_kind(data.get('weather_code'), data.get('is_day'))
+    if type(data.get('is_day')) is not int or data['is_day'] not in (0,1):return None
+    kind = detailed_weather_kind(data.get('weather_code'),data['is_day'],
+                                 data.get('rain'),data.get('snowfall'),data.get('wind_speed_10m'))
     if not kind or not fresh(data.get('time'), now, 7200): return None
     return {'kind': kind, 'checked': now, 'observed': data['time'], 'location': location}
 

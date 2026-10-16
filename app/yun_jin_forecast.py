@@ -3,7 +3,7 @@
 import math
 import time
 from urllib.parse import urlencode
-from yun_jin_weather import read_json,selected_location,fresh,weather_kind
+from yun_jin_weather import read_json,selected_location,fresh,weather_kind,detailed_weather_kind
 
 FORECAST_LIMIT=96*1024
 FORECAST_TTL=3600
@@ -100,19 +100,13 @@ def cache_valid(data,location,now=None,ttl=MAX_CACHE_AGE):
 def condition(row,day=None):
     code=row.get('weather_code');day=row.get('is_day') if day is None else day
     if type(code) is not int or weather_kind(code,1) is None:return 'Non disponibile',None
-    rain=row.get('rain') or 0;snow=row.get('snowfall') or 0
-    wind=row.get('wind_speed_10m',row.get('wind_speed_10m_max')) or 0
-    if code in (61,63,65,71,73,75,80,81,82,85,86) and rain>0 and snow>0:return 'Pioggia e neve','sleet'
-    if code in (0,1,2,3) and wind>=50:return 'Ventoso','wind'
-    if code in (0,1):return 'Sereno','sun' if day==1 else 'clear_night' if day==0 else None
-    if code==2:return 'Parzialmente nuvoloso','partly_cloudy' if day==1 else 'partly_cloudy_night' if day==0 else 'cloud'
-    if code==3:return 'Nuvoloso','cloud'
-    if code in (45,48):return 'Nebbia','fog'
-    if code in (51,53,55):return 'Pioviggine','drizzle'
-    if code in (56,57,66,67):return 'Pioggia gelata','freezing_rain'
-    if code in (61,63,80,81):return 'Pioggia','rain'
-    if code in (65,82):return 'Pioggia forte','heavy_rain'
-    if code in (71,73,77,85):return 'Neve','snow'
-    if code in (75,86):return 'Neve intensa','heavy_snow'
-    if code==95:return 'Temporale','thunderstorm'
-    return 'Temporale con grandine','storm_hail'
+    kind=detailed_weather_kind(code,day,row.get('rain'),row.get('snowfall'),
+                               row.get('wind_speed_10m',row.get('wind_speed_10m_max')))
+    labels={'sun':'Sereno','clear_night':'Sereno','partly_cloudy':'Parzialmente nuvoloso',
+            'partly_cloudy_night':'Parzialmente nuvoloso','cloud':'Nuvoloso','fog':'Nebbia',
+            'drizzle':'Pioviggine','freezing_rain':'Pioggia gelata','rain':'Pioggia',
+            'heavy_rain':'Pioggia forte','snow':'Neve','heavy_snow':'Neve intensa',
+            'thunderstorm':'Temporale','storm_hail':'Temporale con grandine',
+            'sleet':'Pioggia e neve','wind':'Ventoso'}
+    label='Parzialmente nuvoloso' if code==2 and kind=='cloud' else labels.get(kind,'Sereno' if code in (0,1) else 'Non disponibile')
+    return label,kind

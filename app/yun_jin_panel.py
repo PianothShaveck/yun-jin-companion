@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QHBoxLayout, QF
     QLabel, QLineEdit, QTextEdit, QTabWidget, QWidget, QListWidget,
     QListWidgetItem, QSplitter, QTreeWidget, QTreeWidgetItem, QSpinBox, QComboBox,
     QDateTimeEdit, QDialogButtonBox, QFileDialog, QMessageBox, QCheckBox, QSlider,
-    QMenu, QHeaderView)
+    QMenu, QHeaderView, QScrollArea)
 from yun_jin_platform import shortcut_help
 from yun_jin_dialogs import Messages, choose_files, owner_window, exec_dialog
 from yun_jin_ui import (STYLE, button, plain_label, stepper, icon, icon_button,
@@ -82,12 +82,20 @@ class Panel(QDialog):
         brand=QHBoxLayout(); brand.setSpacing(12); brand.setSpacing(8)
         portrait=QLabel(); portrait.setPixmap(pet.windowIcon().pixmap(38,38)); portrait.setFixedSize(38,38)
         brand.addWidget(portrait); brand.addWidget(plain_label('Yun Jin','brand')); brand.addStretch()
-        side.addLayout(brand); side.addSpacing(20)
+        side.addLayout(brand); side.addSpacing(12)
+        navigation=QWidget(); nav_layout=QVBoxLayout(navigation)
+        nav_layout.setContentsMargins(0,0,0,0); nav_layout.setSpacing(5)
         self.nav={}
         for label,glyph,page,sub in [('Appunti','note',0,None),('Promemoria','bell',1,None),
+                ('Calendario','calendar',8,None),('Sveglie','alarm',9,None),
                 ('Studio','cards',6,None),('Meteo','sun',7,None),('Focus','focus',4,None),('Metronomo','metro',5,0),('Cronometro','clock',5,1)]:
-            self.add_navigation(side,label,glyph,page,sub)
-        side.addStretch()
+            self.add_navigation(nav_layout,label,glyph,page,sub)
+        nav_layout.addStretch()
+        nav_scroll=QScrollArea(); nav_scroll.setWidgetResizable(True); nav_scroll.setWidget(navigation)
+        self.nav_scroll=nav_scroll
+        nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        nav_scroll.setStyleSheet('QScrollArea {border:0;background:transparent;} QScrollArea > QWidget > QWidget {background:transparent;}')
+        side.addWidget(nav_scroll,1)
         self.add_navigation(side,'Voce','voice',3,None)
         self.add_navigation(side,'Impostazioni','settings',2,None)
         button('Guida',self.pet.open_guide,side,glyph='help',role='nav')
@@ -102,6 +110,8 @@ class Panel(QDialog):
         from yun_jin_study_ui import StudyPanel
         self.study=StudyPanel(pet);self.tabs.addTab(self.study,'Studio')
         self.weather_host=QWidget();self.weather_view=None;self.tabs.addTab(self.weather_host,'Meteo')
+        self.calendar_host=QWidget();self.calendar_view=None;self.tabs.addTab(self.calendar_host,'Calendario')
+        self.alarms_host=QWidget();self.alarms_view=None;self.tabs.addTab(self.alarms_host,'Sveglie')
         pet.context.location_changed.connect(self.sync_weather)
         self.sync_weather()
         self.music.tabs.currentChanged.connect(self.sync_navigation)
@@ -125,7 +135,18 @@ class Panel(QDialog):
             from yun_jin_forecast_ui import WeatherPanel
             layout=QVBoxLayout(self.weather_host);layout.setContentsMargins(0,0,0,0)
             self.weather_view=WeatherPanel(self.pet);layout.addWidget(self.weather_view)
-        for key,b in self.nav.items():b.setChecked(key==(page,sub))
+        if page==8 and self.calendar_view is None:
+            from yun_jin_calendar_ui import CalendarPanel
+            layout=QVBoxLayout(self.calendar_host);layout.setContentsMargins(0,0,0,0)
+            self.calendar_view=CalendarPanel(self.pet);layout.addWidget(self.calendar_view)
+        if page==9 and self.alarms_view is None:
+            from yun_jin_alarms_ui import AlarmsPanel
+            layout=QVBoxLayout(self.alarms_host);layout.setContentsMargins(0,0,0,0)
+            self.alarms_view=AlarmsPanel(self.pet);layout.addWidget(self.alarms_view)
+        for key,b in self.nav.items():
+            b.setChecked(key==(page,sub))
+            if key==(page,sub) and b.parentWidget() is self.nav_scroll.widget():
+                self.nav_scroll.ensureWidgetVisible(b,0,4)
 
     def sync_weather(self):
         available=self.pet.context.weather_location is not None
@@ -366,6 +387,11 @@ class Panel(QDialog):
         self.tts_reminders.toggled.connect(lambda v:voice.set_pref('auto_reminders',v))
         _,settings=card(layout)
         row=QHBoxLayout(); row.setSpacing(12); row.addWidget(plain_label('Voce','section')); row.addStretch()
+        self.voice_enabled=QCheckBox('Voce attiva'); self.voice_enabled.setChecked(voice.enabled)
+        self.voice_enabled.toggled.connect(voice.set_enabled); row.addWidget(self.voice_enabled)
+        def sync_voice_enabled(enabled):
+            self.voice_enabled.blockSignals(True); self.voice_enabled.setChecked(enabled); self.voice_enabled.blockSignals(False)
+        voice.enabled_changed.connect(sync_voice_enabled)
         more=QMenu(self); more.addAction('Ripristina voce',self.reset_voice); more.addAction('Svuota cache',voice.clear_cache)
         overflow=menu_button('',more,row); overflow.setToolTip('Opzioni voce'); overflow.setAccessibleName('Opzioni voce')
         settings.addLayout(row)

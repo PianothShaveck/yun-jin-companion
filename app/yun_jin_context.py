@@ -34,38 +34,15 @@ TIME_ANIMATIONS = {'morning': ('morning16', 'wave'), 'afternoon': ('afternoon16'
                    'evening': ('evening16', 'review'), 'night': ('yawn16', 'wait')}
 WEATHER_REACTIONS = {
     'sun': ('sun16', 'wave'), 'clear_night': ('review', 'review'),
+    'partly_cloudy': ('cloud16', 'review'), 'partly_cloudy_night': ('cloud16', 'review'),
     'cloud': ('cloud16', 'review'), 'fog': ('wait', 'wait'),
-    'rain': ('rain16', 'wait'), 'snow': ('snow16', 'wave'), 'storm': ('rain16', 'review'),
+    'drizzle': ('rain16', 'wait'), 'rain': ('rain16', 'wait'),
+    'heavy_rain': ('rain16', 'wait'), 'freezing_rain': ('rain16', 'wait'),
+    'sleet': ('snow16', 'wait'), 'snow': ('snow16', 'wave'), 'heavy_snow': ('snow16', 'wave'),
+    'thunderstorm': ('rain16', 'review'), 'storm_hail': ('rain16', 'review'),
+    'wind': ('cloud16', 'review'), 'storm': ('rain16', 'review'),  # Older cached results.
 }
-WEATHER_LINES = {
-    'it': {
-        'sun': 'Che bel sole! Spero che illumini anche la tua giornata.',
-        'clear_night': 'Il cielo è sereno. Che bella notte tranquilla.',
-        'cloud': 'Oggi è nuvoloso. Possiamo prendercela con calma.',
-        'fog': 'Fuori c’è nebbia. Fai attenzione se esci.',
-        'rain': 'Piove. Se esci, ricordati l’ombrello.',
-        'snow': 'Nevica! Copriti bene se esci.',
-        'storm': 'C’è un temporale. Qui al riparo si sta meglio.',
-    },
-    'en': {
-        'sun': 'Such lovely sunshine! I hope it brightens your day too.',
-        'clear_night': 'The sky is clear. What a peaceful night.',
-        'cloud': 'It’s cloudy today. We can take things slowly.',
-        'fog': 'It’s foggy outside. Take care if you go out.',
-        'rain': 'It’s raining. Remember your umbrella if you go out.',
-        'snow': 'It’s snowing! Wrap up warmly if you go out.',
-        'storm': 'There’s a thunderstorm outside. It’s cosy in here.',
-    },
-    'zh-CN': {
-        'sun': '阳光真好，愿你今天心情愉快。',
-        'clear_night': '今晚天色晴朗，真是个宁静的夜晚。',
-        'cloud': '今天多云，慢慢来，也很好。',
-        'fog': '外面有雾，出门记得小心。',
-        'rain': '外面下雨了，出门记得带伞。',
-        'snow': '下雪了！出门记得保暖。',
-        'storm': '外面有雷雨，待在室内要安心些。',
-    },
-}
+
 
 
 def contextual_line(table, key, language):
@@ -188,7 +165,8 @@ class Context(QObject):
                 text = contextual_line(GREETINGS, value, language)
         else:
             animation, fallback = WEATHER_REACTIONS[value]
-            text = contextual_line(WEATHER_LINES, value, language)
+            from yun_jin_weather_lines import choose_weather_line
+            text = choose_weather_line(self.pet.store, value, language)
             self.pet.store.set_preference('context_weather_reaction', {'kind': value, 'at': self.wall()})
         tag = {'kind': kind, 'serial': self.pet.action_serial,
                'animation': (animation, fallback)}

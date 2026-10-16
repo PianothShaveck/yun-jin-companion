@@ -114,6 +114,14 @@ def icon(name, color='#c8bfd7'):
         p.drawRoundedRect(QRectF(5,3,14,18),2,2)
         if name=='note':
             for y in (8,12,16): line(8,y,16,y)
+    elif name=='calendar':
+        p.drawRoundedRect(QRectF(3,5,18,16),2,2);line(3,10,21,10)
+        line(8,3,8,7);line(16,3,16,7)
+        for x,y in ((7,14),(12,14),(17,14),(7,18),(12,18)):
+            p.drawPoint(QPointF(x,y))
+    elif name=='alarm':
+        p.drawEllipse(QRectF(5,6,14,14));line(12,9,12,13);line(12,13,15,13)
+        line(3,6,7,3);line(17,3,21,6);line(7,19,5,22);line(17,19,19,22)
     elif name=='sun':
         p.drawEllipse(QRectF(7,7,10,10))
         for a,b,c,d in ((12,2,12,4),(12,20,12,22),(2,12,4,12),(20,12,22,12),
@@ -146,6 +154,9 @@ def icon(name, color='#c8bfd7'):
         p.drawRoundedRect(QRectF(8,7,12,14),2,2);poly([(15,4),(4,4),(4,17)])
     elif name=='plus': line(12,5,12,19);line(5,12,19,12)
     elif name=='close': line(6,6,18,18);line(6,18,18,6)
+    elif name=='trash':
+        poly([(6,7),(7,21),(17,21),(18,7)]);line(4,7,20,7)
+        poly([(9,6),(9,3),(15,3),(15,6)]);line(10,10,10,17);line(14,10,14,17)
     elif name=='check': poly([(5,12),(10,17),(20,6)])
     elif name=='more':
         for x in (5,12,19):p.drawEllipse(QRectF(x-0.6,11.4,1.2,1.2))

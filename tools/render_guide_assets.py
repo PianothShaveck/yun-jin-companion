@@ -6,11 +6,14 @@ import tempfile
 import time
 import math
 from pathlib import Path
+from datetime import datetime, timedelta
 os.environ['QT_QPA_PLATFORM']='offscreen'
 os.environ['QT_SCALE_FACTOR']='2'
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'app'))
 from PyQt6.QtWidgets import QApplication,QFrame
+from PyQt6.QtTest import QTest
+from PyQt6.QtGui import QFontDatabase
 from yun_jin_app import Companion
 from yun_jin_data import Store
 from yun_jin_panel import ReminderDialog
@@ -19,6 +22,8 @@ from yun_jin_core import ANIMATIONS
 
 def main():
     app=QApplication([]);app.setStyle('Fusion')
+    local_font=Path.home()/'.local/share/fonts/NotoSansCJKsc-Regular.otf'
+    if local_font.is_file():QFontDatabase.addApplicationFont(str(local_font))
     out=ROOT/'docs'/'art';out.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='yun-jin-guide-') as directory:
         store=Store(directory)
@@ -42,7 +47,7 @@ def main():
         context_card=panel.context_checks['greeting'].parentWidget()
         panel.show_page(2);app.processEvents();context_card.grab().save(str(out/'orario-meteo.png'))
         from yun_jin_updates_ui import UpdateDialog
-        pet.updates.release=dict(version='1.4.1',notes='## Novità\n\n- Miglioramenti alle funzioni.\n- Correzioni e ottimizzazioni.',automatic=True,url='https://github.com/PianothShaveck/yun-jin-companion/releases')
+        pet.updates.release=dict(version='1.5.0',notes='## Novità\n\n- Miglioramenti alle funzioni.\n- Correzioni e ottimizzazioni.',automatic=True,url='https://github.com/PianothShaveck/yun-jin-companion/releases')
         dialog=UpdateDialog(pet.updates);dialog.refresh();dialog.show();app.processEvents()
         dialog.grab().save(str(out/'aggiornamento.png'));dialog.hide();dialog.deleteLater()
         panel.show_page(4);app.processEvents()
@@ -90,6 +95,18 @@ def main():
         store.set_preference('weather_forecast_cache',result)
         panel.resize(990,850);panel.show_page(7);app.processEvents();app.processEvents()
         panel.grab().save(str(out/'meteo.png'))
+        # Calendar/alarms are entirely local, with fictional examples.
+        agenda=store.agenda
+        selected=datetime.now().replace(day=16,hour=17,minute=30,second=0,microsecond=0)
+        agenda.save_event('Lezione di cinese',selected,selected+timedelta(hours=1),
+                         recurrence=dict(frequency='weekly',weekdays=[selected.weekday()]),voice=False)
+        agenda.save_event('Prova orchestra',selected.replace(hour=20),selected.replace(hour=21),voice=False)
+        agenda.save_event('Passeggiata al parco',selected+timedelta(days=2),selected+timedelta(days=2,hours=1),voice=False)
+        panel.resize(990,690);panel.show_page(8);panel.calendar_view.select_day(selected.date());QTest.qWait(100)
+        panel.grab().save(str(out/'calendario.png'))
+        agenda.save_alarm('Buongiorno',clock='07:30',weekdays=list(range(5)),voice=False)
+        agenda.save_alarm('Pausa e movimento',clock='16:00',weekdays=list(range(7)),enabled=False,voice=False)
+        panel.resize(990,690);panel.show_page(9);QTest.qWait(100);panel.grab().save(str(out/'sveglie.png'))
         pet.close();store.close()
     print(out)
 

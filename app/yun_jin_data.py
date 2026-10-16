@@ -37,6 +37,7 @@ class Store:
         self.db.execute('PRAGMA synchronous=FULL')
         self.db.execute('PRAGMA foreign_keys=ON')
         self._study = None
+        self._agenda = None
         self.db.executescript('''
             CREATE TABLE IF NOT EXISTS notes (
                 id TEXT PRIMARY KEY, title TEXT NOT NULL, body TEXT NOT NULL,
@@ -48,6 +49,13 @@ class Store:
             CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY, value TEXT NOT NULL);
             CREATE INDEX IF NOT EXISTS reminder_due ON reminders(status,due);
         ''')
+
+    @property
+    def agenda(self):
+        if self._agenda is None:
+            from yun_jin_agenda import AgendaStore
+            self._agenda = AgendaStore(self)
+        return self._agenda
 
     @property
     def study(self):

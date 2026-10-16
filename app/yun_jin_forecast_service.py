@@ -5,7 +5,7 @@ import time
 from PyQt6.QtCore import QObject,QProcess,QTimer,pyqtSignal
 from yun_jin_core import BASE
 from yun_jin_forecast import cache_valid,FORECAST_LIMIT,FORECAST_TTL
-from yun_jin_weather import weather_kind
+from yun_jin_weather import detailed_weather_kind
 
 
 class ForecastService(QObject):
@@ -53,7 +53,8 @@ class ForecastService(QObject):
             self.data=result;self.retry_at=0.;self.failed=False
             self.pet.store.set_preference('weather_forecast_cache',result)
             # Reuse the same observation for the pet's ambient weather reaction.
-            current=result['current'];kind=weather_kind(current.get('weather_code'),current.get('is_day'))
+            current=result['current'];kind=detailed_weather_kind(current.get('weather_code'),current.get('is_day'),
+                current.get('rain'),current.get('snowfall'),current.get('wind_speed_10m'))
             ambient=dict(kind=kind,checked=result['checked'],observed=current['time'],
                          location=dict(self.location,source='manual'))
             context=self.pet.context

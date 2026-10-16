@@ -29,7 +29,7 @@ PAGES=[('INIZIA QUI','Windows'),('SUL DESKTOP','macOS, Linux e comandi'),('CONSE
        ('MISURA','Cronometro e focus'),('CONSERVA I DATI','Backup e manutenzione'),('SEMPRE AGGIORNATA','Aggiornamenti'),
        ('RIPOSA','Il sonno di Yun Jin'),('INTORNO A TE','Orario e meteo'),('GUARDA FUORI','Previsioni meteo'),
        ('IMPARA','Studio e ripassi'),('CREA','Le tue flashcard'),('RICORDA A LUNGO','FSRS e richiami'),
-       ('PERSONALIZZA','Scorciatoie e Anki'),('AIUTO','Problemi e crediti')]
+       ('PERSONALIZZA','Scorciatoie e Anki'),('ORGANIZZA','Calendario'),('SCEGLI L’ORA','Sveglie'),('AIUTO','Problemi e crediti')]
 
 def p(text,style='p'):return Paragraph(text,S[style])
 def h(text):return p(text,'h')
@@ -178,7 +178,8 @@ story += [pair,Spacer(1,16),h('Crea un promemoria'),
     p('Il numero sul pet e nella barra laterale indica gli avvisi da gestire. Il silenzio temporaneo sospende voce e campanelli; gli avvisi visivi rimangono attivi. Durante il metronomo il campanello dei promemoria suona; la lettura vocale resta sospesa, senza interrompere il ritmo.','small'),PageBreak()]
 # 5
 story += [picture('voce.png',460),Spacer(1,12),
-    p('In <b>Voce</b>, <b>Leggi i promemoria alla scadenza</b> pronuncia gli avvisi alla scadenza. La lettura manuale è indipendente da questa opzione. <b>Ascolta</b> legge il campo di testo; <b>Leggi testo copiato</b> usa gli appunti del sistema. <b>Stop</b> compare durante la lettura o la preparazione.'),
+    p('<b>Voce attiva</b>, nel menu Voce e nel pannello, controlla tutte le letture. Disattivandola restano fumetti, avvisi e animazioni; anche l’audio delle flashcard resta silenzioso. <b>Leggi i promemoria alla scadenza</b> riguarda solo la lettura automatica dei promemoria.'),
+    p('<b>Ascolta</b> legge il campo di testo; <b>Leggi testo copiato</b> usa gli appunti. <b>Stop</b> interrompe la lettura o il fumetto. Puoi assegnare una scorciatoia per attivare e disattivare la voce.'),
     p('Durante ogni lettura compare un <b>fumetto</b> accanto a Yun Jin. I testi lunghi scorrono in brevi parti; <b>Stop</b> interrompe voce e fumetto. Saluti e commenti meteo usano la lingua selezionata qui.'),
     table(['Servizio','Regolazioni'],[['Microsoft Edge','Voce, velocità, intonazione e volume.'],['Google Translate','Lingua, lettura lenta e volume; la voce è scelta dal servizio.']]),Spacer(1,10),
     p('Il menu <b>⋯</b> svuota la cache o ripristina Elsa: italiano, +20% di velocità, +15 Hz, volume 70%. La lettura accetta fino a 3.000 caratteri; seleziona un passaggio per testi più lunghi.'),
@@ -202,7 +203,7 @@ story += [picture('cronometro.png',400),Spacer(1,10),
 # 8
 story += [h('Dove sono i dati'),p('In <b>Impostazioni → Cartella dati</b> trovi appunti, immagini, promemoria e preferenze. Gli strumenti musicali e i dati personali funzionano localmente.'),
     table(['Sistema','Cartella'],[['Windows','%LOCALAPPDATA%\\YunJinPet'],['macOS','~/Library/Application Support/YunJinPet'],['Linux','~/.local/share/YunJinPet<br/>(oppure XDG_DATA_HOME)']]),
-    h('Backup'),p('Scegli <b>Impostazioni → Backup</b> e salva lo ZIP. Include appunti, promemoria, mazzi, cronologia dei ripassi e relativi audio e immagini. Appunti e promemoria hanno anche una copia leggibile. I file esterni collegati e le collezioni di Anki non sono inclusi. Posizione, carattere e dimensione del pet sono impostazioni del sistema e non fanno parte del backup.'),
+    h('Backup'),p('Scegli <b>Impostazioni → Backup</b> e salva lo ZIP. Include appunti, promemoria, calendario, sveglie, mazzi, cronologia dei ripassi e relativi audio e immagini. Appunti e promemoria hanno anche una copia leggibile. I file esterni collegati e le collezioni di Anki non sono inclusi. Posizione, carattere e dimensione del pet sono impostazioni del sistema e non fanno parte del backup.'),
     h('Ripristino manuale'),p('<b>1.</b> Chiudi Yun Jin e copia la cartella dati in un luogo sicuro.<br/><b>2.</b> Sposta dalla cartella dati <b>companion.sqlite3</b> e gli eventuali file <b>companion.sqlite3-wal</b> e <b>companion.sqlite3-shm</b>.<br/><b>3.</b> Inserisci il database e le cartelle <b>attachments</b> e <b>study-media</b> del backup.<br/><b>4.</b> Riapri Yun Jin. Se hai cambiato computer, aggiorna i collegamenti ai file esterni.'),
     h('Installazione manuale e riparazione'),p('Per aggiornare manualmente o riparare l’installazione, chiudi Yun Jin, estrai il nuovo pacchetto e avvia <b>Windows.cmd</b>, <b>Mac.command</b> o <b>Linux.sh</b>. L’installer sostituisce il programma e aggiorna le dipendenze conservando i dati. Ripeti l’avvio se il collegamento smette di funzionare dopo aver rimosso Python.'),
     h('Disinstalla'),p('Chiudi l’app e rimuovi i collegamenti. Sul Mac elimina anche l’app in <b>/Applications</b>. Nella cartella dati rimuovi <b>program</b> e <b>runtime</b>; su Windows anche l’eventuale <b>python-3.13</b>. Conserva database, attachments e study-media per riusarli, oppure esporta un backup prima di eliminare tutta la cartella.'),
@@ -244,7 +245,7 @@ story += [picture('orario-meteo.png',360),Spacer(1,8),
     p('Ogni cambio di fascia produce al massimo una reazione. Al ritorno dalla sospensione considera solo la fascia attuale, senza recuperare tutte quelle trascorse. Puoi provarle da <b>Animazioni → Orario oppure Meteo</b>. Con le animazioni aggiuntive disattivate usa i gesti originali.','small'),
     p('<b>Applauso</b>, in <b>Animazioni → Gesti</b>, si esegue solo su comando: non è un comportamento casuale.','small'),
     h('Il tempo fuori'),
-    p('Dopo circa un minuto, poi ogni <b>ora</b>, cerca il meteo in background. Reagisce a sole, nuvole, pioggia, neve, nebbia e temporali con un gesto e una breve frase nella lingua scelta. Commenta i cambiamenti con almeno <b>due ore</b> tra due interventi.'),
+    p('Dopo circa un minuto, poi ogni <b>ora</b>, cerca il meteo in background. Distingue 16 condizioni, dal cielo sereno alla grandine, con frasi diverse nella lingua scelta e animazioni coerenti. Commenta i cambiamenti con almeno <b>due ore</b> tra due interventi.'),
     p('Serve una città selezionata in <b>Impostazioni → Orario e meteo</b>. La scheda <b>Meteo</b> mostra anche le previsioni complete.','small'),
     call('Saluto e reazioni si disattivano separatamente. Non interrompono le altre attività. Senza dati o connessione, Yun Jin continua normalmente e non mostra errori.'),PageBreak()]
 # Forecast
@@ -285,28 +286,45 @@ story += [p('<b>FSRS 6</b> stima difficoltà, stabilità della memoria e probabi
     p('Durante il focus o altre attività non interrompe. Puoi disattivare i richiami in <b>Studio → menu → Richiami e Anki</b>. I ripassi extra delle carte native vengono registrati e FSRS ne tiene conto.','small'),PageBreak()]
 # Shortcuts and optional Anki
 story += [h('Scegli i tuoi tasti'),p('Apri <b>Impostazioni → Scorciatoie</b>, scegli la funzione e premi la combinazione. <b>Salva</b> applica; <b>×</b> disattiva; <b>Ripristina</b> torna ai valori iniziali.'),
-    picture('scorciatoie.png',400),Spacer(1,10),
-    p('Puoi aprire il <b>Meteo</b>, mostrare o nascondere Yun Jin e controllare cronometro, metronomo e focus anche a pannello chiuso. Avvia / Pausa conserva il tempo; Parziale registra un giro; Azzera cancella tempo e parziali. Metronomo e focus usano le impostazioni correnti o le ultime salvate.','small'),
+    picture('scorciatoie.png',360),Spacer(1,10),
+    p('Puoi aprire <b>Meteo, Calendario e Sveglie</b>, creare un impegno o una sveglia, fermare o rinviare una sveglia, attivare/disattivare la voce, mostrare o nascondere Yun Jin e controllare cronometro, metronomo e focus anche a pannello chiuso. Avvia / Pausa conserva il tempo; Parziale registra un giro; Azzera cancella tempo e parziali. Metronomo e focus usano le impostazioni correnti o le ultime salvate.','small'),
     p('Su Windows e macOS, le combinazioni occupate vengono segnalate mentre le imposti. Il controllo legge le scorciatoie di sistema e verifica quelle registrate dalle altre app; le app che intercettano direttamente i tasti possono sfuggirgli. Su Linux le scorciatoie funzionano nelle finestre di Yun Jin.','small'),
     h('Collega Anki, se vuoi'),p('In <b>Studio → menu → Richiami e Anki</b> abilita <b>Includi le carte di Anki</b>. Se c’è un solo profilo viene selezionato; con più profili scegli quello da usare. <b>Sfoglia</b> apre la cartella di Anki, se devi selezionare una collezione diversa. Non servono plugin.'),
     call('Anki viene <b>solo letto</b>. I richiami includono passaggi ostinati e carte difficili dei <b>mazzi studiati nella sua giornata corrente</b>. Puoi includere i passaggi ostinati sospesi con l’apposita spunta: restano sospesi in Anki. Carte nuove, sepolte e nei mazzi filtrati sono escluse. Sono esercizi liberi: non cambiano la pianificazione di Anki.'),Spacer(1,7),
     p('La lettura si aggiorna ogni 15 minuti, anche con Anki aperto. Supporta fronte/retro e cloze, immagini e audio locali. Gli script non vengono eseguiti; i modelli senza contenuto statico leggibile vengono segnalati. Puoi scollegare Anki quando vuoi.','small'),PageBreak()]
-# 12
+# Calendar
+story += [picture('calendario.png',450),Spacer(1,12),
+    p('Seleziona un giorno per vedere gli impegni. <b>Nuovo impegno</b> aggiunge titolo, inizio e fine, note e un eventuale avviso. <b>Tutto il giorno</b> è adatto a viaggi e ricorrenze.'),
+    h('Le tue ricorrenze'),p('Ripeti ogni giorno, settimana, mese o anno, scegliendo intervallo, giorni e fine della serie. Quando modifichi o elimini un evento ricorrente, scegli <b>Solo questo</b> oppure <b>Tutta la serie</b>.'),
+    p('<b>Avviso</b> sceglie quanto prima ricevere la notifica; <b>Voce</b> ne abilita la lettura, secondo l’interruttore generale. Gli impegni seguono l’ora locale del computer.'),
+    p('Le frecce cambiano mese; <b>Oggi</b> torna alla data corrente. Il titolo apre mese e anno. Da tastiera: frecce per il giorno, Invio per un impegno, Pagina su/giù per il mese e Home per oggi.','small'),
+    p('Le illustrazioni seguono la stagione e cambiano da un anno all’altro. Clicca l’illustrazione per ingrandirla. Una serie il 31 salta i mesi senza quel giorno; il 29 febbraio torna negli anni bisestili.','small'),PageBreak()]
+# Alarms
+story += [picture('sveglie.png',390),Spacer(1,12),
+    p('Apri <b>Sveglie → Nuova sveglia</b> e scegli l’ora. Puoi usarla una volta, in una data precisa, ogni giorno, nei giorni lavorativi o in giorni della settimana a tua scelta.'),
+    p('Ogni sveglia ha suono, voce e durata del rinvio regolabili. <b>Attiva</b> la abilita o disabilita. Una sveglia singola si disattiva dopo l’avviso; riattivandola riparte alla prossima occorrenza dell’ora scelta.'),
+    table(['Quando arriva','Azione'],[
+        ['Ferma / Chiudi','Interrompe l’avviso corrente; una sveglia periodica resta programmata.'],
+        ['Tra … min','Rinvia l’avviso del tempo scelto. Il rinvio resta salvato anche chiudendo l’app.'],
+        ['Avvisi recenti','Mostra quelli ancora da gestire o persi mentre il computer era spento.']]),Spacer(1,12),
+    p('Al ritorno recupera solo l’ultima scadenza di ogni serie: le sveglie entro 10 minuti, gli impegni entro due ore dall’avviso e prima della fine. Gli avvisi più vecchi rimangono nell’elenco, senza suonare. Una notifica già mostrata torna silenziosamente dopo il riavvio.','small'),
+    p('Il suono di una sveglia dura al massimo un minuto; la notifica resta da gestire. <b>Effetti sonori</b> e <b>Silenzio per un’ora</b> controllano il suono; <b>Voce attiva</b> controlla la lettura. Sveglie e avvisi funzionano anche con Yun Jin nascosta e durante il focus.','small'),PageBreak()]
+# Help
 story += [table(['Problema','Controllo'],[
     ['Yun Jin non si vede','Menu dell’icona → Mostra Yun Jin. Se è fuori schermo: Aspetto → Riporta sullo schermo. Controlla anche la preferenza per le app a schermo intero.'],
     ['Mac: aprire l’app nascosta','Clicca l’icona di Yun Jin nella barra dei menu: Mostra Yun Jin oppure Pannello. L’app non usa il Dock.'],
-    ['La voce non parte','Controlla Internet, volume e uscita audio. In Voce prova l’altro servizio o svuota la cache.'],
+    ['La voce non parte','Attiva Voce attiva e controlla Internet, volume e uscita audio. In Voce prova l’altro servizio o svuota la cache.'],
     ['Promemoria senza voce','In Voce abilita Leggi i promemoria alla scadenza; termina il silenzio dal menu o ferma il metronomo.'],
     ['Il metronomo non suona','Controlla l’uscita audio del sistema. Dopo aver cambiato dispositivo, premi Ferma e Avvia.'],
     ['Il pet resta fermo','In Comportamento togli Pausa completa e scegli Riprendi. Controlla Focus e il carattere scelto, incluso Addormentata.'],
     ['Avvio bloccato','Controlla la provenienza del pacchetto e le autorizzazioni del sistema. Su dispositivi gestiti rivolgiti all’amministratore.'],
     ['Installazione interrotta','Conserva il messaggio, verifica connessione e spazio libero, poi ripeti l’avvio. Il log è yun-jin.log nella cartella dati.']]),
-    h('Requisiti e accesso alla rete'),p('Prima installazione, voce, meteo e controllo aggiornamenti richiedono Internet. Studio, appunti, promemoria, focus, cronometro e metronomo funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
+    h('Requisiti e accesso alla rete'),p('Prima installazione, voce, meteo e controllo aggiornamenti richiedono Internet. Studio, appunti, promemoria, calendario, sveglie e strumenti musicali funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato.','small'),
     h('Crediti e licenze'),p('Progetto fan non ufficiale. Yun Jin è un personaggio di Genshin Impact; personaggio e marchi appartengono ai rispettivi titolari.','small'),
     p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts, gTTS e FSRS mantengono le rispettive licenze. FSRS 6 è di Open Spaced Repetition; le licenze sono in app/licenses. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
     p('Meteo: <link href="https://open-meteo.com/" color="#3e777e">Open-Meteo</link>, dati CC BY 4.0. Ricerca delle città: <link href="https://www.geonames.org/" color="#3e777e">GeoNames</link>. Per la voce, il testo viene inviato al servizio selezionato; per il meteo, Open-Meteo riceve le coordinate della città scelta e l’indirizzo IP della connessione.','small'),
     h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small'),
-    p('Revisione della guida: 3 ottobre 2026.','small')]
+    p('Revisione della guida: 16 ottobre 2026.','small')]
 
 doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion - Guida',author='Yun Jin Companion',pageCompression=1)
 frame=Frame(44,53,BW,666,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)
