@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Optional ambient reactions; bounded state, slow clocks and no network on the GUI thread."""
 import json
+import random
 import sys
 import time
 from datetime import datetime
@@ -10,26 +11,6 @@ from PyQt6.QtWidgets import QApplication
 from yun_jin_core import BASE, ANIMATIONS
 from yun_jin_weather import fresh, location_valid, selected_location, WEATHER_TTL
 
-GREETINGS = {
-    'it': {
-        'morning': 'Buongiorno! Ti auguro una bella giornata.',
-        'afternoon': 'Buon pomeriggio! Sono felice di rivederti.',
-        'evening': 'Buonasera! Com’è andata la giornata?',
-        'night': 'È tardi. Ricordati di riposare un po’.',
-    },
-    'en': {
-        'morning': 'Good morning! I hope you have a lovely day.',
-        'afternoon': 'Good afternoon! It’s lovely to see you again.',
-        'evening': 'Good evening! How was your day?',
-        'night': 'It’s getting late. Remember to get some rest.',
-    },
-    'zh-CN': {
-        'morning': '早上好！愿你今天心情愉快。',
-        'afternoon': '下午好！很高兴又见到你。',
-        'evening': '晚上好！今天过得怎么样？',
-        'night': '夜深了，别忘了早点休息。',
-    },
-}
 TIME_ANIMATIONS = {'morning': ('morning16', 'wave'), 'afternoon': ('afternoon16', 'wave'),
                    'evening': ('evening16', 'review'), 'night': ('yawn16', 'wait')}
 WEATHER_REACTIONS = {
@@ -42,11 +23,6 @@ WEATHER_REACTIONS = {
     'thunderstorm': ('rain16', 'review'), 'storm_hail': ('rain16', 'review'),
     'wind': ('cloud16', 'review'), 'storm': ('rain16', 'review'),  # Older cached results.
 }
-
-
-
-def contextual_line(table, key, language):
-    return table.get(language, table['it'])[key]
 
 
 def time_period(now):
@@ -162,7 +138,10 @@ class Context(QObject):
         if kind in ('greeting', 'time'):
             animation, fallback = TIME_ANIMATIONS[value]
             if kind == 'greeting':
-                text = contextual_line(GREETINGS, value, language)
+                from yun_jin_greeting_lines import choose_greeting_line
+                text = choose_greeting_line(self.pet.store, value, language)
+                animation = random.choice((animation, 'greeting16'))
+                if animation == 'greeting16': fallback = 'wave'
         else:
             animation, fallback = WEATHER_REACTIONS[value]
             from yun_jin_weather_lines import choose_weather_line

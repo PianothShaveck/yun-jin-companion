@@ -13,11 +13,11 @@ from PyQt6 import sip
 from PyQt6.QtCore import Qt,QDate,QTime,QTimer,QCoreApplication,QEvent,pyqtSignal
 from PyQt6.QtGui import QImage,QColor,QPainter
 from PyQt6.QtTest import QTest
-from PyQt6.QtWidgets import QApplication,QWidget,QDialog,QScrollArea,QVBoxLayout,QMessageBox,QLabel
+from PyQt6.QtWidgets import QApplication,QWidget,QDialog,QScrollArea,QVBoxLayout,QMessageBox,QLabel,QBoxLayout
 from yun_jin_data import Store
 from yun_jin_agenda import AgendaStore
 from yun_jin_calendar_ui import (CalendarPanel,CalendarHero,EventDialog,RecurrenceEditor,
-                                ScopeDialog,MonthJumpDialog,IllustrationDialog,parse_local,exec_editor)
+                                ScopeDialog,MonthJumpDialog,IllustrationDialog,CalendarBackdrop,DayButton,parse_local,exec_editor)
 from yun_jin_alarms_ui import AlarmDialog,AlarmsPanel
 from yun_jin_ui import STYLE
 
@@ -130,6 +130,71 @@ class CalendarUiTests(unittest.TestCase):
         self.assertLessEqual(hero.pixmap.width(),1000);self.assertLessEqual(hero.pixmap.height(),600)
         with patch.dict(sys.modules,{'yun_jin_calendar_art':SimpleNamespace(illustration_for=lambda y,m:Path(self.tmp.name)/'missing.webp')}):
             hero.set_month(date(2032,4,1));self.assertIsNone(hero.pixmap)
+
+    def test_calendar_background_reuses_pixels_through_resize_month_changes_and_close(self):
+        files={}
+        for month,color in [(1,'#ff0000'),(2,'#0000ff'),(3,'#ffffff')]:
+            path=Path(self.tmp.name)/f'background-{month}.png'
+            image=QImage(1200,800,QImage.Format.Format_RGB32);image.fill(QColor(color));image.save(str(path));files[month]=path
+        module=SimpleNamespace(illustration_for=lambda y,m:files.get(m,files[1]))
+        with patch.dict(sys.modules,{'yun_jin_calendar_art':module}):
+            page=self.keep(CalendarPanel(self.pet));page.setStyleSheet(STYLE);page.select_day(date(2032,1,15));page.show();app.processEvents()
+            initial=page.hero.pixmap.cacheKey()
+            with patch('yun_jin_calendar_ui.QImageReader',side_effect=AssertionError('Resizing must reuse decoded artwork')):
+                for width,height in [(800,650),(520,560),(1100,760),(540,600)]:
+                    page.resize(width,height)
+                    for _ in range(4):app.processEvents()
+                    shot=page.month_box.grab().toImage()
+                    self.assertFalse(shot.isNull());self.assertEqual(page.hero.pixmap.cacheKey(),initial)
+                    source=page.month_box.image_source_rect()
+                    self.assertAlmostEqual(source.width()/source.height(),page.month_box.width()/page.month_box.height())
+                    self.assertGreaterEqual(source.left(),0);self.assertGreaterEqual(source.top(),0)
+                    self.assertLessEqual(source.right(),page.hero.pixmap.width());self.assertLessEqual(source.bottom(),page.hero.pixmap.height())
+                    self.assertEqual(page.middle_layout.direction(),QBoxLayout.Direction.LeftToRight if width>=680 else QBoxLayout.Direction.TopToBottom)
+                    scroll=page.findChild(QScrollArea);self.assertEqual(scroll.horizontalScrollBar().maximum(),0)
+                before=page.month_box.grab().toImage()
+            page.change_month(1);app.processEvents();after=page.month_box.grab().toImage()
+            self.assertNotEqual(before,after);self.assertNotEqual(page.hero.pixmap.cacheKey(),initial)
+            page.change_month(1);app.processEvents();self.assertEqual(len(page.hero.cache),2)
+            self.assertNotIn(files[1],page.hero.cache);self.assertEqual(page.month_box.hero.pixmap.cacheKey(),page.hero.pixmap.cacheKey())
+            with patch('yun_jin_calendar_ui.QImageReader',side_effect=AssertionError('Closing must not decode artwork')):page.close();app.processEvents()
+            self.assertFalse(page.isVisible());self.assertEqual(page.findChildren(QTimer),[])
+
+    def test_calendar_background_keeps_bright_art_subdued_and_day_states_distinct(self):
+        path=Path(self.tmp.name)/'white-scene.png';image=QImage(900,600,QImage.Format.Format_RGB32)
+        image.fill(QColor('#ffffff'));image.save(str(path))
+        hero=self.keep(CalendarHero())
+        with patch.dict(sys.modules,{'yun_jin_calendar_art':SimpleNamespace(illustration_for=lambda y,m:path)}):hero.set_month(date(2032,1,1))
+        surface=self.keep(CalendarBackdrop(hero));surface.resize(630,350);surface.show();app.processEvents()
+        background=surface.grab().toImage();ratio=background.devicePixelRatio()
+        def luminance(value):
+            channels=[value.redF(),value.greenF(),value.blueF()]
+            linear=[x/12.92 if x<=.04045 else ((x+.055)/1.055)**2.4 for x in channels]
+            return sum(x*weight for x,weight in zip(linear,(.2126,.7152,.0722)))
+        for y in (30,170,320):
+            color=background.pixelColor(round(300*ratio),round(y*ratio))
+            self.assertLess(max(color.red(),color.green(),color.blue()),110)
+            self.assertGreater((luminance(QColor('#eee6f3'))+.05)/(luminance(color)+.05),4.5)
+            if y==30:self.assertGreater((luminance(QColor('#d0c8dc'))+.05)/(luminance(color)+.05),4.5)
+        day=DayButton(date.today());day.setParent(surface);day.setGeometry(200,280,70,50);day.show()
+        captures=[]
+        for current,chosen,events in [(True,False,[]),(True,True,[]),(False,False,[]),(True,False,[{'title':'Prova','color':'teal'}])]:
+            day.update_day(date.today(),current,chosen,events);day.is_today=current and not chosen;day.update();app.processEvents()
+            captures.append(day.grab().toImage())
+        for index,shot in enumerate(captures):
+            for other in captures[index+1:]:self.assertNotEqual(shot,other)
+        self.assertIn('1 impegni',day.accessibleName());self.assertIn('Prova',day.toolTip())
+        future=date.today()+timedelta(days=5)
+        day.update_day(future,True,False,[]);app.processEvents();plain=day.grab().toImage()
+        day.update_day(future,True,True,[]);app.processEvents();self.assertNotEqual(day.grab().toImage(),plain)
+        day.update_day(future,True,False,[]);app.processEvents();self.assertEqual(day.grab().toImage(),plain)
+        day.update_day(future,False,False,[]);app.processEvents()
+        muted_background=surface.grab().toImage().pixelColor(round(210*ratio),round(290*ratio))
+        self.assertGreater((luminance(QColor('#bfb3ca'))+.05)/(luminance(muted_background)+.05),4.5)
+        with patch.dict(sys.modules,{'yun_jin_calendar_art':SimpleNamespace(illustration_for=lambda y,m:Path(self.tmp.name)/'missing.webp')}):hero.set_month(date(2032,2,1))
+        surface.update();app.processEvents();cleared=surface.grab().toImage()
+        self.assertIsNone(hero.pixmap);self.assertNotEqual(cleared,background)
+        self.assertEqual(cleared.pixelColor(round(300*ratio),round(30*ratio)),QColor('#252131'))
 
     def test_alarm_recurrence_voice_sound_and_disabled_state_survive_edit(self):
         dialog=self.keep(AlarmDialog(self.pet));dialog.title.setText('Lezione');dialog.clock.setTime(QTime(7,45))
@@ -266,6 +331,45 @@ class CalendarUiTests(unittest.TestCase):
         self.assertEqual(dialog.value(),date(2048,12,1))
         scope=self.keep(ScopeDialog(self.pet,None));scope.choose('occurrence');self.assertEqual(scope.scope,'occurrence')
         self.assertEqual(scope.result(),QDialog.DialogCode.Accepted)
+
+    def test_illustration_mouse_close_without_titlebar_preserves_owner_and_releases_pixels(self):
+        from yun_jin_dialogs import exec_dialog
+        path=Path(self.tmp.name)/'scene.png';image=QImage(800,500,QImage.Format.Format_RGB32)
+        image.fill(QColor('#30404f'));image.save(str(path))
+        owner=self.keep(QWidget());owner.show();self.pet.show();app.processEvents()
+        for dismiss in ('mouse','escape'):
+            with self.subTest(dismiss=dismiss):
+                dialog=self.keep(IllustrationDialog(self.pet,owner,path,date(2032,2,1)))
+                # macOS overlay panels cannot be assumed to provide native
+                # title-bar controls. The in-content close button must suffice.
+                dialog.setWindowFlag(Qt.WindowType.FramelessWindowHint,True)
+                errors=[];driver=QTimer();driver.setInterval(5)
+                timeout=QTimer();timeout.setSingleShot(True)
+                def expire():
+                    errors.append(AssertionError('Illustration dialog did not close'));dialog.reject()
+                def inspect():
+                    if app.activeModalWidget() is not dialog:return
+                    driver.stop()
+                    try:
+                        close=dialog.close_button
+                        self.assertTrue(close.isVisible());self.assertTrue(close.isEnabled())
+                        self.assertEqual(close.accessibleName(),'Chiudi');self.assertEqual(close.toolTip(),'Chiudi')
+                        self.assertFalse(close.icon().isNull());self.assertEqual(close.text(),'')
+                        self.assertFalse(close.geometry().intersects(dialog.canvas.geometry()))
+                        self.assertAlmostEqual(dialog.canvas.image_rect().width()/dialog.canvas.image_rect().height(),1.6)
+                        if dismiss=='mouse':QTest.mouseClick(close,Qt.MouseButton.LeftButton)
+                        else:QTest.keyClick(dialog,Qt.Key.Key_Escape)
+                    except Exception as exc:errors.append(exc);dialog.reject()
+                driver.timeout.connect(inspect);timeout.timeout.connect(expire)
+                with patch.object(self.pet,'focus_tool') as focus:
+                    driver.start();timeout.start(3000)
+                    try:result=exec_dialog(dialog,self.pet)
+                    finally:driver.stop();timeout.stop()
+                    if errors:raise errors[0]
+                    self.assertEqual(result,QDialog.DialogCode.Rejected)
+                    self.assertFalse(dialog.isVisible());self.assertTrue(dialog.canvas.pixmap.isNull())
+                    self.assertTrue(owner.isVisible());self.assertTrue(owner.isEnabled());self.assertTrue(self.pet.isVisible())
+                    focus.assert_any_call(owner)
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

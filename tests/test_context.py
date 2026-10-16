@@ -16,9 +16,10 @@ from PyQt6.QtCore import QEventLoop, QTimer, QProcess, QSettings
 from PyQt6.QtWidgets import QApplication
 from yun_jin_app import Companion
 from yun_jin_data import Store
-from yun_jin_context import Context, time_period, GREETINGS, WEATHER_REACTIONS
+from yun_jin_context import Context, time_period, WEATHER_REACTIONS
 from yun_jin_weather import fetch_weather, read_json, weather_kind, WEATHER_TTL, MAX_RESPONSE
 import yun_jin_context as context_module
+from yun_jin_greeting_lines import line_pool as greeting_pool
 
 app = QApplication.instance() or QApplication([])
 app.setQuitOnLastWindowClosed(False)
@@ -117,7 +118,7 @@ class ContextTests(unittest.TestCase):
     def test_greeting_only_once_and_uses_voice_language(self):
         self.store.set_preference('tts_language','it'); self.ctx.start()
         self.assertEqual(self.speak.call_count,1)
-        self.assertEqual(self.speak.call_args.args[0],GREETINGS['it']['morning'])
+        self.assertIn(self.speak.call_args.args[0],greeting_pool('morning','it'))
         self.assertNotIn('language',self.speak.call_args.kwargs)
         for _ in range(3): self.ctx.start(); self.ctx.dispatch(); self.advance()
         self.assertEqual(self.speak.call_count,1)
@@ -133,14 +134,49 @@ class ContextTests(unittest.TestCase):
                 self.ctx = Context(self.pet, lambda:self.now.local, lambda:self.now.mono, lambda:self.now.wall)
                 self.pet.context = self.ctx; self.ctx.enabled['weather'] = False
                 self.speak.reset_mock()
-                with patch.object(self.pet, 'sequence') as sequence:
+                with patch.object(self.pet, 'sequence') as sequence, \
+                     patch('yun_jin_context.random.choice', side_effect=lambda choices: choices[0]):
                     self.ctx.start(); self.ctx.start(); self.ctx.poll()
                     sequence.assert_not_called()
                     tag=self.speak.call_args.kwargs['tag']
                     self.ctx.play_speech_animation(tag);self.ctx.play_speech_animation(tag)
                     sequence.assert_called_once_with([(animation, 1)])
                 self.speak.assert_called_once()
-                self.assertEqual(self.speak.call_args.args[0], GREETINGS['it'][period])
+                self.assertIn(self.speak.call_args.args[0], greeting_pool(period,'it'))
+
+    def test_startup_bow_runs_once_and_respects_animation_controls(self):
+        for extra, time_enabled, expected in ((True,True,'greeting16'),(False,True,'wave'),(True,False,None)):
+            with self.subTest(extra=extra,time_enabled=time_enabled):
+                self.ctx.shutdown();self.pet.cancel();self.pet.idle()
+                self.pet.use_extra_animations=extra
+                self.now.local=datetime(2026,9,30,8)
+                self.ctx=Context(self.pet,lambda:self.now.local,lambda:self.now.mono,lambda:self.now.wall)
+                self.pet.context=self.ctx;self.ctx.enabled.update(weather=False,time=time_enabled)
+                self.speak.reset_mock()
+                with patch('yun_jin_context.random.choice',return_value='greeting16') as choice, \
+                     patch.object(self.pet,'sequence') as sequence:
+                    self.ctx.start();self.ctx.start();self.ctx.poll()
+                    tag=self.speak.call_args.kwargs['tag']
+                    self.ctx.play_speech_animation(tag);self.ctx.play_speech_animation(tag)
+                    self.speak.assert_called_once();choice.assert_called_once()
+                    if expected:sequence.assert_called_once_with([(expected,1)])
+                    else:sequence.assert_not_called()
+                    self.advance(hour=12)
+                    choice.assert_called_once();self.speak.assert_called_once()
+                    if time_enabled:
+                        sequence.assert_called_with([('afternoon16' if extra else 'wave',1)])
+                        self.assertEqual(sequence.call_count,2)
+                    else:sequence.assert_not_called()
+
+    def test_startup_bow_still_runs_once_without_audio(self):
+        self.speak.return_value=False
+        with patch('yun_jin_context.random.choice',return_value='greeting16'):
+            self.ctx.start()
+        self.assertEqual(self.pet.animation,'greeting16')
+        serial=self.pet.action_serial
+        self.ctx.start();self.ctx.poll();self.ctx.dispatch()
+        self.assertEqual(self.pet.action_serial,serial)
+        self.speak.assert_called_once()
 
     def test_each_time_period_once_rollback_midnight_and_resume(self):
         self.ctx.enabled['greeting']=False; self.ctx.start()

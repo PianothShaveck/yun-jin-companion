@@ -20,9 +20,66 @@ from yun_jin_speech import Speech
 from yun_jin_weather import detailed_weather_kind,fetch_weather
 from yun_jin_forecast import condition
 from yun_jin_weather_lines import LANGUAGES,LINES,line_pool,choose_weather_line
+from yun_jin_greeting_lines import LINES as GREETING_LINES, line_pool as greeting_pool, choose_greeting_line
 
 app=QApplication.instance() or QApplication([])
 app.setQuitOnLastWindowClosed(False)
+
+
+class GreetingVarietyTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp=tempfile.TemporaryDirectory();self.store=Store(self.tmp.name)
+
+    def tearDown(self):
+        self.store.close();self.tmp.cleanup()
+
+    def test_twenty_distinct_short_greetings_per_period_and_language(self):
+        self.assertEqual(set(GREETING_LINES),{'morning','afternoon','evening','night'})
+        for period,rows in GREETING_LINES.items():
+            self.assertTrue(all(len(row)==3 for row in rows))
+            for language in LANGUAGES:
+                pool=greeting_pool(period,language)
+                self.assertEqual(len(pool),20);self.assertEqual(len(set(pool)),20)
+                self.assertTrue(all(8<=len(line)<=140 for line in pool),(period,language))
+                if language=='zh-CN':
+                    self.assertTrue(all(any('\u3400'<=c<='\u9fff' for c in line) for line in pool))
+        self.assertEqual(greeting_pool('night','unknown'),greeting_pool('night','it'))
+
+    def test_full_rotation_survives_restarts_without_consecutive_repeats(self):
+        rng=random.Random(151)
+        first=[choose_greeting_line(self.store,'morning','it',rng) for _ in range(7)]
+        self.store.close();self.store=Store(self.tmp.name)
+        first += [choose_greeting_line(self.store,'morning','it',rng) for _ in range(13)]
+        second=[choose_greeting_line(self.store,'morning','it',rng) for _ in range(20)]
+        self.assertEqual(set(first),set(greeting_pool('morning','it')))
+        self.assertEqual(set(second),set(first));self.assertNotEqual(first[-1],second[0])
+
+    def test_language_period_histories_are_independent_and_bounded(self):
+        for language in LANGUAGES:
+            for period in GREETING_LINES:
+                for _ in range(3):
+                    self.assertIn(choose_greeting_line(self.store,period,language),greeting_pool(period,language))
+        state=self.store.preference('context_greeting_phrases',{})
+        self.assertEqual(len(state),12)
+        self.assertTrue(all(len(value['remaining'])==17 for value in state.values()))
+        self.assertLess(len(json.dumps(state)),2000)
+        self.assertIn(choose_greeting_line(self.store,'morning','unknown'),greeting_pool('morning','it'))
+        self.assertEqual(len(self.store.preference('context_greeting_phrases',{})),12)
+
+    def test_bad_history_is_repaired_without_retaining_unknown_data(self):
+        for broken in (None,17,{'it/morning':{'last':1,'remaining':[1]*10000}},
+                       {'it/morning':{'last':False,'remaining':['x']},'obsolete':'x'*10000},
+                       {'it/morning':{'last':1,'remaining':[1,2]}},
+                       {'en/night':{'last':1,'remaining':[2,3],'junk':'x'*10000}}):
+            self.store.set_preference('context_greeting_phrases',broken)
+            self.assertIn(choose_greeting_line(self.store,'morning','it'),greeting_pool('morning','it'))
+            self.assertLess(len(json.dumps(self.store.preference('context_greeting_phrases',{}))),350)
+
+    def test_greeting_corpus_is_lazy_and_does_not_import_weather_corpus(self):
+        code=("import sys;sys.path.insert(0,sys.argv[1]);import yun_jin_context;"
+              "assert 'yun_jin_greeting_lines' not in sys.modules;"
+              "import yun_jin_greeting_lines;assert 'yun_jin_weather_lines' not in sys.modules")
+        subprocess.run([sys.executable,'-c',code,str(Path(__file__).resolve().parents[1]/'app')],check=True,timeout=10)
 
 
 class WeatherVarietyTests(unittest.TestCase):

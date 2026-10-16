@@ -14,7 +14,7 @@ from PyQt6.QtMultimedia import QMediaPlayer
 from yun_jin_app import Companion
 from yun_jin_data import Store
 from yun_jin_speech import caption_pages
-from yun_jin_context import GREETINGS
+from yun_jin_greeting_lines import line_pool as greeting_pool
 from yun_jin_weather_lines import LINES, line_pool
 from yun_jin_macos import MacOverlay
 from yun_jin_tts_worker import cache_key
@@ -228,7 +228,7 @@ class CaptionTests(unittest.TestCase):
                     job = json.loads(process.write.call_args.args[0])
                     self.assertEqual(job['language'], language)
                     self.assertEqual(job['provider'], provider)
-                    self.assertEqual(job['text'], GREETINGS[language]['morning'])
+                    self.assertIn(job['text'], greeting_pool('morning',language))
                     self.play()
                     self.assertEqual(self.pet.bubble.text, job['text'])
                     self.assertEqual(self.store.preference('tts_language', ''), language)

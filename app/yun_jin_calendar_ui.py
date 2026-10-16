@@ -321,6 +321,9 @@ class IllustrationDialog(QDialog):
         super().__init__(owner_window(parent));self.pet=pet;self.setWindowIcon(pet.windowIcon());self.setStyleSheet(STYLE)
         self.setWindowTitle(f'{MONTHS[day.month-1]} {day.year} · Yun Jin')
         layout=QVBoxLayout(self);layout.setContentsMargins(10,10,10,10)
+        controls=QHBoxLayout();controls.addStretch()
+        self.close_button=icon_button('close','Chiudi',self.reject,controls)
+        layout.addLayout(controls)
         self.canvas=IllustrationCanvas(path);layout.addWidget(self.canvas)
         available=self.screen().availableGeometry()
         self.resize(min(1100,max(240,available.width()-80)),min(760,max(180,available.height()-100)))
@@ -421,14 +424,41 @@ class DayButton(QPushButton):
         if self.chosen:p.setBrush(QColor('#6d557f'));p.setPen(QPen(QColor('#c9accf'),1));p.drawRoundedRect(rect,8,8)
         elif self.underMouse():p.setBrush(QColor('#393144'));p.setPen(Qt.PenStyle.NoPen);p.drawRoundedRect(rect,8,8)
         elif self.is_today:p.setBrush(QColor('#353847'));p.setPen(QPen(QColor('#82acb2'),1));p.drawRoundedRect(rect,8,8)
+        elif not self.current_month:p.setBrush(QColor(20,17,29,80));p.setPen(Qt.PenStyle.NoPen);p.drawRoundedRect(rect,8,8)
         if self.hasFocus():p.setBrush(Qt.BrushStyle.NoBrush);p.setPen(QPen(QColor('#b3d0d8'),1.5));p.drawRoundedRect(rect.adjusted(2,2,-2,-2),6,6)
-        p.setPen(QColor('#fff9ff' if self.chosen else '#eee6f3' if self.current_month else '#827b8e'))
+        p.setPen(QColor('#fff9ff' if self.chosen else '#eee6f3' if self.current_month else '#bfb3ca'))
         font=QFont(self.font());font.setPointSizeF(11);font.setBold(self.is_today);p.setFont(font)
         p.drawText(rect.adjusted(0,-4 if self.events else 0,0,0),Qt.AlignmentFlag.AlignCenter,str(self.day.day))
         if self.events:
             n=min(3,len(self.events));start=rect.center().x()-(n-1)*4
             for i in range(n):p.setBrush(QColor(event_color(self.events[i])));p.setPen(Qt.PenStyle.NoPen);p.drawEllipse(QRectF(start+i*8-2,rect.bottom()-8,4,4))
         p.end()
+
+
+class CalendarBackdrop(QWidget):
+    """Reuse the hero's decoded pixels; resize only changes the painted crop."""
+    def __init__(self,hero):
+        super().__init__();self.hero=hero
+    def image_source_rect(self):
+        pix=self.hero.pixmap
+        if pix is None or pix.isNull() or not self.width() or not self.height():return QRectF()
+        width,height=pix.width(),pix.height();scale=max(self.width()/width,self.height()/height)
+        shown_width=min(width,self.width()/scale);shown_height=min(height,self.height()/scale)
+        return QRectF((width-shown_width)/2,(height-shown_height)/2,shown_width,shown_height)
+    def paintEvent(self,event):
+        p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        rect=QRectF(self.rect()).adjusted(.5,.5,-.5,-.5)
+        clip=QPainterPath();clip.addRoundedRect(rect,14,14);p.setClipPath(clip)
+        p.fillRect(rect,QColor('#252131'))
+        pix=self.hero.pixmap
+        if pix is not None and not pix.isNull():
+            p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform);p.setOpacity(.28)
+            p.drawPixmap(QRectF(self.rect()),pix,self.image_source_rect());p.setOpacity(1)
+            veil=QLinearGradient(rect.topLeft(),rect.bottomLeft())
+            veil.setColorAt(0,QColor(24,20,36,50));veil.setColorAt(1,QColor(24,20,36,20))
+            p.fillRect(rect,veil)
+        p.setBrush(Qt.BrushStyle.NoBrush);p.setPen(QPen(QColor('#51465e'),1))
+        p.drawRoundedRect(rect,14,14);p.end()
 
 
 class AlertHistory(QWidget):
@@ -481,7 +511,7 @@ class CalendarPanel(QWidget):
         self.history=AlertHistory(pet,'event',self.open_alert);self.body_layout.addWidget(self.history)
         self.middle=QWidget();self.middle_layout=QBoxLayout(QBoxLayout.Direction.LeftToRight,self.middle)
         self.middle_layout.setContentsMargins(0,0,0,0);self.middle_layout.setSpacing(18)
-        self.month_box=QWidget();month_layout=QVBoxLayout(self.month_box);month_layout.setContentsMargins(0,0,0,0);month_layout.setSpacing(8)
+        self.month_box=CalendarBackdrop(self.hero);month_layout=QVBoxLayout(self.month_box);month_layout.setContentsMargins(12,12,12,12);month_layout.setSpacing(8)
         self.month_button=self.hero.month_button;self.month_button.clicked.connect(self.jump_month)
         tools=self.hero.tools
         self.today_button=button('Oggi',self.today,tools,role='quiet')
@@ -489,7 +519,7 @@ class CalendarPanel(QWidget):
         tools.addStretch()
         self.grid=QGridLayout();self.grid.setContentsMargins(0,0,0,0);self.grid.setSpacing(3)
         for col,label in enumerate(SHORT_DAYS):
-            lab=plain_label(label,'muted');lab.setAlignment(Qt.AlignmentFlag.AlignCenter);lab.setStyleSheet('font-size:11px;');self.grid.addWidget(lab,0,col)
+            lab=plain_label(label,'muted');lab.setAlignment(Qt.AlignmentFlag.AlignCenter);lab.setStyleSheet('font-size:11px;color:#d0c8dc;');self.grid.addWidget(lab,0,col)
         for row in range(1,7):self.grid.setRowMinimumHeight(row,39)
         self.days=[]
         for i in range(42):
@@ -528,7 +558,8 @@ class CalendarPanel(QWidget):
             while cur<=last:self.day_rows.setdefault(cur,[]).append(row);cur+=timedelta(days=1)
         for day,rows in self.day_rows.items():rows.sort(key=lambda r:(not r.get('all_day'),r['start_local'],r['title']))
         self.month_button.setText(f'{MONTHS[self.month.month-1]}\n{self.month.year}')
-        if self.rendered_month!=self.month:self.hero.set_month(self.month);self.rendered_month=self.month
+        if self.rendered_month!=self.month:
+            self.hero.set_month(self.month);self.month_box.update();self.rendered_month=self.month
         for i,b in enumerate(self.days):
             day=first+timedelta(days=i);b.update_day(day,day.month==self.month.month,day==self.selected,self.day_rows.get(day,[]))
         self.refresh_day()
