@@ -84,6 +84,25 @@ class RuntimeTests(unittest.TestCase):
                 self.assert_data_unchanged()
         self.assertEqual(self.pip.call_count, 3)
 
+    def test_edge_protocol_update_installs_dependencies_without_recreating_runtime(self):
+        source = Path(self.tmp.name) / 'source'
+        (source / 'installer').mkdir(parents=True)
+        requirements = source / 'installer/requirements.txt'
+        current = (SOURCE / 'installer/requirements.txt').read_text(encoding='utf-8')
+        requirements.write_text(current.replace('edge-tts==7.3.1', 'edge-tts==7.2.8'), encoding='utf-8')
+        with patch.object(i, 'SOURCE', source):
+            i.environment(self.root)
+            previous_marker = self.marker.read_bytes()
+            requirements.write_text(current, encoding='utf-8')
+            with patch.object(i.venv.EnvBuilder, 'create') as create:
+                self.assertEqual(i.environment(self.root), self.exe)
+            create.assert_not_called()
+            self.assertEqual(self.pip.call_count, 2)
+            self.assertNotEqual(self.marker.read_bytes(), previous_marker)
+            i.environment(self.root)
+            self.assertEqual(self.pip.call_count, 2)
+        self.assert_data_unchanged()
+
     def test_missing_csv_is_repaired_even_when_python_starts(self):
         i.environment(self.root)
         hook = self.site_packages() / 'sitecustomize.py'

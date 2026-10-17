@@ -63,8 +63,8 @@ def main():
     try:
         job=json.loads(sys.stdin.buffer.read().decode('utf-8'))
         result=synthesize(job)
-    except ImportError as exc:
-        result={'ok':False,'error':'Dipendenza TTS mancante: '+str(exc)+'. Esegui Installa-dipendenze-Windows.cmd.'}
+    except ImportError:
+        result={'ok':False,'error':'Componente vocale mancante. Esegui di nuovo il programma di installazione di Yun Jin.'}
     except Exception as exc:
         result={'ok':False,'error':type(exc).__name__+': '+str(exc)[:240]}
     sys.stdout.buffer.write(json.dumps(result,ensure_ascii=False).encode('utf-8'))

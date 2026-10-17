@@ -32,6 +32,7 @@ jobs:
       - run: python tests/test_weather_location.py
       - run: python tests/test_forecast.py
       - run: python tests/test_speech_bubbles.py
+      - run: python tests/test_tts_worker.py
       - run: python tests/test_animation_menu.py
       - run: python tests/test_resource_usage.py
       - run: python tests/test_srs.py

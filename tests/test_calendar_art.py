@@ -17,25 +17,27 @@ class CalendarArtTests(unittest.TestCase):
         variant_for.cache_clear()
 
     def test_all_seasonal_illustrations_are_distinct_and_complete(self):
-        counts = (6, 7, 6, 6, 7, 9, 9, 9, 6, 6, 7, 6)
+        counts = (34, 7, 6, 6, 7, 9, 9, 9, 6, 6, 7, 6)
         self.assertEqual(tuple(map(len, VARIANTS_BY_MONTH)), counts)
         expected = {
             f'm{month:02d}-{letter}.webp'
-            for month, count in enumerate(counts, 1)
+            for month, count in enumerate((6, 7, 6, 6, 7, 9, 9, 9, 6, 6, 7, 6), 1)
             for letter in 'abcdefghi'[:count]
         }
+        expected.update(f'YJ-{number:03d}.webp' for number in range(85, 113))
         paths = list(ASSETS.glob('*.webp'))
         self.assertEqual({p.name for p in paths}, expected)
-        self.assertEqual(len({hashlib.sha256(p.read_bytes()).digest() for p in paths}), 84)
+        self.assertEqual(len({hashlib.sha256(p.read_bytes()).digest() for p in paths}), 112)
         for path in paths:
             reader = QImageReader(str(path))
             size = reader.size()
             self.assertGreaterEqual(size.width(), 1000, path.name)
-            self.assertLessEqual(size.width(), 1280, path.name)
+            self.assertLessEqual(size.width(), 1536, path.name)
             self.assertGreaterEqual(size.height(), 600, path.name)
-            self.assertLessEqual(size.height(), 853, path.name)
+            self.assertLessEqual(size.height(), 1024, path.name)
+            self.assertLess(abs(size.width() / size.height() - 1.5), 0.003, path.name)
             self.assertFalse(reader.read().isNull(), path.name)
-        self.assertLess(sum(p.stat().st_size for p in paths), 34 * 1024 * 1024)
+        self.assertLess(sum(p.stat().st_size for p in paths), 95 * 1024 * 1024)
 
     def test_all_supported_years_use_complete_bags_without_adjacent_repeats(self):
         for month in range(1, 13):
@@ -61,7 +63,15 @@ class CalendarArtTests(unittest.TestCase):
         for year, month in reversed(dates):
             choice = variant_for(year, month)
             self.assertEqual(choice, expected[year, month])
-            self.assertEqual(illustration_for(year, month), ASSETS / f'm{month:02d}-{choice}.webp')
+            expected_file = f'{choice}.webp' if choice.startswith('YJ-') else f'm{month:02d}-{choice}.webp'
+            self.assertEqual(illustration_for(year, month), ASSETS / expected_file)
+
+    def test_new_briefs_are_all_reachable_only_in_january(self):
+        new_ids = {f'YJ-{number:03d}' for number in range(85, 113)}
+        january = {illustration_for(year, 1).stem for year in range(1, 35)}
+        self.assertTrue(new_ids.issubset(january))
+        for month in range(2, 13):
+            self.assertTrue(new_ids.isdisjoint(VARIANTS_BY_MONTH[month - 1]))
 
     def test_calendar_has_no_fixed_short_cycle(self):
         years = {

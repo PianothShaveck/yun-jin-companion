@@ -6,7 +6,8 @@ from pathlib import Path
 
 ASSETS = Path(__file__).resolve().parent / 'assets' / 'calendar'
 VARIANTS_BY_MONTH = (
-    'abcdef', 'abcdefg', 'abcdef', 'abcdef', 'abcdefg', 'abcdefghi',
+    tuple('abcdef') + tuple(f'YJ-{number:03d}' for number in range(85, 113)),
+    'abcdefg', 'abcdef', 'abcdef', 'abcdefg', 'abcdefghi',
     'abcdefghi', 'abcdefghi', 'abcdef', 'abcdef', 'abcdefg', 'abcdef',
 )
 
@@ -36,4 +37,7 @@ def variant_for(year, month):
 
 
 def illustration_for(year, month):
-    return ASSETS / f'm{month:02d}-{variant_for(year, month)}.webp'
+    variant = variant_for(year, month)
+    # New catalog IDs stay recognizable across source briefs and release files.
+    name = variant if variant.startswith('YJ-') else f'm{month:02d}-{variant}'
+    return ASSETS / f'{name}.webp'
