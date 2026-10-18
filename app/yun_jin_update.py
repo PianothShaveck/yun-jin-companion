@@ -25,8 +25,9 @@ REPOSITORY = 'PianothShaveck/yun-jin-companion'
 RELEASES_URL = 'https://github.com/' + REPOSITORY + '/releases'
 API_URL = 'https://api.github.com/repos/' + REPOSITORY + '/releases/latest'
 INTERVAL = 2 * 60 * 60
-MAX_ZIP = 200 * 1024 * 1024
-MAX_EXPANDED = 600 * 1024 * 1024
+# Keep downloads streamed; these are disk-size limits, not allocations.
+MAX_ZIP = 2 * 1024 ** 3
+MAX_EXPANDED = 6 * 1024 ** 3
 MANIFEST = 'release-manifest.json'
 PROTOCOL = 1
 

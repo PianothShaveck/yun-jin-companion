@@ -17,7 +17,7 @@ class CalendarArtTests(unittest.TestCase):
         variant_for.cache_clear()
 
     def test_all_seasonal_illustrations_are_distinct_and_complete(self):
-        counts = (34, 7, 6, 6, 7, 9, 9, 9, 6, 62, 7, 6)
+        counts = (34, 7, 6, 6, 7, 9, 9, 9, 6, 62, 62, 6)
         self.assertEqual(tuple(map(len, VARIANTS_BY_MONTH)), counts)
         expected = {
             f'm{month:02d}-{letter}.webp'
@@ -25,10 +25,10 @@ class CalendarArtTests(unittest.TestCase):
             for letter in 'abcdefghi'[:count]
         }
         expected.update(f'YJ-{number:03d}.webp' for number in range(85, 113))
-        expected.update(f'YJ-{number:03d}.webp' for number in range(578, 634))
+        expected.update(f'YJ-{number:03d}.webp' for number in range(578, 689))
         paths = list(ASSETS.glob('*.webp'))
         self.assertEqual({p.name for p in paths}, expected)
-        self.assertEqual(len({hashlib.sha256(p.read_bytes()).digest() for p in paths}), 168)
+        self.assertEqual(len({hashlib.sha256(p.read_bytes()).digest() for p in paths}), 223)
         for path in paths:
             reader = QImageReader(str(path))
             size = reader.size()
@@ -38,7 +38,7 @@ class CalendarArtTests(unittest.TestCase):
             self.assertLessEqual(size.height(), 1024, path.name)
             self.assertLess(abs(size.width() / size.height() - 1.5), 0.003, path.name)
             self.assertFalse(reader.read().isNull(), path.name)
-        self.assertLess(sum(p.stat().st_size for p in paths), 180 * 1024 * 1024)
+        self.assertLess(sum(p.stat().st_size for p in paths), 275 * 1024 * 1024)
 
     def test_all_supported_years_use_complete_bags_without_adjacent_repeats(self):
         for month in range(1, 13):
@@ -97,16 +97,56 @@ class CalendarArtTests(unittest.TestCase):
         for day in range(31,0,-1):self.assertEqual(illustration_for(2060,10,day),expected[day-1])
         self.assertNotEqual(expected,[illustration_for(2026,10,day) for day in range(1,32)])
 
-    def test_monthly_images_preserve_existing_choices_and_daily_work_is_bounded(self):
-        for year,month,expected in [(2026,1,'YJ-093'),(2060,1,'YJ-086'),(2026,9,'c'),(2026,11,'g'),(2026,12,'b'),(9999,8,'b')]:
-            for day in (1,15,28):self.assertEqual(variant_for(year,month,day),expected)
+    def test_every_november_has_thirty_distinct_images_and_interleaved_scenes(self):
+        pool = set(VARIANTS_BY_MONTH[10]); all_seen = set(); previous = None
+        self.assertEqual(yun_jin_calendar_art.DAILY_MONTHS, frozenset({10, 11}))
+        self.assertEqual(len(pool), 62)
+        for year in range(1, 10000):
+            choices = tuple(variant_for(year, 11, day) for day in range(1, 31))
+            self.assertEqual(len(set(choices)), 30, year)
+            self.assertTrue(set(choices) <= pool, year)
+            self.assertNotEqual(choices, previous, year)
+            groups = tuple(yun_jin_calendar_art._november_group(choice) for choice in choices)
+            self.assertTrue(all(a != b for a, b in zip(groups, groups[1:])), year)
+            all_seen.update(choices); previous = choices
+        self.assertEqual(all_seen, pool)
+        expected = tuple(illustration_for(2060, 11, day) for day in range(1, 31))
+        variant_for.cache_clear(); yun_jin_calendar_art._daily_bag.cache_clear()
+        for day in range(30, 0, -1):
+            self.assertEqual(illustration_for(2060, 11, day), expected[day-1])
+            self.assertTrue(expected[day-1].is_file())
+        self.assertNotEqual(expected, tuple(illustration_for(2026, 11, day) for day in range(1, 31)))
+
+    def test_october_mapping_and_all_other_months_are_unchanged(self):
+        # Frozen examples from the actual published 1.5.3 algorithm.
+        for year, day, expected in [
+            (2026, 1, 'YJ-596'), (2026, 8, 'YJ-581'),
+            (2026, 15, 'YJ-584'), (2026, 30, 'YJ-615'),
+            (2027, 1, 'YJ-625'), (2027, 8, 'YJ-617'),
+            (2060, 1, 'YJ-606'), (2060, 15, 'YJ-624'),
+            (9999, 1, 'YJ-589'), (9999, 30, 'YJ-609'),
+        ]:
+            self.assertEqual(variant_for(year, 10, day), expected)
+        for year, month, expected in [
+            (2026, 1, 'YJ-093'), (2060, 1, 'YJ-086'),
+            (2026, 9, 'c'), (2026, 12, 'b'), (9999, 8, 'b'),
+        ]:
+            for day in (1, 15, 28):
+                self.assertEqual(variant_for(year, month, day), expected)
+
+    def test_daily_work_is_bounded(self):
         yun_jin_calendar_art._daily_bag.cache_clear()
         with patch.object(yun_jin_calendar_art,'blake2s',wraps=hashlib.blake2s) as digest:
             for day in range(1,32):variant_for(2060,10,day)
             self.assertLessEqual(digest.call_count,62)
         for year in range(1,301):variant_for(year,10,1)
+        yun_jin_calendar_art._daily_bag.cache_clear()
+        variant_for.cache_clear()
+        with patch.object(yun_jin_calendar_art, 'blake2s', wraps=hashlib.blake2s) as digest:
+            for day in range(1, 31): variant_for(2060, 11, day)
+            self.assertLessEqual(digest.call_count, 150)
         self.assertLessEqual(yun_jin_calendar_art._daily_bag.cache_info().currsize,64)
-        for year,month,day in [(2026,10,0),(2026,10,32),(2026,2,29),(2026,4,31)]:
+        for year,month,day in [(2026,10,0),(2026,10,32),(2026,11,0),(2026,11,31),(2026,2,29),(2026,4,31)]:
             with self.assertRaises(ValueError):illustration_for(year,month,day)
 
     def test_late_year_selection_has_bounded_work_and_cache(self):

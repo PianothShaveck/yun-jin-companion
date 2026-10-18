@@ -298,7 +298,7 @@ story += [picture('calendario.png',450),Spacer(1,12),
     h('Le tue ricorrenze'),p('Ripeti ogni giorno, settimana, mese o anno, scegliendo intervallo, giorni e fine della serie. Quando modifichi o elimini un evento ricorrente, scegli <b>Solo questo</b> oppure <b>Tutta la serie</b>.'),
     p('<b>Avviso</b> sceglie quanto prima ricevere la notifica; <b>Voce</b> ne abilita la lettura, secondo l’interruttore generale. Gli impegni seguono l’ora locale del computer.'),
     p('Le frecce cambiano mese; <b>Oggi</b> torna alla data corrente. Il titolo apre mese e anno. Da tastiera: frecce per il giorno, Invio per un impegno, Pagina su/giù per il mese e Home per oggi.','small'),
-    p('A ottobre ogni giorno selezionato ha un’illustrazione diversa, con una nuova selezione ogni anno. Negli altri mesi l’immagine resta mensile. Clicca l’illustrazione per ingrandirla; chiudila con la <b>×</b> in alto a destra o con <b>Esc</b>. Una serie il 31 salta i mesi senza quel giorno; il 29 febbraio torna negli anni bisestili.','small'),PageBreak()]
+    p('A ottobre e novembre ogni giorno selezionato ha un’illustrazione diversa, con un ordine deterministico che cambia ogni anno. Negli altri mesi l’immagine resta mensile. Clicca l’illustrazione per ingrandirla; chiudila con la <b>×</b> in alto a destra o con <b>Esc</b>. Una serie il 31 salta i mesi senza quel giorno; il 29 febbraio torna negli anni bisestili.','small'),PageBreak()]
 # Alarms
 story += [picture('sveglie.png',390),Spacer(1,12),
     p('Apri <b>Sveglie → Nuova sveglia</b> e scegli l’ora. Puoi usarla una volta, in una data precisa, ogni giorno, nei giorni lavorativi o in giorni della settimana a tua scelta.'),
@@ -324,7 +324,7 @@ story += [table(['Problema','Controllo'],[
     p('Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts, gTTS e FSRS mantengono le rispettive licenze. FSRS 6 è di Open Spaced Repetition; le licenze sono in app/licenses. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.','small'),
     p('Meteo: <link href="https://open-meteo.com/" color="#3e777e">Open-Meteo</link>, dati CC BY 4.0. Ricerca delle città: <link href="https://www.geonames.org/" color="#3e777e">GeoNames</link>. Per la voce, il testo viene inviato al servizio selezionato; per il meteo, Open-Meteo riceve le coordinate della città scelta e l’indirizzo IP della connessione.','small'),
     h('Progetti di riferimento'),p('<link href="https://www.python.org" color="#3e777e">Python</link> · <link href="https://www.riverbankcomputing.com/software/pyqt/" color="#3e777e">PyQt</link> · <link href="https://doc.qt.io" color="#3e777e">Qt</link> · <link href="https://github.com/rany2/edge-tts" color="#3e777e">edge-tts</link> · <link href="https://gtts.readthedocs.io" color="#3e777e">gTTS</link>','small'),
-    p('Revisione della guida: 16 ottobre 2026.','small')]
+    p('Revisione della guida: 18 ottobre 2026.','small')]
 
 doc=BaseDocTemplate(str(OUT),pagesize=(W,H),title='Yun Jin Companion - Guida',author='Yun Jin Companion',pageCompression=1)
 frame=Frame(44,53,BW,666,leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)

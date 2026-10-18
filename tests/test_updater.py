@@ -45,6 +45,47 @@ class UpdateTests(unittest.TestCase):
   self.assertEqual(result['notes'],data['body']);self.assertIn('/Yun-Jin-Companion-1.2.0.zip',result['download'])
   self.assertIsNone(u.release_from_json(data,'1.10.0'))
   data['prerelease']=True;self.assertIsNone(u.release_from_json(data,'1.1.0'))
+ def test_large_release_accepts_two_gib_and_rejects_larger_metadata(self):
+  for size in (200*1024*1024+1, 2*1024**3):
+   with self.subTest(size=size):
+    data=release();data['assets'][0]['size']=size
+    result=u.release_from_json(data,'1.1.0')
+    self.assertTrue(result['automatic']);self.assertEqual(result['size'],size)
+  for size in (0, -1, 2*1024**3+1):
+   with self.subTest(size=size):
+    data=release();data['assets'][0]['size']=size
+    with self.assertRaises(ValueError):u.release_from_json(data,'1.1.0')
+ def test_streamed_download_still_enforces_cap_and_declared_size(self):
+  # Small stand-ins exercise the real streaming path without allocating GiB.
+  data=u.release_from_json(release(),'1.1.0')
+  for cap,declared in ((3,4),(4,3)):
+   data['size']=declared
+   with patch.object(u,'MAX_ZIP',cap),patch.object(u,'open_url',return_value=io.BytesIO(b'abcd')):
+    with self.assertRaisesRegex(ValueError,'Dimensione del download'):
+     u.prepare_update(data,self.root/'cache')
+   self.assertEqual(list((self.root/'cache').iterdir()),[])
+ def test_expanded_size_boundary_remains_enforced(self):
+  source=fixture(self.root/'source');raw=archive(source)
+  total=sum(p.stat().st_size for p in source.rglob('*') if p.is_file())
+  self.assertEqual(u.MAX_EXPANDED,6*1024**3)
+  with patch.object(u,'MAX_EXPANDED',total):
+   self.assertEqual(u.verify_program(u.unpack_verified(io.BytesIO(raw),self.root/'exact','1.2.0'))['version'],'1.2.0')
+  with patch.object(u,'MAX_EXPANDED',total-1):
+   with self.assertRaisesRegex(ValueError,'Dimensioni del pacchetto'):
+    u.unpack_verified(io.BytesIO(raw),self.root/'too-big','1.2.0')
+  self.assertFalse((self.root/'too-big').exists())
+ def test_packager_rejects_oversized_archive_without_replacing_output(self):
+  import importlib.util
+  spec=importlib.util.spec_from_file_location('package_release_limits',ROOT/'tools/package_release.py')
+  package=importlib.util.module_from_spec(spec);spec.loader.exec_module(package)
+  self.assertEqual(package.MAX_RUNTIME_ZIP,u.MAX_ZIP)
+  root=self.root/'package';root.mkdir();(root/'dist').mkdir()
+  for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf'):(root/name).write_text('fixture')
+  output=root/'dist/release.zip';output.write_bytes(b'previous valid release')
+  with patch.object(package,'ROOT',root),patch.object(package,'OUTPUT',output),patch.object(package,'write_animation_index'),patch.object(package,'write_manifest'),patch.object(package,'animation_sources',return_value=set()),patch.object(package,'MAX_RUNTIME_ZIP',1):
+   with self.assertRaisesRegex(ValueError,'2 GiB'):package.build()
+  self.assertEqual(output.read_bytes(),b'previous valid release')
+  self.assertEqual(list((root/'dist').iterdir()),[output])
  def test_missing_asset_or_digest_never_installs(self):
   data=release();data['assets'][0]['digest']=None
   self.assertFalse(u.release_from_json(data,'1.1.0')['automatic'])
