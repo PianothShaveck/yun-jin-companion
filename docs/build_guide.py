@@ -298,7 +298,7 @@ story += [picture('calendario.png',450),Spacer(1,12),
     h('Le tue ricorrenze'),p('Ripeti ogni giorno, settimana, mese o anno, scegliendo intervallo, giorni e fine della serie. Quando modifichi o elimini un evento ricorrente, scegli <b>Solo questo</b> oppure <b>Tutta la serie</b>.'),
     p('<b>Avviso</b> sceglie quanto prima ricevere la notifica; <b>Voce</b> ne abilita la lettura, secondo l’interruttore generale. Gli impegni seguono l’ora locale del computer.'),
     p('Le frecce cambiano mese; <b>Oggi</b> torna alla data corrente. Il titolo apre mese e anno. Da tastiera: frecce per il giorno, Invio per un impegno, Pagina su/giù per il mese e Home per oggi.','small'),
-    p('Le illustrazioni seguono la stagione e cambiano da un anno all’altro. Clicca l’illustrazione per ingrandirla; chiudila con la <b>×</b> in alto a destra o con <b>Esc</b>. Una serie il 31 salta i mesi senza quel giorno; il 29 febbraio torna negli anni bisestili.','small'),PageBreak()]
+    p('A ottobre ogni giorno selezionato ha un’illustrazione diversa, con una nuova selezione ogni anno. Negli altri mesi l’immagine resta mensile. Clicca l’illustrazione per ingrandirla; chiudila con la <b>×</b> in alto a destra o con <b>Esc</b>. Una serie il 31 salta i mesi senza quel giorno; il 29 febbraio torna negli anni bisestili.','small'),PageBreak()]
 # Alarms
 story += [picture('sveglie.png',390),Spacer(1,12),
     p('Apri <b>Sveglie → Nuova sveglia</b> e scegli l’ora. Puoi usarla una volta, in una data precisa, ogni giorno, nei giorni lavorativi o in giorni della settimana a tua scelta.'),

@@ -8,7 +8,7 @@ import json
 import os
 import tempfile
 ROOT=Path(__file__).resolve().parents[1]
-OUTPUT=ROOT/'dist/Yun-Jin-Companion-1.5.2.zip'
+OUTPUT=ROOT/'dist/Yun-Jin-Companion-1.5.3.zip'
 
 # Only maintained sources belong in the repository archive. Working artwork,
 # reviews, release history and publishing notes are not distribution sources.
@@ -24,12 +24,29 @@ GUIDE_IMAGES = (
     'studio.png', 'carte.png', 'scorciatoie.png', 'meteo.png', 'calendario.png', 'sveglie.png',
 )
 
+def animation_sources():
+    assets=ROOT/'app/assets'
+    specs=json.loads((assets/'animations.json').read_text(encoding='utf-8'))['animations']
+    return {assets/spec['file'] for spec in specs}
+
+def write_animation_index():
+    assets=ROOT/'app/assets';index={}
+    for spec in json.loads((assets/'animations.json').read_text(encoding='utf-8'))['animations']:
+        encoded=json.dumps(spec,sort_keys=True).encode('utf-8')
+        digest=hashlib.sha256(b'yun-jin-normalized-v1\0'+encoded+(assets/spec['file']).read_bytes()).hexdigest()[:24]
+        stem=spec['name']+'-'+digest
+        if not (assets/'normalized'/(stem+'.webp')).is_file():
+            raise ValueError('Rigenera la cache animazioni: '+spec['name'])
+        index[hashlib.sha256(encoded).hexdigest()]=stem
+    (assets/'normalized/index.json').write_text(json.dumps(index,indent=2)+'\n',encoding='utf-8')
+
 def runtime_files():
+    sources=animation_sources()
     paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf')]
     for folder in ('app','installer'):
         paths.extend(p for p in (ROOT/folder).rglob('*') if p.is_file()
                      and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo','.log','.zip')
-                     and p.name!='release-manifest.json')
+                     and p.name!='release-manifest.json' and p not in sources)
     return paths
 
 def write_manifest():
@@ -37,14 +54,15 @@ def write_manifest():
     for line in (ROOT/'installer/requirements.txt').read_text().splitlines():
         if line.strip() and not line.startswith('#'):
             name,version=line.strip().split('==');requirements[name]=version
-    document=dict(protocol=1,version='1.5.2',python_min=[3,11],python_max_exclusive=[3,15],
+    document=dict(protocol=1,version='1.5.3',python_min=[3,11],python_max_exclusive=[3,15],
                   requirements=requirements,files={str(p.relative_to(ROOT)).replace('\\','/'):
                       hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(runtime_files())})
     (ROOT/'app/release-manifest.json').write_text(json.dumps(document,indent=2)+'\n',encoding='utf-8')
 
 def build(source=False):
+    write_animation_index()
     write_manifest()
-    output=OUTPUT.with_name('Yun-Jin-Companion-1.5.2-Sorgenti.zip') if source else OUTPUT
+    output=OUTPUT.with_name('Yun-Jin-Companion-1.5.3-Sorgenti.zip') if source else OUTPUT
     output.parent.mkdir(exist_ok=True)
     paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf')]
     if source:
@@ -54,15 +72,21 @@ def build(source=False):
     for folder in folders:
         paths.extend(p for p in (ROOT/folder).rglob('*') if p.is_file()
                      and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo','.log','.zip'))
+    if not source:
+        sources=animation_sources();paths=[p for p in paths if p not in sources]
     fd,temporary=tempfile.mkstemp(prefix='release-',suffix='.zip',dir=output.parent)
     os.close(fd)
     try:
         with zipfile.ZipFile(temporary,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as archive:
             for path in sorted(paths):
-                archive.write(path,Path('Yun-Jin-Companion-1.5.2')/path.relative_to(ROOT))
+                archive.write(path,Path('Yun-Jin-Companion-1.5.3')/path.relative_to(ROOT))
         with zipfile.ZipFile(temporary) as archive:
             if archive.testzip() is not None:
                 raise ValueError('Archive CRC validation failed')
+        # Older installed updaters accept at most 200 MiB. Catch growth here,
+        # before publishing an update they cannot download.
+        if not source and Path(temporary).stat().st_size>200*1024*1024:
+            raise ValueError('Il pacchetto supera il limite degli aggiornamenti automatici (200 MiB).')
         # Windows fsync/_commit requires a writable file descriptor.
         with open(temporary,'r+b') as stream:os.fsync(stream.fileno())
         os.replace(temporary,output)

@@ -2,6 +2,7 @@
 import os
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 import json
+import shutil
 import sys
 import tempfile
 import time
@@ -50,6 +51,22 @@ class ResourceTests(unittest.TestCase):
                 frames=sheet.load_clip(BASE/'assets'/spec['file'],spec)
                 self.assertEqual(len(frames),spec['count'])
                 self.assertTrue(all(not frame.isNull() for frame in frames),spec['name'])
+
+    def test_runtime_without_working_sheets_preserves_every_animation_pixel(self):
+        assets=Path(self.tmp.name)/'assets'
+        shutil.copytree(BASE/'assets/normalized',assets/'normalized')
+        sheet=self.pet.sheet
+        for spec in json.loads((BASE/'assets/animations.json').read_text())['animations']:
+            source=BASE/'assets'/spec['file'];missing=assets/spec['file']
+            self.assertFalse(missing.exists())
+            expected=sheet.load_clip(source,spec)
+            with patch.object(sheet,'align_sequence',side_effect=AssertionError('Runtime must use final frames')), \
+                 patch.object(sheet,'align_frame',side_effect=AssertionError('Runtime must use final frames')):
+                actual=sheet.load_clip(missing,spec)
+            self.assertEqual(len(actual),len(expected))
+            self.assertEqual([p.toImage() for p in actual],[p.toImage() for p in expected],spec['name'])
+        changed=dict(spec,label='Changed specification')
+        with self.assertRaisesRegex(ValueError,'Indice animazioni'):sheet.load_clip(missing,changed)
 
     def test_unused_audio_allocates_no_players_and_effects_are_reused(self):
         sound=self.pet.sound;speech=self.pet.speech

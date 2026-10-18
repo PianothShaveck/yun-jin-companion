@@ -15,6 +15,7 @@ import sys
 import time
 from collections import deque, OrderedDict
 from collections.abc import Mapping
+from functools import lru_cache
 from pathlib import Path
 
 from PyQt6.QtCore import QPoint, QPointF, QRect, QRectF, Qt, QTimer, QSettings, QLockFile, QStandardPaths
@@ -103,6 +104,15 @@ def animation_fingerprint(path, spec):
     digest.update(json.dumps(spec, sort_keys=True).encode('utf-8'))
     digest.update(path.read_bytes())
     return digest.hexdigest()[:24]
+
+
+@lru_cache(maxsize=1)
+def packaged_animation_index(folder):
+    """Runtime releases carry final lossless frames, without the working sheets."""
+    try:
+        document=json.loads((folder/'index.json').read_text(encoding='utf-8'))
+        return document if isinstance(document,dict) else {}
+    except (OSError,ValueError):return {}
 
 
 class Frames(Mapping):
@@ -233,7 +243,14 @@ class SpriteSheet:
     def load_clip(self, path, spec, use_cache=True):
         count = int(spec['count'])
         if use_cache:
-            stem = spec['name'] + '-' + animation_fingerprint(path, spec)
+            if path.is_file():
+                stem = spec['name'] + '-' + animation_fingerprint(path, spec)
+            else:
+                key=hashlib.sha256(json.dumps(spec,sort_keys=True).encode('utf-8')).hexdigest()
+                stem=packaged_animation_index(path.parent/'normalized').get(key,'')
+                # The generated index may only name a file in this folder.
+                if not isinstance(stem,str) or not stem or Path(stem).name!=stem or '\\' in stem:
+                    raise ValueError('Indice animazioni non valido: '+str(spec['name']))
             for extension in ('.webp','.png'):
                 normalized = path.parent / 'normalized' / (stem + extension)
                 if normalized.is_file():

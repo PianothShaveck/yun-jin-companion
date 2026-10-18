@@ -122,21 +122,57 @@ class CalendarUiTests(unittest.TestCase):
         files=[]
         for i in range(3):
             path=Path(self.tmp.name)/f'art-{i}.png';image=QImage(1200,800,QImage.Format.Format_RGB32);image.fill(QColor('#765380'));image.save(str(path));files.append(path)
-        hero=self.keep(CalendarHero());module=SimpleNamespace(illustration_for=lambda y,m:files[m-1])
+        hero=self.keep(CalendarHero());module=SimpleNamespace(illustration_for=lambda y,m,d=1:files[m-1])
         with patch.dict(sys.modules,{'yun_jin_calendar_art':module}):
             for month in (1,2,3):hero.set_month(date(2032,month,1))
         self.assertEqual(len(hero.cache),2);self.assertNotIn(files[0],hero.cache)
         self.assertAlmostEqual(hero.pixmap.width()/hero.pixmap.height(),1.5,places=2)
         self.assertLessEqual(hero.pixmap.width(),1000);self.assertLessEqual(hero.pixmap.height(),600)
-        with patch.dict(sys.modules,{'yun_jin_calendar_art':SimpleNamespace(illustration_for=lambda y,m:Path(self.tmp.name)/'missing.webp')}):
+        with patch.dict(sys.modules,{'yun_jin_calendar_art':SimpleNamespace(illustration_for=lambda y,m,d=1:Path(self.tmp.name)/'missing.webp')}):
             hero.set_month(date(2032,4,1));self.assertIsNone(hero.pixmap)
+
+    def test_daily_selection_mouse_keyboard_preview_and_cache(self):
+        files=[]
+        for i,color in enumerate(('#ff0000','#00ff00','#0000ff')):
+            path=Path(self.tmp.name)/f'daily-{i}.png';image=QImage(900,600,QImage.Format.Format_RGB32)
+            image.fill(QColor(color));image.save(str(path));files.append(path)
+        module=SimpleNamespace(illustration_for=lambda y,m,d:files[(d-1)%3])
+        with patch.dict(sys.modules,{'yun_jin_calendar_art':module}):
+            page=self.keep(CalendarPanel(self.pet));page.select_day(date(2060,10,1));page.show();app.processEvents()
+            self.assertEqual(page.hero.path,files[0])
+            cell=next(b for b in page.days if b.day==date(2060,10,2));QTest.mouseClick(cell,Qt.MouseButton.LeftButton)
+            self.assertEqual(page.selected,date(2060,10,2));self.assertEqual(page.hero.path,files[1])
+            QTest.keyClick(cell,Qt.Key.Key_Right);self.assertEqual(page.hero.path,files[2]);self.assertEqual(page.hero.day,date(2060,10,3))
+            self.assertEqual(len(page.hero.cache),2);self.assertIs(page.month_box.hero.pixmap,page.hero.pixmap)
+            with patch('yun_jin_calendar_ui.QImageReader',side_effect=AssertionError('Same-day refresh must reuse pixels')):
+                page.refresh();page.select_day(date(2060,10,2))
+            def inspect(dialog,pet):
+                self.assertIn('2 ottobre 2060',dialog.windowTitle());self.assertFalse(dialog.canvas.pixmap.isNull());return QDialog.DialogCode.Rejected
+            with patch('yun_jin_calendar_ui.exec_dialog',side_effect=inspect):page.preview_illustration(page.hero.path)
+            self.assertEqual(page.findChildren(QTimer),[])
+
+    def test_midnight_follows_today_but_preserves_browsing_and_updates_on_reopen(self):
+        class ClockDate(date):
+            current=date(2060,10,30)
+            @classmethod
+            def today(cls):return cls.current
+        with patch('yun_jin_calendar_ui.date',ClockDate):
+            page=self.keep(CalendarPanel(self.pet));page.show();app.processEvents()
+            ClockDate.current=date(2060,10,31);self.pet.agenda_changed.emit()
+            self.assertEqual(page.selected,ClockDate.current);self.assertEqual(page.hero.day,ClockDate.current)
+            page.select_day(date(2050,10,5));ClockDate.current=date(2060,11,1);self.pet.agenda_changed.emit()
+            self.assertEqual(page.selected,date(2050,10,5))
+            page.today();page.hide();ClockDate.current=date(2060,11,2);self.pet.agenda_changed.emit()
+            self.assertEqual(page.selected,date(2060,11,1))
+            page.show();app.processEvents();self.assertEqual(page.selected,ClockDate.current)
+            self.assertEqual(page.hero.day,ClockDate.current);self.assertEqual(page.findChildren(QTimer),[])
 
     def test_calendar_background_reuses_pixels_through_resize_month_changes_and_close(self):
         files={}
         for month,color in [(1,'#ff0000'),(2,'#0000ff'),(3,'#ffffff')]:
             path=Path(self.tmp.name)/f'background-{month}.png'
             image=QImage(1200,800,QImage.Format.Format_RGB32);image.fill(QColor(color));image.save(str(path));files[month]=path
-        module=SimpleNamespace(illustration_for=lambda y,m:files.get(m,files[1]))
+        module=SimpleNamespace(illustration_for=lambda y,m,d=1:files.get(m,files[1]))
         with patch.dict(sys.modules,{'yun_jin_calendar_art':module}):
             page=self.keep(CalendarPanel(self.pet));page.setStyleSheet(STYLE);page.select_day(date(2032,1,15));page.show();app.processEvents()
             initial=page.hero.pixmap.cacheKey()
@@ -164,7 +200,7 @@ class CalendarUiTests(unittest.TestCase):
         path=Path(self.tmp.name)/'white-scene.png';image=QImage(900,600,QImage.Format.Format_RGB32)
         image.fill(QColor('#ffffff'));image.save(str(path))
         hero=self.keep(CalendarHero())
-        with patch.dict(sys.modules,{'yun_jin_calendar_art':SimpleNamespace(illustration_for=lambda y,m:path)}):hero.set_month(date(2032,1,1))
+        with patch.dict(sys.modules,{'yun_jin_calendar_art':SimpleNamespace(illustration_for=lambda y,m,d=1:path)}):hero.set_month(date(2032,1,1))
         surface=self.keep(CalendarBackdrop(hero));surface.resize(630,350);surface.show();app.processEvents()
         background=surface.grab().toImage();ratio=background.devicePixelRatio()
         def luminance(value):
@@ -191,7 +227,7 @@ class CalendarUiTests(unittest.TestCase):
         day.update_day(future,False,False,[]);app.processEvents()
         muted_background=surface.grab().toImage().pixelColor(round(210*ratio),round(290*ratio))
         self.assertGreater((luminance(QColor('#bfb3ca'))+.05)/(luminance(muted_background)+.05),4.5)
-        with patch.dict(sys.modules,{'yun_jin_calendar_art':SimpleNamespace(illustration_for=lambda y,m:Path(self.tmp.name)/'missing.webp')}):hero.set_month(date(2032,2,1))
+        with patch.dict(sys.modules,{'yun_jin_calendar_art':SimpleNamespace(illustration_for=lambda y,m,d=1:Path(self.tmp.name)/'missing.webp')}):hero.set_month(date(2032,2,1))
         surface.update();app.processEvents();cleared=surface.grab().toImage()
         self.assertIsNone(hero.pixmap);self.assertNotEqual(cleared,background)
         self.assertEqual(cleared.pixelColor(round(300*ratio),round(30*ratio)),QColor('#252131'))
@@ -287,7 +323,7 @@ class CalendarUiTests(unittest.TestCase):
     def test_illustration_click_opens_full_scene_escape_releases_pixels_and_title_still_jumps(self):
         path=Path(self.tmp.name)/'full-scene.png';image=QImage(800,500,QImage.Format.Format_RGB32);image.fill(QColor('#224422'))
         painter=QPainter(image);painter.fillRect(0,0,800,10,QColor('#ff0000'));painter.fillRect(0,490,800,10,QColor('#0000ff'));painter.end();image.save(str(path))
-        module=SimpleNamespace(illustration_for=lambda y,m:path)
+        module=SimpleNamespace(illustration_for=lambda y,m,d=1:path)
         with patch.dict(sys.modules,{'yun_jin_calendar_art':module}):page=self.keep(CalendarPanel(self.pet))
         page.resize(720,600);page.show();app.processEvents()
         self.assertTrue(page.hero.open_art.isVisible());self.assertEqual(page.hero.open_art.toolTip(),'Apri illustrazione')

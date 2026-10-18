@@ -319,7 +319,7 @@ class IllustrationCanvas(QWidget):
 class IllustrationDialog(QDialog):
     def __init__(self,pet,parent,path,day):
         super().__init__(owner_window(parent));self.pet=pet;self.setWindowIcon(pet.windowIcon());self.setStyleSheet(STYLE)
-        self.setWindowTitle(f'{MONTHS[day.month-1]} {day.year} · Yun Jin')
+        self.setWindowTitle(f'{day.day} {MONTHS[day.month-1].lower()} {day.year} · Yun Jin')
         layout=QVBoxLayout(self);layout.setContentsMargins(10,10,10,10)
         controls=QHBoxLayout();controls.addStretch()
         self.close_button=icon_button('close','Chiudi',self.reject,controls)
@@ -339,7 +339,7 @@ class CalendarHero(QWidget):
     def __init__(self):
         super().__init__();self.day=date.today();self.cache=OrderedDict();self.path=None;self.pixmap=None
         self.setMinimumHeight(160);self.setMaximumHeight(190);self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Fixed)
-        self.setAccessibleName('Illustrazione del mese')
+        self.setAccessibleName('Illustrazione del calendario')
         layout=QVBoxLayout(self);layout.setContentsMargins(22,15,12,15);layout.setSpacing(8)
         self.month_button=button('',None,role='quiet');self.month_button.setAccessibleName('Scegli mese e anno')
         self.month_button.setStyleSheet('QPushButton {font-size:27px;font-weight:600;text-align:left;padding:2px 0;border:none;background:transparent;} QPushButton:hover {color:#ffffff;}')
@@ -371,7 +371,7 @@ class CalendarHero(QWidget):
         self.month_button.setText(f'{MONTHS[day.month-1]}\n{day.year}')
         try:
             from yun_jin_calendar_art import illustration_for
-            path=illustration_for(day.year,day.month)
+            path=illustration_for(day.year,day.month,day.day)
         except (ImportError,OSError,ValueError,TypeError):path=None
         if path:
             path=Path(path);self.path=path
@@ -504,7 +504,7 @@ class AlertHistory(QWidget):
 class CalendarPanel(QWidget):
     def __init__(self,pet):
         super().__init__();self.pet=pet;self.store=agenda_store(pet);self.selected=date.today();self.month=self.selected.replace(day=1)
-        self.rows=[];self.day_rows={};self.rendered_month=None;self.visible_event_limit=30
+        self.rows=[];self.day_rows={};self.rendered_art_day=None;self.visible_event_limit=30;self._today=self.selected
         root=QVBoxLayout(self);root.setContentsMargins(0,0,0,0);root.setSpacing(0)
         body=QWidget();self.body_layout=QVBoxLayout(body);self.body_layout.setContentsMargins(0,0,4,0);self.body_layout.setSpacing(14)
         self.hero=CalendarHero();self.hero.illustration_requested.connect(self.preview_illustration);self.body_layout.addWidget(self.hero)
@@ -545,6 +545,13 @@ class CalendarPanel(QWidget):
     def refresh_if_visible(self,*_):
         if self.isVisible():self.refresh()
     def refresh(self):
+        today=date.today()
+        if today!=self._today:
+            # The existing agenda day-change signal refreshes visible pages.
+            # Follow midnight only when the user was viewing the current day.
+            if self.selected==self._today:
+                self.selected=today;self.month=today.replace(day=1);self.visible_event_limit=30
+            self._today=today
         self.history.refresh()
         first=self.month-timedelta(days=self.month.weekday());end=first+timedelta(days=42)
         self.rows=self.store.occurrences(first.isoformat(),end.isoformat())
@@ -558,12 +565,12 @@ class CalendarPanel(QWidget):
             while cur<=last:self.day_rows.setdefault(cur,[]).append(row);cur+=timedelta(days=1)
         for day,rows in self.day_rows.items():rows.sort(key=lambda r:(not r.get('all_day'),r['start_local'],r['title']))
         self.month_button.setText(f'{MONTHS[self.month.month-1]}\n{self.month.year}')
-        if self.rendered_month!=self.month:
-            self.hero.set_month(self.month);self.month_box.update();self.rendered_month=self.month
         for i,b in enumerate(self.days):
             day=first+timedelta(days=i);b.update_day(day,day.month==self.month.month,day==self.selected,self.day_rows.get(day,[]))
         self.refresh_day()
     def refresh_day(self):
+        if self.rendered_art_day!=self.selected:
+            self.hero.set_month(self.selected);self.month_box.update();self.rendered_art_day=self.selected
         self.day_title.setText(('Oggi · ' if self.selected==date.today() else '')+local_day_label(self.selected))
         while self.events_layout.count():
             item=self.events_layout.takeAt(0)
@@ -611,7 +618,7 @@ class CalendarPanel(QWidget):
             if b.day==self.selected:b.setFocus();break
     def today(self):self.select_day(date.today(),focus=True)
     def preview_illustration(self,path):
-        dialog=IllustrationDialog(self.pet,self,path,self.month)
+        dialog=IllustrationDialog(self.pet,self,path,self.selected)
         try:
             if not dialog.canvas.pixmap.isNull():exec_dialog(dialog,self.pet)
         finally:dialog.deleteLater()
