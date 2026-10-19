@@ -167,6 +167,29 @@ class CalendarUiTests(unittest.TestCase):
             page.show();app.processEvents();self.assertEqual(page.selected,ClockDate.current)
             self.assertEqual(page.hero.day,ClockDate.current);self.assertEqual(page.findChildren(QTimer),[])
 
+    def test_real_winter_art_changes_at_midnight_year_boundary_and_leap_day(self):
+        from yun_jin_calendar_art import illustration_for
+        class ClockDate(date):
+            current = date(2031, 12, 30)
+            @classmethod
+            def today(cls): return cls.current
+        with patch('yun_jin_calendar_ui.date', ClockDate):
+            page = self.keep(CalendarPanel(self.pet)); page.show(); app.processEvents()
+            previous_path = page.hero.path
+            for day in (date(2031, 12, 31), date(2032, 1, 1), date(2032, 1, 2),
+                        date(2032, 2, 28), date(2032, 2, 29), date(2032, 3, 1)):
+                ClockDate.current = day; self.pet.agenda_changed.emit(); app.processEvents()
+                self.assertEqual(page.selected, day)
+                self.assertEqual(page.hero.path, illustration_for(day.year, day.month, day.day))
+                self.assertNotEqual(page.hero.path, previous_path)
+                self.assertFalse(page.hero.pixmap.isNull())
+                self.assertLessEqual(len(page.hero.cache), 2)
+                previous_path = page.hero.path
+            page.select_day(date(2032, 2, 15))
+            ClockDate.current = date(2032, 3, 2); self.pet.agenda_changed.emit()
+            self.assertEqual(page.selected, date(2032, 2, 15))
+            self.assertEqual(page.findChildren(QTimer), [])
+
     def test_calendar_background_reuses_pixels_through_resize_month_changes_and_close(self):
         files={}
         for month,color in [(1,'#ff0000'),(2,'#0000ff'),(3,'#ffffff')]:

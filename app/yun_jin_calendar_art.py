@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Stable seasonal illustrations; no image decoding until the calendar opens.
 
-October preserves the original daily permutation exactly. November interleaves
-its distinct scene groups so a stable, year-specific daily order also varies
-its subject matter rather than clustering scenes from the same group.
+October and November preserve their published daily permutations exactly.
+Winter months interleave scene groups in a stable, year-specific daily order.
 """
 from functools import lru_cache
 from datetime import date
@@ -12,14 +11,18 @@ from pathlib import Path
 
 ASSETS = Path(__file__).resolve().parent / 'assets' / 'calendar'
 VARIANTS_BY_MONTH = (
-    tuple('abcdef') + tuple(f'YJ-{number:03d}' for number in range(85, 113)),
-    'abcdefg', 'abcdef', 'abcdef', 'abcdefg', 'abcdefghi',
+    tuple('abcdef') + tuple(f'YJ-{number:03d}' for number in range(85, 141)),
+    tuple('abcdefg') + tuple(f'YJ-{number:03d}' for number in range(141, 196)),
+    'abcdef', 'abcdef', 'abcdefg', 'abcdefghi',
     'abcdefghi', 'abcdefghi', 'abcdef',
     tuple('abcdef') + tuple(f'YJ-{number:03d}' for number in range(578, 634)),
     tuple('abcdefg') + tuple(f'YJ-{number:03d}' for number in range(634, 689)),
-    'abcdef',
+    tuple('abcdef') + tuple(f'YJ-{number:03d}' for number in range(689, 745)),
 )
-DAILY_MONTHS = frozenset({10, 11})
+DAILY_MONTHS = frozenset({1, 2, 10, 11, 12})
+
+# First catalog ID and first seven-scene brief group for each winter month.
+_WINTER_GROUPS = {1: (85, 1), 2: (141, 9), 12: (689, 89)}
 
 
 def _digest(value):
@@ -33,9 +36,41 @@ def _november_group(variant):
     return f'G{81 + (int(variant[3:]) - 634) // 7}'
 
 
+def _winter_group(month, variant):
+    if not variant.startswith('YJ-'):
+        return 'base'
+    first_id, first_group = _WINTER_GROUPS[month]
+    return f'G{first_group + (int(variant[3:]) - first_id) // 7}'
+
+
+def _winter_bag(year, month):
+    """Mix each month's brief groups without repeating a scene in that year."""
+    namespace = f'YunJin.Calendar.Winter.v1:{year}:{month}'
+    groups = {}
+    for variant in VARIANTS_BY_MONTH[month - 1]:
+        groups.setdefault(_winter_group(month, variant), []).append(variant)
+    for group, members in groups.items():
+        members.sort(key=lambda item: _digest(f'{namespace}:{group}:{item}'))
+    result = []
+    previous_group = None
+    for round_index in range(max(map(len, groups.values()))):
+        group_order = sorted(
+            (group for group, items in groups.items() if len(items) > round_index),
+            key=lambda group: _digest(f'{namespace}:round:{round_index}:{group}'),
+        )
+        if len(group_order) > 1 and previous_group == group_order[0]:
+            group_order.append(group_order.pop(0))
+        for group in group_order:
+            result.append(groups[group][round_index])
+            previous_group = group
+    return tuple(result)
+
+
 @lru_cache(maxsize=64)
 def _daily_bag(year, month):
     """One year-specific permutation, computed only from IDs (never pixels)."""
+    if month in _WINTER_GROUPS:
+        return _winter_bag(year, month)
     variants = VARIANTS_BY_MONTH[month - 1]
     if month != 11:
         # IMPORTANT: byte-for-byte equivalent to the published October v1

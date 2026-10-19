@@ -1,5 +1,7 @@
 """Complete seasonal assets, deterministic variety and bounded encoded resources."""
 import hashlib
+import calendar
+import subprocess
 import os
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 from pathlib import Path
@@ -17,18 +19,18 @@ class CalendarArtTests(unittest.TestCase):
         variant_for.cache_clear()
 
     def test_all_seasonal_illustrations_are_distinct_and_complete(self):
-        counts = (34, 7, 6, 6, 7, 9, 9, 9, 6, 62, 62, 6)
+        counts = (62, 62, 6, 6, 7, 9, 9, 9, 6, 62, 62, 62)
         self.assertEqual(tuple(map(len, VARIANTS_BY_MONTH)), counts)
         expected = {
             f'm{month:02d}-{letter}.webp'
             for month, count in enumerate((6, 7, 6, 6, 7, 9, 9, 9, 6, 6, 7, 6), 1)
             for letter in 'abcdefghi'[:count]
         }
-        expected.update(f'YJ-{number:03d}.webp' for number in range(85, 113))
-        expected.update(f'YJ-{number:03d}.webp' for number in range(578, 689))
+        expected.update(f'YJ-{number:03d}.webp' for number in range(85, 196))
+        expected.update(f'YJ-{number:03d}.webp' for number in range(578, 745))
         paths = list(ASSETS.glob('*.webp'))
         self.assertEqual({p.name for p in paths}, expected)
-        self.assertEqual(len({hashlib.sha256(p.read_bytes()).digest() for p in paths}), 223)
+        self.assertEqual(len({hashlib.sha256(p.read_bytes()).digest() for p in paths}), 362)
         for path in paths:
             reader = QImageReader(str(path))
             size = reader.size()
@@ -38,7 +40,7 @@ class CalendarArtTests(unittest.TestCase):
             self.assertLessEqual(size.height(), 1024, path.name)
             self.assertLess(abs(size.width() / size.height() - 1.5), 0.003, path.name)
             self.assertFalse(reader.read().isNull(), path.name)
-        self.assertLess(sum(p.stat().st_size for p in paths), 275 * 1024 * 1024)
+        self.assertLess(sum(p.stat().st_size for p in paths), 500 * 1024 * 1024)
 
     def test_all_supported_years_use_complete_bags_without_adjacent_repeats(self):
         for month in range(1, 13):
@@ -68,12 +70,57 @@ class CalendarArtTests(unittest.TestCase):
             expected_file = f'{choice}.webp' if choice.startswith('YJ-') else f'm{month:02d}-{choice}.webp'
             self.assertEqual(illustration_for(year, month), ASSETS / expected_file)
 
-    def test_new_briefs_are_all_reachable_only_in_january(self):
-        new_ids = {f'YJ-{number:03d}' for number in range(85, 113)}
-        january = {illustration_for(year, 1).stem for year in range(1, 35)}
-        self.assertTrue(new_ids.issubset(january))
-        for month in range(2, 13):
-            self.assertTrue(new_ids.isdisjoint(VARIANTS_BY_MONTH[month - 1]))
+    def test_winter_days_are_distinct_seasonal_varied_and_reach_every_scene(self):
+        for month, start, stop in ((1, 85, 141), (2, 141, 196), (12, 689, 745)):
+            pool = set(VARIANTS_BY_MONTH[month - 1]); seen = set(); previous = None
+            for year in range(1, 10000):
+                count = calendar.monthrange(year, month)[1]
+                choices = tuple(variant_for(year, month, day) for day in range(1, count + 1))
+                self.assertEqual(len(set(choices)), count, (year, month))
+                self.assertTrue(set(choices) <= pool, (year, month))
+                self.assertNotEqual(choices, previous, (year, month))
+                # Brief groups are seven scenes each; base scenes form one group.
+                groups = [None if not item.startswith('YJ-') else (int(item[3:]) - start) // 7
+                          for item in choices]
+                self.assertTrue(all(a != b for a, b in zip(groups, groups[1:])), (year, month))
+                seen.update(choices); previous = choices
+            self.assertEqual(seen, pool)
+            new_ids = {f'YJ-{number:03d}' for number in range(start, stop)}
+            self.assertTrue(new_ids <= seen)
+            for other_month in range(1, 13):
+                if other_month != month:
+                    self.assertTrue(new_ids.isdisjoint(VARIANTS_BY_MONTH[other_month - 1]))
+        for leap_year in (2000, 2032, 2400):
+            self.assertNotEqual(illustration_for(leap_year, 2, 28), illustration_for(leap_year, 2, 29))
+        for common_year in (2026, 2100, 2200):
+            with self.assertRaises(ValueError): illustration_for(common_year, 2, 29)
+
+    def test_winter_order_survives_cache_clear_restart_and_hash_randomization(self):
+        dates = [(year, month, day) for year in (1, 2026, 2032, 9999)
+                 for month in (1, 2, 12) for day in (1, 15, 28)]
+        expected = [str(illustration_for(*day)) for day in dates]
+        variant_for.cache_clear(); yun_jin_calendar_art._daily_bag.cache_clear()
+        self.assertEqual([str(illustration_for(*day)) for day in reversed(dates)], list(reversed(expected)))
+        script = ('import json,sys;sys.path.insert(0,sys.argv[1]);'
+                  'from yun_jin_calendar_art import illustration_for;'
+                  f'print(json.dumps([str(illustration_for(*day)) for day in {dates!r}]))')
+        import json
+        for seed in ('1', '98765'):
+            output = subprocess.check_output([sys.executable, '-c', script, str(ASSETS.parent.parent)],
+                                             env=dict(os.environ, PYTHONHASHSEED=seed), text=True)
+            self.assertEqual(json.loads(output), expected)
+
+    def test_published_october_and_november_mapping_is_exactly_preserved(self):
+        # Captured from published commit 982205d before introducing winter days.
+        for month, count, expected in (
+            (10, 31, '1a24a03948d697f92f4817bc5763763f5ff964bb325b3342e796a3b3de7fa697'),
+            (11, 30, '5d6ce4b4b310f0482c045247cd1b96974697ba6584955ae0e480ddbc6d6e9c92'),
+        ):
+            digest = hashlib.sha256()
+            for year in range(1, 10000):
+                for day in range(1, count + 1):
+                    digest.update(f'{year}:{month}:{day}:{variant_for(year, month, day)}\n'.encode())
+            self.assertEqual(digest.hexdigest(), expected, month)
 
     def test_calendar_has_no_fixed_short_cycle(self):
         years = {
@@ -99,7 +146,7 @@ class CalendarArtTests(unittest.TestCase):
 
     def test_every_november_has_thirty_distinct_images_and_interleaved_scenes(self):
         pool = set(VARIANTS_BY_MONTH[10]); all_seen = set(); previous = None
-        self.assertEqual(yun_jin_calendar_art.DAILY_MONTHS, frozenset({10, 11}))
+        self.assertEqual(yun_jin_calendar_art.DAILY_MONTHS, frozenset({1, 2, 10, 11, 12}))
         self.assertEqual(len(pool), 62)
         for year in range(1, 10000):
             choices = tuple(variant_for(year, 11, day) for day in range(1, 31))
@@ -117,7 +164,7 @@ class CalendarArtTests(unittest.TestCase):
             self.assertTrue(expected[day-1].is_file())
         self.assertNotEqual(expected, tuple(illustration_for(2026, 11, day) for day in range(1, 31)))
 
-    def test_october_mapping_and_all_other_months_are_unchanged(self):
+    def test_frozen_october_and_remaining_monthly_examples_are_unchanged(self):
         # Frozen examples from the actual published 1.5.3 algorithm.
         for year, day, expected in [
             (2026, 1, 'YJ-596'), (2026, 8, 'YJ-581'),
@@ -128,8 +175,7 @@ class CalendarArtTests(unittest.TestCase):
         ]:
             self.assertEqual(variant_for(year, 10, day), expected)
         for year, month, expected in [
-            (2026, 1, 'YJ-093'), (2060, 1, 'YJ-086'),
-            (2026, 9, 'c'), (2026, 12, 'b'), (9999, 8, 'b'),
+            (2026, 9, 'c'), (9999, 8, 'b'),
         ]:
             for day in (1, 15, 28):
                 self.assertEqual(variant_for(year, month, day), expected)
@@ -145,6 +191,13 @@ class CalendarArtTests(unittest.TestCase):
         with patch.object(yun_jin_calendar_art, 'blake2s', wraps=hashlib.blake2s) as digest:
             for day in range(1, 31): variant_for(2060, 11, day)
             self.assertLessEqual(digest.call_count, 150)
+        for month in (1, 2, 12):
+            variant_for.cache_clear(); yun_jin_calendar_art._daily_bag.cache_clear()
+            with patch.object(yun_jin_calendar_art, 'blake2s', wraps=hashlib.blake2s) as digest:
+                for day in range(1, calendar.monthrange(2060, month)[1] + 1):
+                    variant_for(2060, month, day)
+                self.assertLessEqual(digest.call_count, 150)
+            for year in range(1, 301): variant_for(year, month, 1)
         self.assertLessEqual(yun_jin_calendar_art._daily_bag.cache_info().currsize,64)
         for year,month,day in [(2026,10,0),(2026,10,32),(2026,11,0),(2026,11,31),(2026,2,29),(2026,4,31)]:
             with self.assertRaises(ValueError):illustration_for(year,month,day)

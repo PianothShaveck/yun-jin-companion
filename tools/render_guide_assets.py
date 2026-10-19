@@ -47,8 +47,10 @@ def main():
         context_card=panel.context_checks['greeting'].parentWidget()
         panel.show_page(2);app.processEvents();context_card.grab().save(str(out/'orario-meteo.png'))
         from yun_jin_updates_ui import UpdateDialog
-        pet.updates.release=dict(version='1.5.4',notes='## Novità\n\n- Miglioramenti alle funzioni.\n- Correzioni e ottimizzazioni.',automatic=True,url='https://github.com/PianothShaveck/yun-jin-companion/releases')
-        dialog=UpdateDialog(pet.updates);dialog.refresh();dialog.show();app.processEvents()
+        pet.updates.release=dict(version='1.5.5',notes='- Calendario giornaliero anche a dicembre, gennaio e febbraio.\n- 139 nuove illustrazioni.',automatic=True,url='https://github.com/PianothShaveck/yun-jin-companion/releases')
+        dialog=UpdateDialog(pet.updates);dialog.refresh()
+        dialog.summary.setText('Versione attuale: 1.5.4')  # Fictional upgrade example.
+        dialog.show();app.processEvents()
         dialog.grab().save(str(out/'aggiornamento.png'));dialog.hide();dialog.deleteLater()
         panel.show_page(4);app.processEvents()
         panel.tabs.widget(4).findChild(QFrame,'hero').grab().save(str(out/'focus.png'))
@@ -97,7 +99,7 @@ def main():
         panel.grab().save(str(out/'meteo.png'))
         # Calendar/alarms are entirely local, with fictional examples.
         agenda=store.agenda
-        selected=datetime.now().replace(day=16,hour=17,minute=30,second=0,microsecond=0)
+        selected=datetime(2032,2,16,17,30)
         agenda.save_event('Lezione di cinese',selected,selected+timedelta(hours=1),
                          recurrence=dict(frequency='weekly',weekdays=[selected.weekday()]),voice=False)
         agenda.save_event('Prova orchestra',selected.replace(hour=20),selected.replace(hour=21),voice=False)
