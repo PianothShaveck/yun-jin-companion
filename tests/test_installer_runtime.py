@@ -39,6 +39,8 @@ class RuntimeTests(unittest.TestCase):
         # Real Python/venv/ensurepip, but no network or application wheels.
         self.pip = self.enterContext(patch.object(i, 'run'))
         self.enterContext(patch.object(i, 'DEPENDENCY_CHECK', i.RUNTIME_CHECK))
+        self.enterContext(patch.object(i, 'secure_pip'))
+        self.enterContext(patch.object(i, 'CERTIFICATE_CHECK', 'pass'))
 
     def assert_data_unchanged(self):
         for name, content in self.sentinels.items():
@@ -214,7 +216,11 @@ class ProbeTests(unittest.TestCase):
             brew = Path(tmp) / 'brew/bin/python3'
             for path in (official, brew):
                 path.parent.mkdir(parents=True)
-                path.write_text('#!/bin/sh\nexec ' + shlex.quote(sys.executable) + ' "$@"\n', encoding='utf-8')
+                # Exercise discovery order with an explicit patched-version stub,
+                # independently of the interpreter running this test suite.
+                path.write_text('#!/bin/sh\nexec ' + shlex.quote(sys.executable)
+                                + ' -c ' + shlex.quote('import sys;sys.version_info=(3,14,9);exec(sys.argv[1])')
+                                + ' "$3"\n', encoding='utf-8')
                 path.chmod(0o755)
             result = subprocess.run(['bash', '-c', function + '\nfind_python'], capture_output=True, text=True, timeout=30)
             self.assertEqual(result.returncode, 0)

@@ -7,7 +7,7 @@ import logging
 import sqlite3
 
 from PyQt6 import sip
-from PyQt6.QtCore import Qt, QDate, QTime, QSize, QRectF, pyqtSignal
+from PyQt6.QtCore import Qt, QDate, QTime, QSize, QRectF, QTimer, pyqtSignal
 from PyQt6.QtGui import QColor, QPainter, QPainterPath, QPen, QFont, QLinearGradient, QImageReader, QPixmap
 from PyQt6.QtWidgets import (QWidget, QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,
     QBoxLayout, QFormLayout, QLabel, QPushButton, QComboBox, QSpinBox, QCheckBox,
@@ -299,12 +299,16 @@ class MonthJumpDialog(QDialog):
 
 class IllustrationCanvas(QWidget):
     def __init__(self,path):
-        super().__init__();reader=QImageReader(str(path));reader.setAutoTransform(True)
+        super().__init__();self.set_image(path);self.setMinimumSize(180,120)
+        self.setAccessibleName('Illustrazione del calendario')
+    def set_image(self,path):
+        reader=QImageReader(str(path));reader.setAutoTransform(True)
         size=reader.size()
         if size.isValid() and size.width()*size.height()>16_000_000:
             reader.setScaledSize(size.scaled(QSize(4096,4096),Qt.AspectRatioMode.KeepAspectRatio))
-        self.pixmap=QPixmap.fromImage(reader.read());self.setMinimumSize(180,120)
-        self.setAccessibleName('Illustrazione del calendario')
+        pixmap=QPixmap.fromImage(reader.read())
+        if not pixmap.isNull():self.pixmap=pixmap;self.update()
+        elif not hasattr(self,'pixmap'):self.pixmap=QPixmap()
     def image_rect(self):
         if self.pixmap.isNull():return QRectF()
         size=self.pixmap.size();scale=min(self.width()/size.width(),self.height()/size.height())
@@ -321,15 +325,35 @@ class IllustrationDialog(QDialog):
         super().__init__(owner_window(parent));self.pet=pet;self.setWindowIcon(pet.windowIcon());self.setStyleSheet(STYLE)
         self.setWindowTitle(f'{day.day} {MONTHS[day.month-1].lower()} {day.year} · Yun Jin')
         layout=QVBoxLayout(self);layout.setContentsMargins(10,10,10,10)
-        controls=QHBoxLayout();controls.addStretch()
+        controls=QHBoxLayout()
+        self.download_status=plain_label('');controls.addWidget(self.download_status)
+        self.retry=button('Riprova',self.load_original,controls,role='quiet');self.retry.hide()
+        controls.addStretch()
         self.close_button=icon_button('close','Chiudi',self.reject,controls)
         layout.addLayout(controls)
         self.canvas=IllustrationCanvas(path);layout.addWidget(self.canvas)
+        self.path=path;self.loader=None;self.closed=False
+        # Keep arbitrary/local illustrations usable without a catalog/network.
+        if Path(path).parent.name=='calendar-preview':
+            QTimer.singleShot(0,self.load_original)
         available=self.screen().availableGeometry()
         self.resize(min(1100,max(240,available.width()-80)),min(760,max(180,available.height()-100)))
+    def load_original(self):
+        if self.closed:return
+        from yun_jin_calendar_download import OriginalLoader
+        if self.loader is None:
+            self.loader=OriginalLoader(self.pet.store.root,self)
+            self.loader.ready.connect(self.original_ready);self.loader.failed.connect(self.original_failed)
+        self.retry.hide();self.download_status.setText('Caricamento…');self.loader.start(self.path)
+    def original_ready(self,path):
+        if not self.closed:self.canvas.set_image(path);self.download_status.clear();self.retry.hide()
+    def original_failed(self):
+        if not self.closed:self.download_status.setText('Originale non disponibile.');self.retry.show()
     def done(self,result):
         # Release the full-size pixels as soon as it closes, even before Qt's
         # deferred deletion gets its next event-loop turn.
+        self.closed=True
+        if self.loader is not None:self.loader.cancel()
         self.canvas.pixmap=QPixmap();super().done(result)
 
 

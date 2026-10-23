@@ -4,6 +4,8 @@ import json
 import math
 import sys
 import time
+import ssl
+import certifi
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -13,7 +15,7 @@ WEATHER_TTL = 3600
 
 def read_json(url,limit=MAX_RESPONSE):
     request = Request(url, headers={'User-Agent': 'Yun-Jin-Companion/1.5', 'Accept': 'application/json'})
-    with urlopen(request, timeout=5) as response:
+    with urlopen(request, timeout=5, context=ssl.create_default_context(cafile=certifi.where())) as response:
         raw = response.read(limit + 1)
     if len(raw) > limit:
         raise ValueError('Response too large')

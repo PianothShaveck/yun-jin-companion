@@ -16,11 +16,35 @@ import venv
 
 SOURCE = Path(__file__).resolve().parent.parent
 NAME = 'Yun Jin Companion'
-VERSION = '1.5.5'
+VERSION = '1.5.6'
 MAC_APPLICATIONS = Path('/Applications')
 MAC_BUNDLE_ID = 'pianoth.yunjin.desktoppet.v1'
 RUNTIME_CHECK = 'import csv, ctypes, hashlib, json, pip, sqlite3, ssl, zipfile'
 DEPENDENCY_CHECK = 'import PyQt6.QtMultimedia, edge_tts, gtts, fsrs, fsrs_rs_python'
+PIP_WHEEL = ('https://files.pythonhosted.org/packages/3f/06/'
+             '3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/'
+             'pip-26.2.2-py3-none-any.whl#sha256='
+             'fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70')
+PIP_CHECK = ('from importlib.metadata import version; '
+             'assert tuple(map(int,version("pip").split("."))) >= (26,2,2)')
+CERTIFICATE_CHECK = ('from importlib.metadata import version; '
+                    'assert tuple(map(int,version("certifi").split("."))) >= (2026,10,19)')
+
+
+def supported_python(version, system):
+    minimums = {(3, 13): (3, 13, 17), (3, 14): (3, 14, 9)}
+    if system not in ('darwin', 'win32'):
+        minimums.update({(3, 11): (3, 11, 17), (3, 12): (3, 12, 15)})
+    return tuple(version[:2]) in minimums and tuple(version[:3]) >= minimums[tuple(version[:2])]
+
+
+def secure_pip(executable):
+    if not python_works(executable, PIP_CHECK):
+        print('Aggiorno pip con verifica SHA-256…', flush=True)
+        run([executable, '-I', '-m', 'pip', '--isolated', '--disable-pip-version-check',
+             'install', '--no-index', '--no-deps', '--upgrade', 'pip @ ' + PIP_WHEEL])
+        if not python_works(executable, PIP_CHECK):
+            raise RuntimeError('Aggiornamento di sicurezza di pip non riuscito.')
 
 
 def location():
@@ -54,7 +78,8 @@ def environment(root):
     marker = env/'installed.json'
     base = os.path.normcase(os.path.realpath(sys.base_prefix))
     runtime_check = (RUNTIME_CHECK + '; import os, sys; '
-                     f'sys.exit(0 if os.path.normcase(os.path.realpath(sys.base_prefix)) == {base!r} else 1)')
+                     f'sys.exit(0 if os.path.normcase(os.path.realpath(sys.base_prefix)) == {base!r} '
+                     f'and sys.version_info[:3] >= {tuple(sys.version_info[:3])!r} else 1)')
     if not python_works(executable, runtime_check):
         print('Preparo l’ambiente Python di Yun Jin…', flush=True)
         # Recreate at its final path: venv launchers contain absolute paths.
@@ -69,13 +94,16 @@ def environment(root):
         ready = json.loads(marker.read_text())['requirements']==signature
     except (OSError,ValueError,KeyError,TypeError):
         pass
+    # Check the environment itself even when its marker is current. Bootstrap
+    # with a hash-pinned wheel before any package index access.
+    secure_pip(executable)
     if ready:
-        ready = python_works(executable, DEPENDENCY_CHECK)
+        ready = python_works(executable, DEPENDENCY_CHECK + '; ' + CERTIFICATE_CHECK)
     if not ready:
         print('Installo le dipendenze. Al primo avvio serve Internet…', flush=True)
         marker.unlink(missing_ok=True)
         run([executable,'-I','-m','pip','install','--disable-pip-version-check','--only-binary=:all:','-r',requirements])
-        if not python_works(executable, DEPENDENCY_CHECK):
+        if not python_works(executable, DEPENDENCY_CHECK + '; ' + CERTIFICATE_CHECK):
             raise RuntimeError('Verifica delle dipendenze non riuscita. Riapri il programma di installazione.')
         marker.write_text(json.dumps({'requirements':signature}),encoding='utf-8')
     return executable
@@ -94,7 +122,16 @@ def deploy(root):
     destination = root/'program'
     staging = Path(tempfile.mkdtemp(prefix='program-new-',dir=root))
     try:
-        shutil.copytree(SOURCE/'app',staging/'app',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+        manifest = json.loads((SOURCE/'app/release-manifest.json').read_text(encoding='utf-8'))
+        for relative in manifest['files']:
+            path = Path(relative)
+            if path.is_absolute() or '..' in path.parts:
+                raise ValueError('Percorso non valido nel manifest.')
+            if path.parts[0] == 'app':
+                target = staging/path
+                target.parent.mkdir(parents=True,exist_ok=True)
+                shutil.copy2(SOURCE/path,target)
+        shutil.copy2(SOURCE/'app/release-manifest.json',staging/'app/release-manifest.json')
         shutil.copy2(SOURCE/'Guida.pdf',staging/'Guida.pdf')
         # Keep old program until copying is complete; never touch personal data.
         previous = root/'program-previous'
@@ -108,6 +145,12 @@ def deploy(root):
         if previous.exists(): shutil.rmtree(previous)
     finally:
         if staging.exists(): shutil.rmtree(staging)
+    # Reuse originals in a full checkout without duplicating them in the app.
+    # A missing/moved checkout falls back to the verified download.
+    originals = SOURCE/'app/assets/calendar'
+    if originals.is_dir():
+        (root/'calendar-originals.json').write_text(
+            json.dumps({'directory':str(originals.resolve())}),encoding='utf-8')
     return destination
 
 
@@ -222,8 +265,8 @@ def linux_shortcut(executable,program,root):
 
 
 def main():
-    if not (3,11)<=sys.version_info[:2]<(3,15):
-        raise RuntimeError('Serve Python 3.11–3.14 a 64 bit. Usa il programma di avvio incluso.')
+    if not supported_python(sys.version_info, sys.platform):
+        raise RuntimeError('Aggiorna Python (3.13.17 o 3.14.9). Su Windows/Mac usa il programma di avvio incluso.')
     if sys.maxsize<=2**32:raise RuntimeError('Serve Python a 64 bit.')
     if sys.platform=='darwin' and int(platform.mac_ver()[0].split('.')[0])<13:
         raise RuntimeError('Questa versione richiede macOS 13 o successivo.')

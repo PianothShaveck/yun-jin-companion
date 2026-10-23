@@ -17,7 +17,7 @@ os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 if sys.platform=='darwin':os.environ['QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM']='1'
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'app'))
-from PyQt6.QtCore import QEventLoop,QTimer
+from PyQt6.QtCore import QEventLoop,QTimer,QSettings
 from PyQt6.QtWidgets import QApplication,QSystemTrayIcon
 from yun_jin_app import Companion
 from yun_jin_data import Store
@@ -42,6 +42,8 @@ class FakeStatus:
 class AccessTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.store=Store(self.tmp.name)
+        settings=QSettings(str(Path(self.tmp.name)/'pet.ini'),QSettings.Format.IniFormat)
+        self.enterContext(patch('yun_jin_core.QSettings',return_value=settings))
         self.store.set_preference('updates_enabled',False)
         self.pet=Companion(self.store);self.pet.apply_character_visibility()
         self.overlay_native=Mock();self.overlay_native.snapshot.return_value=(123,3,16)

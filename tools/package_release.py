@@ -8,7 +8,7 @@ import json
 import os
 import tempfile
 ROOT=Path(__file__).resolve().parents[1]
-OUTPUT=ROOT/'dist/Yun-Jin-Companion-1.5.5.zip'
+OUTPUT=ROOT/'dist/Yun-Jin-Companion-1.5.6.zip'
 MAX_RUNTIME_ZIP = 2 * 1024 ** 3
 
 # Only maintained sources belong in the repository archive. Working artwork,
@@ -16,7 +16,7 @@ MAX_RUNTIME_ZIP = 2 * 1024 ** 3
 SOURCE_FILES = (
     'README.md', '.gitignore', 'docs/build_guide.py',
     'tools/package_release.py', 'tools/prune_sprite_cache.py',
-    'tools/build_sprite_cache.py', 'tools/render_guide_assets.py',
+    'tools/build_sprite_cache.py', 'tools/render_guide_assets.py', 'tools/build_calendar_previews.py',
 )
 GUIDE_IMAGES = (
     'appunti.png', 'promemoria.png', 'avviso.png', 'voce.png',
@@ -47,7 +47,8 @@ def runtime_files():
     for folder in ('app','installer'):
         paths.extend(p for p in (ROOT/folder).rglob('*') if p.is_file()
                      and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo','.log','.zip')
-                     and p.name!='release-manifest.json' and p not in sources)
+                     and p.name!='release-manifest.json' and p not in sources
+                     and ROOT/'app/assets/calendar' not in p.parents)
     return paths
 
 def write_manifest():
@@ -55,7 +56,9 @@ def write_manifest():
     for line in (ROOT/'installer/requirements.txt').read_text().splitlines():
         if line.strip() and not line.startswith('#'):
             name,version=line.strip().split('==');requirements[name]=version
-    document=dict(protocol=1,version='1.5.5',python_min=[3,11],python_max_exclusive=[3,15],
+    document=dict(protocol=1,version='1.5.6',python_min=[3,11],python_max_exclusive=[3,15],
+                  python_security_min={'3.11':[3,11,17],'3.12':[3,12,15],
+                                       '3.13':[3,13,17],'3.14':[3,14,9]},
                   requirements=requirements,files={str(p.relative_to(ROOT)).replace('\\','/'):
                       hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(runtime_files())})
     (ROOT/'app/release-manifest.json').write_text(json.dumps(document,indent=2)+'\n',encoding='utf-8')
@@ -63,7 +66,7 @@ def write_manifest():
 def build(source=False):
     write_animation_index()
     write_manifest()
-    output=OUTPUT.with_name('Yun-Jin-Companion-1.5.5-Sorgenti.zip') if source else OUTPUT
+    output=OUTPUT.with_name('Yun-Jin-Companion-1.5.6-Sorgenti.zip') if source else OUTPUT
     output.parent.mkdir(exist_ok=True)
     paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf')]
     if source:
@@ -74,13 +77,14 @@ def build(source=False):
         paths.extend(p for p in (ROOT/folder).rglob('*') if p.is_file()
                      and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo','.log','.zip'))
     if not source:
-        sources=animation_sources();paths=[p for p in paths if p not in sources]
+        sources=animation_sources();paths=[p for p in paths if p not in sources
+                                          and ROOT/'app/assets/calendar' not in p.parents]
     fd,temporary=tempfile.mkstemp(prefix='release-',suffix='.zip',dir=output.parent)
     os.close(fd)
     try:
         with zipfile.ZipFile(temporary,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as archive:
             for path in sorted(paths):
-                archive.write(path,Path('Yun-Jin-Companion-1.5.5')/path.relative_to(ROOT))
+                archive.write(path,Path('Yun-Jin-Companion-1.5.6')/path.relative_to(ROOT))
         with zipfile.ZipFile(temporary) as archive:
             if archive.testzip() is not None:
                 raise ValueError('Archive CRC validation failed')

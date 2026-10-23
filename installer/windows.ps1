@@ -28,7 +28,7 @@ function Find-Python {
     if ($Command -and $Command.Source -notlike '*\WindowsApps\*') { $Candidates.Add($Command.Source) }
     foreach ($Candidate in ($Candidates | Select-Object -Unique)) {
         if (Test-Path -LiteralPath $Candidate) {
-            & $Candidate -c 'import sys; sys.exit(0 if (3,11)<=sys.version_info[:2]<(3,15) and sys.maxsize>2**32 else 1)' 2>$null
+            & $Candidate -c 'import sys; sys.exit(0 if ((3,13,17)<=sys.version_info[:3]<(3,14) or (3,14,9)<=sys.version_info[:3]<(3,15)) and sys.maxsize>2**32 else 1)' 2>$null
             if ($LASTEXITCODE -eq 0) { return $Candidate }
         }
     }
@@ -41,8 +41,8 @@ try {
         Write-Host 'Scarico Python 3.13 dal sito ufficiale e verifico la sua integrita...'
         $Download = Join-Path ([IO.Path]::GetTempPath()) ('yun-jin-python-' + [guid]::NewGuid().ToString() + '.exe')
         try {
-            Invoke-WebRequest -UseBasicParsing -Uri 'https://www.python.org/ftp/python/3.13.15/python-3.13.15-amd64.exe' -OutFile $Download
-            $Expected = 'edec09c4853aeae9ac36efb8c9f95b6b8e2fee65eee56d9767a8b7c69c574403'
+            Invoke-WebRequest -UseBasicParsing -Uri 'https://www.python.org/ftp/python/3.13.17/python-3.13.17-amd64.exe' -OutFile $Download
+            $Expected = '5da012101ba2e17113a9a1cd901e9ce1441086f2b7ecb5de06ec94163899a190'
             if ((Get-FileHash -LiteralPath $Download -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Expected) { throw 'Verifica SHA256 di Python fallita. Il file non verra eseguito.' }
             $Arguments = '/passive InstallAllUsers=0 Include_pip=1 Include_launcher=0 Include_test=0 Include_doc=0 Include_tcltk=0 PrependPath=0 Shortcuts=0 TargetDir="' + $Runtime + '"'
             $Process = Start-Process -FilePath $Download -ArgumentList $Arguments -Wait -PassThru

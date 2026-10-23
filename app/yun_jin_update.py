@@ -58,13 +58,8 @@ class SafeRedirect(HTTPRedirectHandler):
 
 
 def open_url(url):
-    context = ssl.create_default_context()
-    try:
-        import certifi
-        # Add Mozilla roots without discarding system/enterprise certificates.
-        context.load_verify_locations(cafile=certifi.where())
-    except ImportError:
-        pass
+    import certifi
+    context = ssl.create_default_context(cafile=certifi.where())
     opener = build_opener(HTTPSHandler(context=context), SafeRedirect())
     return opener.open(Request(url, headers={
         'User-Agent': 'Yun-Jin-Companion-Updater',
@@ -205,6 +200,10 @@ def check_compatibility(manifest):
     maximum = tuple(manifest.get('python_max_exclusive', [3, 15]))
     if not minimum <= sys.version_info[:2] < maximum:
         raise RuntimeError('Questa release richiede un’altra versione di Python. Apri la release e usa il suo installer.')
+    security_minimum = manifest.get('python_security_min', {}).get(
+        '.'.join(map(str, sys.version_info[:2])))
+    if security_minimum and sys.version_info[:3] < tuple(security_minimum):
+        raise RuntimeError('Aggiorna Python usando l’installer della release.')
     requirements = manifest.get('requirements')
     if not isinstance(requirements, dict) or not requirements:
         raise ValueError('Requisiti del pacchetto mancanti.')

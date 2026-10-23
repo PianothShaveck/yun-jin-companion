@@ -167,7 +167,7 @@ class CalendarUiTests(unittest.TestCase):
             page.show();app.processEvents();self.assertEqual(page.selected,ClockDate.current)
             self.assertEqual(page.hero.day,ClockDate.current);self.assertEqual(page.findChildren(QTimer),[])
 
-    def test_real_winter_art_changes_at_midnight_year_boundary_and_leap_day(self):
+    def test_real_daily_art_changes_at_midnight_month_year_and_leap_boundaries(self):
         from yun_jin_calendar_art import illustration_for
         class ClockDate(date):
             current = date(2031, 12, 30)
@@ -177,7 +177,9 @@ class CalendarUiTests(unittest.TestCase):
             page = self.keep(CalendarPanel(self.pet)); page.show(); app.processEvents()
             previous_path = page.hero.path
             for day in (date(2031, 12, 31), date(2032, 1, 1), date(2032, 1, 2),
-                        date(2032, 2, 28), date(2032, 2, 29), date(2032, 3, 1)):
+                        date(2032, 2, 28), date(2032, 2, 29), date(2032, 3, 1),
+                        date(2032, 3, 2), date(2032, 3, 31), date(2032, 4, 1),
+                        date(2032, 4, 30), date(2032, 5, 1), date(2032, 5, 31)):
                 ClockDate.current = day; self.pet.agenda_changed.emit(); app.processEvents()
                 self.assertEqual(page.selected, day)
                 self.assertEqual(page.hero.path, illustration_for(day.year, day.month, day.day))

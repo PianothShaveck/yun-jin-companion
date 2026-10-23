@@ -19,18 +19,18 @@ class CalendarArtTests(unittest.TestCase):
         variant_for.cache_clear()
 
     def test_all_seasonal_illustrations_are_distinct_and_complete(self):
-        counts = (62, 62, 6, 6, 7, 9, 9, 9, 6, 62, 62, 62)
+        counts = (62, 62, 62, 62, 62, 9, 9, 9, 6, 62, 62, 62)
         self.assertEqual(tuple(map(len, VARIANTS_BY_MONTH)), counts)
         expected = {
             f'm{month:02d}-{letter}.webp'
             for month, count in enumerate((6, 7, 6, 6, 7, 9, 9, 9, 6, 6, 7, 6), 1)
             for letter in 'abcdefghi'[:count]
         }
-        expected.update(f'YJ-{number:03d}.webp' for number in range(85, 196))
+        expected.update(f'YJ-{number:03d}.webp' for number in range(85, 363))
         expected.update(f'YJ-{number:03d}.webp' for number in range(578, 745))
         paths = list(ASSETS.glob('*.webp'))
         self.assertEqual({p.name for p in paths}, expected)
-        self.assertEqual(len({hashlib.sha256(p.read_bytes()).digest() for p in paths}), 362)
+        self.assertEqual(len({hashlib.sha256(p.read_bytes()).digest() for p in paths}), 529)
         for path in paths:
             reader = QImageReader(str(path))
             size = reader.size()
@@ -40,7 +40,7 @@ class CalendarArtTests(unittest.TestCase):
             self.assertLessEqual(size.height(), 1024, path.name)
             self.assertLess(abs(size.width() / size.height() - 1.5), 0.003, path.name)
             self.assertFalse(reader.read().isNull(), path.name)
-        self.assertLess(sum(p.stat().st_size for p in paths), 500 * 1024 * 1024)
+        self.assertLess(sum(p.stat().st_size for p in paths), 800 * 1024 * 1024)
 
     def test_all_supported_years_use_complete_bags_without_adjacent_repeats(self):
         for month in range(1, 13):
@@ -68,7 +68,7 @@ class CalendarArtTests(unittest.TestCase):
             choice = variant_for(year, month)
             self.assertEqual(choice, expected[year, month])
             expected_file = f'{choice}.webp' if choice.startswith('YJ-') else f'm{month:02d}-{choice}.webp'
-            self.assertEqual(illustration_for(year, month), ASSETS / expected_file)
+            self.assertEqual(illustration_for(year, month), ASSETS.parent / 'calendar-preview' / expected_file)
 
     def test_winter_days_are_distinct_seasonal_varied_and_reach_every_scene(self):
         for month, start, stop in ((1, 85, 141), (2, 141, 196), (12, 689, 745)):
@@ -95,9 +95,37 @@ class CalendarArtTests(unittest.TestCase):
         for common_year in (2026, 2100, 2200):
             with self.assertRaises(ValueError): illustration_for(common_year, 2, 29)
 
+    def test_spring_days_are_distinct_and_interleave_themes_across_years(self):
+        for month, start in ((3, 196), (4, 252), (5, 308)):
+            pool = set(VARIANTS_BY_MONTH[month - 1]); seen = set(); previous = None
+            for year in range(1, 10000):
+                count = calendar.monthrange(year, month)[1]
+                choices = tuple(variant_for(year, month, day) for day in range(1, count + 1))
+                self.assertEqual(len(set(choices)), count, (year, month))
+                self.assertTrue(set(choices) <= pool, (year, month))
+                self.assertNotEqual(choices, previous, (year, month))
+                groups = [None if not item.startswith('YJ-') else (int(item[3:]) - start) // 7
+                          for item in choices]
+                self.assertTrue(all(a != b for a, b in zip(groups, groups[1:])), (year, month))
+                seen.update(choices); previous = choices
+            self.assertEqual(seen, pool)
+
+    def test_published_winter_mapping_is_exactly_preserved(self):
+        # Captured from 1.5.5 commit 1638621272 before adding spring assets.
+        for month, expected in (
+            (1, '2c956e72f55bc8b3025bb8ee52b47deb40808266641ddf0791088eedff3e8387'),
+            (2, '3ef5bce8b1784b368404eb1bc622d7d4b27fa42afd255535952284d17323fc9e'),
+            (12, '3ed9e33f3f216d53ff95acc9db980d88000904fe6969e1f26746e5768b6969da'),
+        ):
+            digest = hashlib.sha256()
+            for year in range(1, 10000):
+                for day in range(1, calendar.monthrange(year, month)[1] + 1):
+                    digest.update(f'{year}:{month}:{day}:{variant_for(year, month, day)}\n'.encode())
+            self.assertEqual(digest.hexdigest(), expected, month)
+
     def test_winter_order_survives_cache_clear_restart_and_hash_randomization(self):
         dates = [(year, month, day) for year in (1, 2026, 2032, 9999)
-                 for month in (1, 2, 12) for day in (1, 15, 28)]
+                 for month in (1, 2, 3, 4, 5, 12) for day in (1, 15, 28)]
         expected = [str(illustration_for(*day)) for day in dates]
         variant_for.cache_clear(); yun_jin_calendar_art._daily_bag.cache_clear()
         self.assertEqual([str(illustration_for(*day)) for day in reversed(dates)], list(reversed(expected)))
@@ -146,7 +174,7 @@ class CalendarArtTests(unittest.TestCase):
 
     def test_every_november_has_thirty_distinct_images_and_interleaved_scenes(self):
         pool = set(VARIANTS_BY_MONTH[10]); all_seen = set(); previous = None
-        self.assertEqual(yun_jin_calendar_art.DAILY_MONTHS, frozenset({1, 2, 10, 11, 12}))
+        self.assertEqual(yun_jin_calendar_art.DAILY_MONTHS, frozenset({1, 2, 3, 4, 5, 10, 11, 12}))
         self.assertEqual(len(pool), 62)
         for year in range(1, 10000):
             choices = tuple(variant_for(year, 11, day) for day in range(1, 31))
@@ -191,7 +219,7 @@ class CalendarArtTests(unittest.TestCase):
         with patch.object(yun_jin_calendar_art, 'blake2s', wraps=hashlib.blake2s) as digest:
             for day in range(1, 31): variant_for(2060, 11, day)
             self.assertLessEqual(digest.call_count, 150)
-        for month in (1, 2, 12):
+        for month in (1, 2, 3, 4, 5, 12):
             variant_for.cache_clear(); yun_jin_calendar_art._daily_bag.cache_clear()
             with patch.object(yun_jin_calendar_art, 'blake2s', wraps=hashlib.blake2s) as digest:
                 for day in range(1, calendar.monthrange(2060, month)[1] + 1):

@@ -51,6 +51,16 @@ class InstallerTests(unittest.TestCase):
         self.assertTrue((self.program / 'app/yun_jin_music.py').is_file())
         self.assertTrue((self.program / 'Guida.pdf').is_file())
 
+    def test_deploy_removes_old_full_images_and_reuses_checkout(self):
+        old_images = self.program / 'app/assets/calendar'
+        old_images.mkdir()
+        (old_images / 'YJ-196.webp').write_bytes(b'old-original')
+        i.deploy(self.root)
+        self.assertFalse(old_images.exists())
+        self.assertTrue((self.program / 'app/assets/calendar-preview/YJ-196.webp').is_file())
+        reference = json.loads((self.root / 'calendar-originals.json').read_text())
+        self.assertEqual(Path(reference['directory']), (i.SOURCE / 'app/assets/calendar').resolve())
+
     def test_fresh_install_and_repeat(self):
         for _ in range(2):
             bundle = i.mac_shortcut(self.exe, self.program, self.root)
