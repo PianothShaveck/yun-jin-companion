@@ -110,6 +110,19 @@ class Updates(QObject):
         if self.enabled:
             self.timer.start(); self.initial.start(30000)
         self.show_previous_result()
+        self.cleanup_timer = QTimer(self); self.cleanup_timer.setSingleShot(True)
+        self.cleanup_timer.timeout.connect(self.cleanup_completed)
+        self.cleanup_timer.start(30000)
+
+    def cleanup_completed(self):
+        # Also reclaim successful updates made by workers predating cleanup.
+        # Disk traversal never runs in the GUI thread or depends on auto-checks.
+        if self.pet.closing:
+            return
+        data_root, app_dir = self.pet.store.root, BASE
+        threading.Thread(target=engine.cleanup_completed_updates,
+                         args=(data_root, app_dir), daemon=True,
+                         name='update-cleanup').start()
 
     def set_status(self, text):
         self.status = text; self.status_changed.emit(text)
@@ -302,7 +315,7 @@ class Updates(QObject):
             logging.exception('Reading update result')
 
     def shutdown(self):
-        for timer in (self.timer, self.initial, self.offer):
+        for timer in (self.timer, self.initial, self.offer, self.cleanup_timer):
             timer.stop()
         if self.dialog:
             self.dialog.hide()

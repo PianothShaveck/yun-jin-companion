@@ -183,14 +183,16 @@ class UpdateTests(unittest.TestCase):
   # Real detached process + real Qt file lock, with a tiny stand-in for the GUI.
   from PyQt6.QtCore import QLockFile
   for succeeds in (True,False):
-   work=self.root/str(succeeds);work.mkdir()
+   data=self.root/str(succeeds);work=data/'updates/update-live';work.mkdir(parents=True)
    old_entry="import os\nfrom pathlib import Path\nPath(os.environ['YUN_JIN_UPDATE_RESULT']).with_name('old-restarted').touch()\n"
-   old=fixture(work/'running','1.1.0',entry=old_entry)
+   old=fixture(data/'program','1.1.0',entry=old_entry)
    ready_entry="import os\nfrom pathlib import Path\nPath(os.environ['YUN_JIN_UPDATE_READY']).write_text(os.environ['YUN_JIN_UPDATE_TOKEN'])\n"
-   source=fixture(work/'source',entry=ready_entry if succeeds else 'raise RuntimeError("broken release")')
-   lock=QLockFile(str(work/'app.lock'));lock.setStaleLockTime(0);self.assertTrue(lock.tryLock(100))
-   plan=dict(source=str(source),app_dir=str(old/'app'),executable=sys.executable,version='1.2.0',lock=str(work/'app.lock'),token='test-token')
+   source=fixture(work/'unpacked/release',entry=ready_entry if succeeds else 'raise RuntimeError("broken release")')
+   lock=QLockFile(str(data/'companion.lock'));lock.setStaleLockTime(0);self.assertTrue(lock.tryLock(100))
+   plan=dict(source=str(source),app_dir=str(old/'app'),executable=sys.executable,version='1.2.0',lock=str(data/'companion.lock'),token='test-token')
    (work/'plan.json').write_text(json.dumps(plan))
+   (work/'release.zip').write_bytes(b'archive')
+   u.write_json(work.parent/'pending.json',dict(work=str(work),app_dir=str(old/'app')))
    process=subprocess.Popen([sys.executable,str(ROOT/'app/yun_jin_update.py'),'--worker',str(work/'plan.json')],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
    try:
     deadline=time.monotonic()+10
@@ -199,6 +201,9 @@ class UpdateTests(unittest.TestCase):
     lock.unlock();out,err=process.communicate(timeout=20)
     self.assertEqual(process.returncode,0 if succeeds else 1,(out,err))
     result=json.loads((work/'result.json').read_text());self.assertEqual(result['ok'],succeeds)
+    self.assertEqual((work/'backup').exists(),not succeeds)
+    self.assertEqual(source.exists(),not succeeds)
+    self.assertEqual((work/'release.zip').exists(),not succeeds)
     if not succeeds:
      self.assertEqual((old/'app/yun_jin_pet.py').read_text(),old_entry)
      deadline=time.monotonic()+5

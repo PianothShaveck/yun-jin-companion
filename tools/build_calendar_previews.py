@@ -50,7 +50,7 @@ def build():
             width=original_size.width(), height=original_size.height(),
             preview_sha256=hashlib.sha256(target.read_bytes()).hexdigest(),
         )
-    document = dict(protocol=1, ref='v1.5.6', images=records)
+    document = dict(protocol=1, ref='v1.5.7', images=records)
     (ASSETS / 'calendar-index.json').write_text(json.dumps(document, indent=2) + '\n', encoding='utf-8')
     print(f'{len(records)} immagini; originali {sum(p.stat().st_size for p in original_dir.glob("*.webp"))} byte; '
           f'anteprime {sum(p.stat().st_size for p in preview_dir.glob("*.webp"))} byte', flush=True)

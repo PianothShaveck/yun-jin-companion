@@ -8,7 +8,7 @@ import json
 import os
 import tempfile
 ROOT=Path(__file__).resolve().parents[1]
-OUTPUT=ROOT/'dist/Yun-Jin-Companion-1.5.6.zip'
+OUTPUT=ROOT/'dist/Yun-Jin-Companion-1.5.7.zip'
 MAX_RUNTIME_ZIP = 2 * 1024 ** 3
 
 # Only maintained sources belong in the repository archive. Working artwork,
@@ -56,7 +56,7 @@ def write_manifest():
     for line in (ROOT/'installer/requirements.txt').read_text().splitlines():
         if line.strip() and not line.startswith('#'):
             name,version=line.strip().split('==');requirements[name]=version
-    document=dict(protocol=1,version='1.5.6',python_min=[3,11],python_max_exclusive=[3,15],
+    document=dict(protocol=1,version='1.5.7',python_min=[3,11],python_max_exclusive=[3,15],
                   python_security_min={'3.11':[3,11,17],'3.12':[3,12,15],
                                        '3.13':[3,13,17],'3.14':[3,14,9]},
                   requirements=requirements,files={str(p.relative_to(ROOT)).replace('\\','/'):
@@ -66,7 +66,7 @@ def write_manifest():
 def build(source=False):
     write_animation_index()
     write_manifest()
-    output=OUTPUT.with_name('Yun-Jin-Companion-1.5.6-Sorgenti.zip') if source else OUTPUT
+    output=OUTPUT.with_name('Yun-Jin-Companion-1.5.7-Sorgenti.zip') if source else OUTPUT
     output.parent.mkdir(exist_ok=True)
     paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf')]
     if source:
@@ -84,7 +84,7 @@ def build(source=False):
     try:
         with zipfile.ZipFile(temporary,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as archive:
             for path in sorted(paths):
-                archive.write(path,Path('Yun-Jin-Companion-1.5.6')/path.relative_to(ROOT))
+                archive.write(path,Path('Yun-Jin-Companion-1.5.7')/path.relative_to(ROOT))
         with zipfile.ZipFile(temporary) as archive:
             if archive.testzip() is not None:
                 raise ValueError('Archive CRC validation failed')

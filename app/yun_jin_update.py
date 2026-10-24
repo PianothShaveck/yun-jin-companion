@@ -350,6 +350,117 @@ def clear_pending(work):
             pending.unlink()
 
 
+def _plain_path(path, root):
+    """Never traverse symlinks or Windows directory junctions during cleanup."""
+    path, root = Path(path).absolute(), Path(root).absolute()
+    path.relative_to(root)
+    for candidate in (path, *path.parents):
+        if candidate == root.parent:
+            break
+        if candidate.is_symlink() or getattr(candidate, 'is_junction', lambda: False)():
+            return False
+    return True
+
+
+def _remove_payload_files(root, names):
+    removed = 0
+    failed = False
+    # Keep the manifest until last so an interrupted cleanup can be retried.
+    for name in sorted(names, key=lambda n: (n == 'app/' + MANIFEST, n)):
+        if name == 'app/' + MANIFEST and failed:
+            continue
+        path = root / str(safe_relative(name))
+        try:
+            if not _plain_path(path, root) or not path.is_file():
+                continue
+            size = path.stat().st_size
+            path.unlink()
+            removed += size
+            parent = path.parent
+            while parent != root.parent:
+                try:
+                    parent.rmdir()
+                except OSError:
+                    break  # Unknown files and nonempty directories stay.
+                parent = parent.parent
+        except OSError:
+            failed = True
+            continue  # Windows may still hold a file; retry on the next start.
+    return removed
+
+
+def cleanup_completed_updates(data_root, app_dir):
+    """Drop only recorded payloads of confirmed updates, retaining diagnostics.
+
+    Journals from older workers have the same committed status. Failed, pending,
+    incomplete and foreign updates retain everything needed for recovery.
+    """
+    data_root, app_dir = Path(data_root).absolute(), Path(app_dir).resolve()
+    cache = data_root / 'updates'
+    removed = 0
+    try:
+        if not _plain_path(cache, data_root) or not cache.is_dir():
+            return 0
+        pending = cache / 'pending.json'
+        active = None
+        if pending.exists():
+            if not _plain_path(pending, cache):
+                return 0
+            active = Path(json.loads(pending.read_text(encoding='utf-8'))['work']).absolute()
+        works = list(cache.glob('update-*'))
+    except (OSError, ValueError, KeyError, TypeError):
+        return 0
+    for work in works:
+        try:
+            if work == active or not _plain_path(work, cache) or not work.is_dir():
+                continue
+            if not all(_plain_path(work / n, cache) for n in ('plan.json', 'journal.json')):
+                continue
+            plan = json.loads((work / 'plan.json').read_text(encoding='utf-8'))
+            journal = json.loads((work / 'journal.json').read_text(encoding='utf-8'))
+            if not isinstance(plan, dict) or not isinstance(journal, dict):
+                continue
+            if (journal['status'] != 'committed'
+                    or Path(journal['app_dir']).resolve() != app_dir
+                    or Path(plan['app_dir']).resolve() != app_dir
+                    or journal['version'] != plan['version']
+                    or Path(plan['lock']).absolute() != data_root / 'companion.lock'
+                    or Path(journal['backup']).absolute() != work / 'backup'):
+                continue
+            source = Path(plan['source']).absolute()
+            if source.parent != work / 'unpacked' or not _plain_path(source, cache):
+                continue
+            entries = journal['entries']
+            if not isinstance(entries, list) or len(entries) > 6001:
+                continue
+            backup_names = set()
+            for item in entries:
+                name = str(safe_relative(item['name']))
+                if not (name.startswith(('app/', 'installer/')) or name in
+                        ('Guida.pdf', 'Mac.command', 'Linux.sh', 'Windows.cmd')):
+                    raise ValueError('Foreign journal entry')
+                if item['existed'] is True:
+                    backup_names.add(name)
+            # Read the source inventory before deleting any payload. A damaged
+            # source leaves that tree intact, but cannot invalidate the backup list.
+            source_names = set()
+            try:
+                if _plain_path(source / 'app' / MANIFEST, cache):
+                    source_names = set(read_manifest(source)['files']) | {'app/' + MANIFEST}
+            except (OSError, ValueError, KeyError, TypeError, AttributeError):
+                pass
+            removed += _remove_payload_files(work / 'backup', backup_names)
+            removed += _remove_payload_files(source, source_names)
+            removed += _remove_payload_files(work, {'release.zip'})
+            try:
+                (work / 'unpacked').rmdir()
+            except OSError:
+                pass
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+    return removed
+
+
 def recover_pending(app_dir, data_root):
     """Pre-import recovery after power loss. Never recover under a live app.
 
@@ -446,6 +557,7 @@ def worker(plan_path):
             journal = json.loads(journal_path.read_text(encoding='utf-8'))
             journal['status'] = 'committed'; write_json(journal_path, journal)
             clear_pending(work)
+            cleanup_completed_updates(Path(plan['lock']).parent, plan['app_dir'])
             return 0
         if child.poll() is not None:
             break

@@ -1,6 +1,6 @@
 # Yun Jin Companion
 
-Una piccola Yun Jin sul desktop, con studio, calendario, sveglie e strumenti musicali. **Versione 1.5.6** per Windows, macOS e Linux.
+Una piccola Yun Jin sul desktop, con studio, calendario, sveglie e strumenti musicali. **Versione 1.5.7** per Windows, macOS e Linux.
 
 [Scarica l'app](https://github.com/PianothShaveck/yun-jin-companion/releases/latest) · [Guida illustrata](Guida.pdf)
 
@@ -12,7 +12,7 @@ Una piccola Yun Jin sul desktop, con studio, calendario, sveglie e strumenti mus
 - Scorciatoie personalizzabili, globali su Windows e macOS.
 - Appunti con ricerca, immagini e allegati.
 - Promemoria e sveglie con giorni e orari personalizzabili.
-- Calendario illustrato con impegni ricorrenti e avvisi; da ottobre a maggio un’immagine diversa ogni giorno. Gli originali si scaricano aprendo l’ingrandimento; le anteprime restano disponibili offline.
+- Calendario illustrato con impegni ricorrenti e avvisi; da ottobre a luglio un’immagine diversa ogni giorno. Gli originali si scaricano aprendo l’ingrandimento; le anteprime restano disponibili offline.
 - Metronomo con accenti e scalata personalizzabile, cronometro con parziali e timer focus.
 - Voce tramite Edge TTS o Google Translate, disattivabile mantenendo i fumetti.
 - Animazioni, passeggiate, inseguimento del cursore e sonnellini.
@@ -22,7 +22,7 @@ Una piccola Yun Jin sul desktop, con studio, calendario, sveglie e strumenti mus
 
 ## Installazione
 
-Scarica **Yun-Jin-Companion-1.5.6.zip** dalla release ed estrai tutta la cartella.
+Scarica **Yun-Jin-Companion-1.5.7.zip** dalla release ed estrai tutta la cartella.
 
 | Sistema | Avvio dell'installazione |
 | --- | --- |

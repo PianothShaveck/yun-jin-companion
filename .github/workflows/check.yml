@@ -48,6 +48,7 @@ jobs:
       - run: python tests/test_agenda_integration.py
       - run: python tests/test_voice_weather.py
       - run: python tests/test_updater.py
+      - run: python tests/test_update_cleanup.py
       - run: python tests/test_windows_encoding.py
       - run: python tests/test_windows_identity.py
       - run: python tests/test_windows_overlay.py
