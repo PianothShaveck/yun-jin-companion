@@ -11,6 +11,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       QT_QPA_PLATFORM: offscreen
+      # Existing UI assertions use the Italian source catalog explicitly.
+      # Localization tests also start a clean process to verify English default.
+      YUNJIN_LANGUAGE: it
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -40,11 +43,16 @@ jobs:
       - run: python tests/test_study_rotation.py
       - run: python tests/test_anki_reader.py
       - run: python tests/test_hotkeys.py
+      - run: python tests/test_google_calendar.py
+      - run: python tests/test_google_multidevice.py
+      - run: python tests/test_google_ui.py
+      - run: python -m unittest tests.test_localization -v
       - run: python tests/test_agenda.py
       - run: python tests/test_calendar_ui.py
       - run: python tests/test_calendar_download.py
       - run: python tests/test_runtime_security.py
       - run: python tests/test_calendar_art.py
+      - run: python tests/test_calendar_migration.py
       - run: python tests/test_agenda_integration.py
       - run: python tests/test_voice_weather.py
       - run: python tests/test_updater.py
@@ -69,6 +77,7 @@ jobs:
         run: |
           bash -n Mac.command
           sh -n Linux.sh
+          sh -n installer/language.sh
           sh -n installer/install-mac-bundle.sh
       - name: Check installer data preservation and Mac bundle layout
         if: runner.os != 'Windows'

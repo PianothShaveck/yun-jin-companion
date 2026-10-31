@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """macOS fullscreen overlay using public AppKit APIs and Qt-owned NSPanels."""
+from yun_jin_i18n import tr
 import ctypes
 import logging
 import weakref
@@ -65,8 +66,7 @@ class AppKit:
                           (ctypes.c_long,), (requested,))
         current = self.send(self.application, 'activationPolicy', ctypes.c_long)
         if current != requested:
-            raise RuntimeError(f'Modalità applicazione macOS: richiesta {requested}, '
-                               f'attuale {current}, risposta {bool(reply)}.')
+            raise RuntimeError(tr('Modalità applicazione macOS: richiesta {v0}, attuale {v1}, risposta {v2}.', v0=requested, v1=current, v2=bool(reply)))
 
     def window(self, widget):
         return self.send(int(widget.winId()), 'window')
@@ -74,7 +74,7 @@ class AppKit:
     def snapshot(self, widget):
         window = self.window(widget)
         if not window:
-            raise RuntimeError('Finestra nativa macOS non disponibile.')
+            raise RuntimeError(tr('Finestra nativa macOS non disponibile.'))
         return (window, self.send(window, 'level', ctypes.c_long),
                 self.send(window, 'collectionBehavior', ctypes.c_ulong))
 
@@ -83,16 +83,20 @@ class AppKit:
         is_panel = self.send(window, 'isKindOfClass:', ctypes.c_bool,
                              (ctypes.c_void_p,), (self.cls('NSPanel'),))
         if not is_panel:
-            raise RuntimeError('La finestra overlay deve essere un pannello nativo macOS.')
-        style = self.send(window, 'styleMask', ctypes.c_ulong)
-        # Keep this flag for the lifetime of each panel; toggling it repeatedly
-        # can desynchronize AppKit's activation state. Disable via policy/level.
-        self.send(window, 'setStyleMask:', None, (ctypes.c_ulong,), (style | NONACTIVATING_PANEL,))
+            raise RuntimeError(tr('La finestra overlay deve essere un pannello nativo macOS.'))
+        passive = (widget.windowType() == Qt.WindowType.ToolTip or
+                   bool(widget.windowFlags() & Qt.WindowType.WindowDoesNotAcceptFocus))
+        if not passive:
+            style = self.send(window, 'styleMask', ctypes.c_ulong)
+            # Do not rewrite a live panel's style on each Show/deferred pass.
+            if not style & NONACTIVATING_PANEL:
+                self.send(window, 'setStyleMask:', None, (ctypes.c_ulong,), (style | NONACTIVATING_PANEL,))
         self.send(window, 'setHidesOnDeactivate:', None, (ctypes.c_bool,), (False,))
         previous = self.send(window, 'collectionBehavior', ctypes.c_ulong)
         self.send(window, 'setCollectionBehavior:', None, (ctypes.c_ulong,), (overlay_behavior(previous),))
         self.send(window, 'setLevel:', None, (ctypes.c_long,), (level,))
-        self.send(window, 'orderFrontRegardless', None)
+        if not passive:
+            self.send(window, 'orderFrontRegardless', None)
 
     def focus(self, widget):
         self.send(self.window(widget), 'makeKeyAndOrderFront:', None,
@@ -126,6 +130,9 @@ class MacOverlay(QObject):
         self.applying = False
 
     def prepare(self, widget):
+        if widget.windowType() == Qt.WindowType.ToolTip:
+            widget.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
+            widget.setWindowFlag(Qt.WindowType.WindowDoesNotAcceptFocus, True)
         # Force NSPanel creation before the first show, including Qt file
         # dialogs and message boxes, so text input remains available fullscreen.
         if isinstance(widget, QMessageBox):

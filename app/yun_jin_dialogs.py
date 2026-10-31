@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Shared ownership, modality and focus for every application dialog."""
+from yun_jin_i18n import tr
 import sys
 from pathlib import Path
 from PyQt6 import sip
@@ -161,8 +162,8 @@ def choose_files(owner, title, mode='files', filename='', name_filter='', direct
             paths = dialog.selectedFiles()
             if mode != 'save' or not paths or not Path(paths[0]).exists():
                 return paths
-            if Messages.question(parent, 'Sostituisci file',
-                                 'Il file esiste già. Sostituirlo?') == QMessageBox.StandardButton.Yes:
+            if Messages.question(parent, tr('Sostituisci file'),
+                                 tr('Il file esiste già. Sostituirlo?')) == QMessageBox.StandardButton.Yes:
                 return paths
         return []
     finally:

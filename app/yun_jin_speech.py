@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Qt speech controller: no GUI blocking, no automatic provider switching."""
+from yun_jin_i18n import tr
 import json
 import bisect
 import sys
@@ -100,7 +101,7 @@ class Speech(QObject):
             self.player.mediaStatusChanged.connect(self.media_status)
             self.player.errorOccurred.connect(self.playback_error)
         except Exception as exc:
-            self.status='Riproduzione vocale non disponibile: '+str(exc)
+            self.status=tr('Riproduzione vocale non disponibile: ')+str(exc)
             if self.player is not None:self.player.deleteLater();self.player=None
             if self.output is not None:self.output.deleteLater();self.output=None
         return self.player is not None and self.output is not None
@@ -147,19 +148,19 @@ class Speech(QObject):
             self.category = category
         text=str(text).strip()
         if not text:
-            self.report('Nessun testo da leggere.')
+            self.report(tr('Nessun testo da leggere.'))
             return False
         if len(text)>3000:
-            self.report('Massimo 3000 caratteri. Seleziona un passaggio.')
+            self.report(tr('Massimo 3000 caratteri. Seleziona un passaggio.'))
             return False
         if self.enabled and not preview and time.time()<self.pet.sound.quiet_until:
-            self.report('Silenzio attivo. Riattiva i suoni dal menu.')
+            self.report(tr('Silenzio attivo. Riattiva i suoni dal menu.'))
             return False
         if category=='reminder' and (self.busy or (self.enabled and
                 ((getattr(self.pet,'metronome',None) and self.pet.metronome.running) or not self.pref('auto_reminders',True)))):
             return False
         if self.enabled and not self.ensure_player():
-            self.report('Qt Multimedia non è disponibile: reinstalla le dipendenze.')
+            self.report(tr('Qt Multimedia non è disponibile: reinstalla le dipendenze.'))
             return False
         self.stop(announce=False)
         self.category=category
@@ -192,7 +193,7 @@ class Speech(QObject):
         if usable:
             self.cached_path=cached
             self.cached_timer.start(0)
-            self.report('Preparazione…')
+            self.report(tr('Preparazione…'))
             return True
         process=QProcess(self)
         self.process=process
@@ -208,7 +209,7 @@ class Speech(QObject):
         process.started.connect(lambda p=process,j=job:self.write_job(p,j))
         self.timeout.start(12000 if category == 'ambient' else 45000)
         process.start()
-        if process is self.process:self.report('Preparazione…')
+        if process is self.process:self.report(tr('Preparazione…'))
         return True
 
     def write_job(self,process,job):
@@ -225,7 +226,7 @@ class Speech(QObject):
             self.animate_ambient()
             self.busy=False
             process.deleteLater()
-            self.report('Impossibile avviare il generatore vocale. Verifica il Python usato dal collegamento.')
+            self.report(tr('Impossibile avviare il generatore vocale. Verifica il Python usato dal collegamento.'))
 
     def generated(self,process,code):
         if process is not self.process:
@@ -238,7 +239,7 @@ class Speech(QObject):
         try:
             reply=json.loads(raw.decode('utf-8'))
             if code!=0 or not reply.get('ok'):
-                raise ValueError(reply.get('error','Il servizio non ha restituito una risposta.'))
+                raise ValueError(reply.get('error',tr('Il servizio non ha restituito una risposta.')))
         except Exception as exc:
             self.audio_error(exc)
             return
@@ -257,7 +258,7 @@ class Speech(QObject):
             path=Path(path).resolve()
             path.relative_to(self.cache.resolve())
             if not path.is_file() or path.suffix!='.mp3':
-                raise ValueError('File vocale non valido.')
+                raise ValueError(tr('File vocale non valido.'))
             if refresh:path.touch()
             if self.category=='reminder' and self.current_tag:
                 active={r['id'] for r in self.pet.store.reminders()}
@@ -271,7 +272,7 @@ class Speech(QObject):
             self.output.setVolume(max(0,min(100,int(self.pref('volume',70))))/100)
             self.player.setSource(QUrl.fromLocalFile(str(path)))
             self.player.play()
-            self.report('Lettura…')
+            self.report(tr('Lettura…'))
         except Exception as exc:
             self.audio_error(exc)
 
@@ -279,7 +280,7 @@ class Speech(QObject):
         self.animate_ambient()
         self.busy=False
         self.current_tag=None
-        self.report('Voce non disponibile: '+str(exc)+' Riprova o cambia servizio.')
+        self.report(tr('Voce non disponibile: ')+str(exc)+tr(' Riprova o cambia servizio.'))
 
     def clear_caption(self):
         if self.caption_index != -1:
@@ -355,7 +356,7 @@ class Speech(QObject):
             self.busy=False
             self.current_tag=None
             self.active_changed.emit(False)
-            self.report('Lettura terminata.')
+            self.report(tr('Lettura terminata.'))
 
     def playback_error(self,*args):
         if not self.closed and not self.silent_caption:
@@ -363,12 +364,12 @@ class Speech(QObject):
             self.clear_caption()
             self.busy=False
             self.active_changed.emit(False)
-            self.report('Errore nella riproduzione: '+self.player.errorString())
+            self.report(tr('Errore nella riproduzione: ')+self.player.errorString())
 
     def timed_out(self):
         self.animate_ambient()
         self.stop(announce=False)
-        self.report('Nessuna risposta. Riprova o cambia servizio.')
+        self.report(tr('Nessuna risposta. Riprova o cambia servizio.'))
 
     def stop(self,announce=True):
         self.caption_timer.stop()
@@ -392,7 +393,7 @@ class Speech(QObject):
         self.current_tag=None
         self.active_changed.emit(False)
         if announce:
-            self.report('Voce interrotta.')
+            self.report(tr('Voce interrotta.'))
 
     def clear_cache(self):
         self.stop(announce=False)
@@ -405,7 +406,7 @@ class Speech(QObject):
                     path.unlink();count+=1
                 except OSError:
                     pass
-        self.report(f'Cache svuotata: {count} file.')
+        self.report(tr('Cache svuotata: {v0} file.', v0=count))
 
     def shutdown(self):
         self.closed=True

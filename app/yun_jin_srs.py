@@ -4,6 +4,7 @@
 Content is versioned independently of scheduling, so future card types can share
 notes, media and review history. FSRS is loaded only when it is actually needed.
 """
+from yun_jin_i18n import tr
 from datetime import datetime, time as daytime, timedelta, timezone
 import hashlib
 import html
@@ -79,14 +80,14 @@ def parse_steps(text):
     for token in str(text).lower().split():
         match = re.fullmatch(r'(\d+(?:[.,]\d+)?|[.,]\d+)([smhd]?)', token)
         if not match:
-            raise ValueError('Passi non validi. Esempio: 10s 30s 1m 10m.')
+            raise ValueError(tr('Passi non validi. Esempio: 10s 30s 1m 10m.'))
         number, unit = match.groups()
         seconds = float(number.replace(',', '.')) * {'s':1,'m':60,'h':3600,'d':86400,'':60}[unit]
         if not math.isfinite(seconds) or not 1 <= seconds <= 36500*86400:
-            raise ValueError('Ogni passo deve durare almeno un secondo.')
+            raise ValueError(tr('Ogni passo deve durare almeno un secondo.'))
         values.append(timedelta(seconds=seconds))
     if len(values) > 20:
-        raise ValueError('Usa al massimo 20 passi.')
+        raise ValueError(tr('Usa al massimo 20 passi.'))
     return tuple(values)
 
 
@@ -94,15 +95,15 @@ def validate_settings(values):
     settings = {**DEFAULTS, **values}
     retention = settings['retention']
     if not isinstance(retention, (int, float)) or not .70 <= retention <= .99:
-        raise ValueError('La ritenzione deve essere tra 70% e 99%.')
+        raise ValueError(tr('La ritenzione deve essere tra 70% e 99%.'))
     for key in ('new_limit', 'review_limit'):
         value = settings[key]
         if value is not None and (type(value) is not int or not 0 <= value <= 1000000):
-            raise ValueError('Limite giornaliero non valido.')
+            raise ValueError(tr('Limite giornaliero non valido.'))
     for key in ('learning', 'relearning'):
         parse_steps(settings[key])
     if type(settings['leech_threshold']) is not int or not 2 <= settings['leech_threshold'] <= 1000:
-        raise ValueError('Soglia non valida: scegli un valore tra 2 e 1000.')
+        raise ValueError(tr('Soglia non valida: scegli un valore tra 2 e 1000.'))
     settings['fsrs'] = bool(settings['fsrs'])
     settings['suspend_leeches'] = bool(settings['suspend_leeches'])
     return settings
@@ -111,10 +112,10 @@ def validate_settings(values):
 def cloze_ordinals(text):
     matches = list(CLOZE.finditer(text))
     if not matches or any(not m[2].strip() or '{{' in m[2] for m in matches):
-        raise ValueError('Inserisci almeno una lacuna, per esempio {{c1::你好::saluto}}.')
+        raise ValueError(tr('Inserisci almeno una lacuna, per esempio {{c1::你好::saluto}}.'))
     remainder = CLOZE.sub('', text)
     if '{{' in remainder or '}}' in remainder:
-        raise ValueError('Controlla le parentesi delle lacune. Le lacune annidate non sono supportate.')
+        raise ValueError(tr('Controlla le parentesi delle lacune. Le lacune annidate non sono supportate.'))
     return sorted({int(m[1]) for m in matches})
 
 
@@ -136,29 +137,29 @@ def render_cloze(text, ordinal, answer=False):
 
 def validate_content(kind, content):
     if kind not in ('basic','cloze'):
-        raise ValueError('Tipo di carta non supportato.')
+        raise ValueError(tr('Tipo di carta non supportato.'))
     result = {'front':str(content.get('front','')).strip(), 'back':str(content.get('back','')).strip(),
               'front_media':list(content.get('front_media',[])), 'back_media':list(content.get('back_media',[]))}
     if any(len(result[key]) > 100000 for key in ('front','back')):
-        raise ValueError('Testo troppo lungo (massimo 100.000 caratteri per lato).')
+        raise ValueError(tr('Testo troppo lungo (massimo 100.000 caratteri per lato).'))
     for key in ('front_media','back_media'):
         if len(result[key]) > 12 or any(not isinstance(v,str) or not MEDIA.fullmatch(v) for v in result[key]):
-            raise ValueError('Allegati non validi (massimo 12 per lato).')
+            raise ValueError(tr('Allegati non validi (massimo 12 per lato).'))
     if not result['front'] and not result['front_media']:
-        raise ValueError('Il fronte è vuoto.')
+        raise ValueError(tr('Il fronte è vuoto.'))
     if kind == 'basic' and not result['back'] and not result['back_media']:
-        raise ValueError('Il retro è vuoto.')
+        raise ValueError(tr('Il retro è vuoto.'))
     ordinals = cloze_ordinals(result['front']) if kind == 'cloze' else [0]
     return result, ordinals
 
 
 def duration_label(seconds):
-    if seconds < 60: return f'{max(1,round(seconds))} s'
-    if seconds < 3600: return f'{seconds/60:g} min'
-    if seconds < 86400: return f'{seconds/3600:.1f} h'.replace('.0 ', ' ')
-    if seconds < 86400*30: return f'{round(seconds/86400)} g'
-    if seconds < 86400*365: return f'{seconds/86400/30:.1f} mesi'
-    return f'{seconds/86400/365:.1f} anni'
+    if seconds < 60: return tr('{v0} s', v0=max(1, round(seconds)))
+    if seconds < 3600: return tr('{v0:g} min', v0=seconds / 60)
+    if seconds < 86400: return tr('{v0:.1f} h', v0=seconds / 3600).replace('.0 ', ' ')
+    if seconds < 86400*30: return tr('{v0} g', v0=round(seconds / 86400))
+    if seconds < 86400*365: return tr('{v0:.1f} mesi', v0=seconds / 86400 / 30)
+    return tr('{v0:.1f} anni', v0=seconds / 86400 / 365)
 
 
 class StudyStore:
@@ -172,18 +173,18 @@ class StudyStore:
 
     def deck(self, deck_id):
         row = self.db.execute('SELECT * FROM sr_decks WHERE id=? AND archived=0',(deck_id,)).fetchone()
-        if row is None: raise ValueError('Mazzo non trovato.')
+        if row is None: raise ValueError(tr('Mazzo non trovato.'))
         result = dict(row); result['settings'] = validate_settings(json.loads(result['settings']))
         result['parameters'] = json.loads(result['parameters']) if result['parameters'] else None
         return result
 
     def save_deck(self, name, settings=None, deck_id=None):
         name = name.strip()
-        if not name:raise ValueError('Il nome del mazzo non può essere vuoto.')
-        if len(name)>120:raise ValueError('Il nome del mazzo non può superare 120 caratteri.')
+        if not name:raise ValueError(tr('Il nome del mazzo non può essere vuoto.'))
+        if len(name)>120:raise ValueError(tr('Il nome del mazzo non può superare 120 caratteri.'))
         duplicate=self.db.execute('SELECT id FROM sr_decks WHERE name=? COLLATE NOCASE',(name,)).fetchone()
         if duplicate and duplicate[0]!=deck_id:
-            raise ValueError('Esiste già un mazzo con questo nome, anche nell’archivio.')
+            raise ValueError(tr('Esiste già un mazzo con questo nome, anche nell’archivio.'))
         old = self.deck(deck_id) if deck_id else None
         settings = validate_settings(settings if settings is not None else (old['settings'] if old else {}))
         with self.db:
@@ -205,11 +206,11 @@ class StudyStore:
         content, ordinals = validate_content(kind,content)
         for key in ('front_media','back_media'):
             for filename in content[key]:
-                if not self.media_path(filename).is_file(): raise ValueError('Un allegato non è disponibile.')
+                if not self.media_path(filename).is_file(): raise ValueError(tr('Un allegato non è disponibile.'))
         with self.db:
             if note_id:
                 current = self.db.execute('SELECT id FROM sr_notes WHERE id=? AND deleted=0',(note_id,)).fetchone()
-                if current is None: raise ValueError('Carta non trovata.')
+                if current is None: raise ValueError(tr('Carta non trovata.'))
                 self.db.execute('UPDATE sr_notes SET deck_id=?,kind=?,content=?,modified=? WHERE id=?',
                                 (deck_id,kind,json.dumps(content,ensure_ascii=False),now,note_id))
                 self.db.execute('UPDATE sr_cards SET deleted=1,revision=revision+1 WHERE note_id=?',(note_id,))
@@ -223,7 +224,7 @@ class StudyStore:
 
     def note(self, note_id):
         row = self.db.execute('SELECT * FROM sr_notes WHERE id=? AND deleted=0',(note_id,)).fetchone()
-        if row is None: raise ValueError('Carta non trovata.')
+        if row is None: raise ValueError(tr('Carta non trovata.'))
         result = dict(row); result['content'] = json.loads(result['content']); return result
 
     def delete_note(self, note_id):
@@ -249,14 +250,14 @@ class StudyStore:
         row = self.db.execute('''SELECT c.*,n.deck_id,n.kind,n.content FROM sr_cards c
           JOIN sr_notes n ON n.id=c.note_id JOIN sr_decks d ON d.id=n.deck_id
           WHERE c.id=? AND c.deleted=0 AND n.deleted=0 AND d.archived=0''',(card_id,)).fetchone()
-        if row is None: raise ValueError('Carta non trovata.')
+        if row is None: raise ValueError(tr('Carta non trovata.'))
         return dict(row)
 
     def import_media(self, source):
         source = Path(source); suffix = source.suffix[1:].lower()
-        if suffix not in MEDIA_TYPES: raise ValueError('Formato non supportato.')
+        if suffix not in MEDIA_TYPES: raise ValueError(tr('Formato non supportato.'))
         if not source.is_file() or source.stat().st_size > 32*1024*1024:
-            raise ValueError('Scegli un file fino a 32 MB.')
+            raise ValueError(tr('Scegli un file fino a 32 MB.'))
         self.media_root.mkdir(exist_ok=True)
         digest = hashlib.sha256(); temp = self.media_root/(uuid.uuid4().hex+'.part')
         try:
@@ -264,10 +265,10 @@ class StudyStore:
             with source.open('rb') as reader, temp.open('wb') as writer:
                 while chunk := reader.read(128*1024):
                     size += len(chunk)
-                    if size > 32*1024*1024: raise ValueError('Il file supera 32 MB.')
+                    if size > 32*1024*1024: raise ValueError(tr('Il file supera 32 MB.'))
                     digest.update(chunk); writer.write(chunk)
                 writer.flush(); os.fsync(writer.fileno())
-            if size == 0: raise ValueError('Il file è vuoto.')
+            if size == 0: raise ValueError(tr('Il file è vuoto.'))
             filename = digest.hexdigest()+'.'+suffix
             os.replace(temp,self.media_root/filename)
             with self.db:
@@ -278,9 +279,9 @@ class StudyStore:
             temp.unlink(missing_ok=True)
 
     def media_path(self, filename):
-        if not MEDIA.fullmatch(filename): raise ValueError('Allegato non valido.')
+        if not MEDIA.fullmatch(filename): raise ValueError(tr('Allegato non valido.'))
         path = self.media_root/filename
-        if path.is_symlink(): raise ValueError('Allegato non valido.')
+        if path.is_symlink(): raise ValueError(tr('Allegato non valido.'))
         return path
 
     def usage(self, deck_id, now):
@@ -396,23 +397,23 @@ class StudyStore:
         return after
 
     def review(self, card_id, rating, session_id, revision=None, now=None, duration_ms=0):
-        if type(rating) is not int or rating not in (1,2,3,4): raise ValueError('Valutazione non valida.')
+        if type(rating) is not int or rating not in (1,2,3,4): raise ValueError(tr('Valutazione non valida.'))
         now=time.time() if now is None else now
         with self.db:
             session=self.db.execute('SELECT * FROM sr_sessions WHERE id=? AND ended IS NULL',(session_id,)).fetchone()
-            if session is None: raise ValueError('La sessione è terminata.')
+            if session is None: raise ValueError(tr('La sessione è terminata.'))
             row=self.card(card_id)
             if row['suspended'] or (revision is not None and row['revision']!=revision):
-                raise ValueError('La carta è cambiata. Riapri lo studio.')
-            if session['deck_id'] is not None and row['deck_id']!=session['deck_id']: raise ValueError('Mazzo non valido.')
+                raise ValueError(tr('La carta è cambiata. Riapri lo studio.'))
+            if session['deck_id'] is not None and row['deck_id']!=session['deck_id']: raise ValueError(tr('Mazzo non valido.'))
             if row['last_review'] is not None and now<row['last_review']:
-                raise ValueError('L’orologio di sistema precede l’ultima risposta. Correggi l’ora prima di continuare.')
+                raise ValueError(tr('L’orologio di sistema precede l’ultima risposta. Correggi l’ora prima di continuare.'))
             after=self.predict(row,rating,now)
             before={key:row[key] for key in after}
             retrievability=self.retrievability(row,now)
             changed=self.db.execute('UPDATE sr_cards SET '+','.join(key+'=?' for key in after)+' WHERE id=? AND revision=?',
                                    [*after.values(),card_id,row['revision']])
-            if changed.rowcount!=1: raise ValueError('La carta è cambiata. Riprova.')
+            if changed.rowcount!=1: raise ValueError(tr('La carta è cambiata. Riprova.'))
             review_id=self.db.execute('''INSERT INTO sr_reviews(card_id,deck_id,session_id,reviewed,rating,duration_ms,
               before,after,state_before,previous_review,retrievability) VALUES(?,?,?,?,?,?,?,?,?,?,?)''',
               (card_id,row['deck_id'],session_id,now,rating,max(0,min(600000,int(duration_ms))),json.dumps(before),
@@ -424,7 +425,7 @@ class StudyStore:
             row=self.db.execute('SELECT * FROM sr_reviews WHERE session_id=? AND undone=0 ORDER BY id DESC LIMIT 1',(session_id,)).fetchone()
             if row is None: return None
             card=self.card(row['card_id']); after=json.loads(row['after'])
-            if card['revision']!=after['revision']: raise ValueError('La carta è stata modificata dopo questa risposta.')
+            if card['revision']!=after['revision']: raise ValueError(tr('La carta è stata modificata dopo questa risposta.'))
             before=json.loads(row['before'])
             self.db.execute('UPDATE sr_cards SET '+','.join(k+'=?' for k in before)+' WHERE id=?',
                             [*before.values(),card['id']])

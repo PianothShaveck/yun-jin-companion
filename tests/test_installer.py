@@ -195,5 +195,32 @@ class InstallerTests(unittest.TestCase):
         self.assertFalse(list(self.apps.glob('.yun-jin-install.*')))
 
 
+class InstallerLanguageTests(unittest.TestCase):
+    def test_bootstrap_does_not_consume_input_or_show_a_language_menu(self):
+        script = i.SOURCE / 'installer/language.sh'
+        env = dict(os.environ)
+        env.pop('YUNJIN_LANGUAGE', None)
+        result = subprocess.run(
+            ['bash', '-eu', '-c',
+             '. "$1"; yj_text "Pronto" "Ready" "就绪"; '
+             'read -r untouched; printf "%s\\n" "$untouched"', 'bash', str(script)],
+            input='installer-input-sentinel\n', env=env,
+            capture_output=True, text=True, timeout=3)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.splitlines(), ['Ready', 'installer-input-sentinel'])
+
+    def test_bootstrap_preserves_explicit_installer_language(self):
+        script = i.SOURCE / 'installer/language.sh'
+        for language, expected in [('it', 'Pronto'), ('en', 'Ready'), ('zh-CN', '就绪')]:
+            with self.subTest(language=language):
+                result = subprocess.run(
+                    ['bash', '-eu', '-c', '. "$1"; yj_text "Pronto" "Ready" "就绪"',
+                     'bash', str(script)],
+                    env=dict(os.environ, YUNJIN_LANGUAGE=language),
+                    input='', capture_output=True, text=True, timeout=3)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.strip(), expected)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

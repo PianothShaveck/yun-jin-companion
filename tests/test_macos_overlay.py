@@ -202,6 +202,34 @@ class OverlayTests(unittest.TestCase):
         self.assertFalse(any('activate' in selector.lower() and selector != 'setHidesOnDeactivate:'
                              for selector, args in calls))
 
+    def test_live_nonactivating_panel_style_is_not_rewritten_on_refresh(self):
+        bridge=object.__new__(AppKit);bridge.window=lambda widget:123;bridge.cls=lambda name:456
+        calls=[]
+        def send(receiver,selector,result=None,types=(),args=()):
+            calls.append(selector)
+            return {'isKindOfClass:':True,'styleMask':128,'collectionBehavior':0}.get(selector)
+        bridge.send=send
+        for _ in range(3):bridge.configure(self.pet,1000)
+        self.assertNotIn('setStyleMask:',calls)
+        self.assertNotIn('makeKeyAndOrderFront:',calls)
+
+    def test_tooltip_keeps_focus_passive_without_native_style_or_order_changes(self):
+        tip=QWidget(None,Qt.WindowType.ToolTip);self.windows.append(tip)
+        self.controller.prepare(tip)
+        self.assertTrue(tip.testAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating))
+        self.assertTrue(tip.windowFlags() & Qt.WindowType.WindowDoesNotAcceptFocus)
+        bridge=object.__new__(AppKit);bridge.window=lambda widget:123;bridge.cls=lambda name:456
+        calls=[]
+        def send(receiver,selector,result=None,types=(),args=()):
+            calls.append(selector)
+            return {'isKindOfClass:':True,'collectionBehavior':0}.get(selector)
+        bridge.send=send
+        for _ in range(3):bridge.configure(tip,1004)
+        self.assertNotIn('styleMask',calls);self.assertNotIn('setStyleMask:',calls)
+        self.assertNotIn('orderFrontRegardless',calls)
+        self.assertNotIn('makeKeyAndOrderFront:',calls)
+        self.assertEqual(calls.count('setLevel:'),3)
+
     def test_user_toggle_persists_only_after_success(self):
         from types import SimpleNamespace
         from yun_jin_app import Companion

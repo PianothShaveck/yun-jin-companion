@@ -5,6 +5,7 @@
 Place next to spritesheet-yun-jin-v2.png. Animation rows and gaze directions
 come from that sheet, not from the annotated contact sheets or GIF previews.
 """
+from yun_jin_i18n import tr
 import ctypes
 import hashlib
 import json
@@ -153,10 +154,9 @@ class SpriteSheet:
     def __init__(self, path):
         sheet = read_pixmap(path)
         if sheet.isNull():
-            raise RuntimeError('Non riesco a leggere spritesheet-yun-jin-v2.png.\n'
-                               'Mettilo nella stessa cartella di yun_jin_pet.py.')
+            raise RuntimeError(tr('Non riesco a leggere spritesheet-yun-jin-v2.png.\nMettilo nella stessa cartella di yun_jin_pet.py.'))
         if sheet.width() < 80 or sheet.height() < 110:
-            raise RuntimeError('Lo spritesheet è troppo piccolo o non valido.')
+            raise RuntimeError(tr('Lo spritesheet è troppo piccolo o non valido.'))
         self.ratio = (sheet.height() / 11) / (sheet.width() / 8)
         self.frames = Frames()
         # The supplied 1374 x 2048 sheet has fractional cell boundaries.
@@ -214,17 +214,17 @@ class SpriteSheet:
                     continue
                 columns, rows, count = int(spec['columns']), int(spec['rows']), int(spec['count'])
                 if min(columns,rows,count)<1 or count>min(columns*rows,512):
-                    raise ValueError('Griglia o numero di frame non valido')
+                    raise ValueError(tr('Griglia o numero di frame non valido'))
                 path = (manifest.parent / spec['file']).resolve()
                 path.relative_to(manifest.parent.resolve())
                 timing = spec.get('seconds_per_frame', .12)
                 durations = [float(timing)]*count if isinstance(timing,(int,float)) else [float(t) for t in timing]
                 if len(durations)!=count or any(not .02<=t<=10 for t in durations):
-                    raise ValueError('Durate fotogrammi non valide')
+                    raise ValueError(tr('Durate fotogrammi non valide'))
                 key = 100 + number
                 order=spec.get('frame_order',list(range(count)))
                 if len(order)!=count or any(not isinstance(i,int) or not 0<=i<columns*rows for i in order):
-                    raise ValueError('Ordine dei fotogrammi non valido')
+                    raise ValueError(tr('Ordine dei fotogrammi non valido'))
                 self.frames.loaders[key] = (count, lambda spec=spec, path=path: self.optional_clip(path, spec))
                 ANIMATIONS[name] = (key,count,durations)
                 LABELS[name] = str(spec.get('label',name))
@@ -250,7 +250,7 @@ class SpriteSheet:
                 stem=packaged_animation_index(path.parent/'normalized').get(key,'')
                 # The generated index may only name a file in this folder.
                 if not isinstance(stem,str) or not stem or Path(stem).name!=stem or '\\' in stem:
-                    raise ValueError('Indice animazioni non valido: '+str(spec['name']))
+                    raise ValueError(tr('Indice animazioni non valido: ')+str(spec['name']))
             for extension in ('.webp','.png'):
                 normalized = path.parent / 'normalized' / (stem + extension)
                 if normalized.is_file():
@@ -260,7 +260,7 @@ class SpriteSheet:
                         return [pix.copy((i%4)*ref.width(), (i//4)*ref.height(), ref.width(), ref.height()) for i in range(count)]
         pix = read_pixmap(path)
         if pix.isNull():
-            raise ValueError('Immagine animazione non leggibile: ' + path.name)
+            raise ValueError(tr('Immagine animazione non leggibile: ') + path.name)
         columns, rows = int(spec['columns']), int(spec['rows'])
         order = spec.get('frame_order', list(range(count)))
         cells=[]
@@ -269,12 +269,12 @@ class SpriteSheet:
         canvas=spec.get('frame_canvas')
         clip_rows=spec.get('frame_clip_rows')
         if clip_rows is not None and (not rects or len(clip_rows)!=len(rects)):
-            raise ValueError('Maschere fotogrammi incomplete')
+            raise ValueError(tr('Maschere fotogrammi incomplete'))
         if rects is not None:
             if len(rects)!=columns*rows or len(offsets or [])!=len(rects) or not canvas or len(canvas)!=2:
-                raise ValueError('Ritagli o ancoraggi incompleti')
+                raise ValueError(tr('Ritagli o ancoraggi incompleti'))
             if any(not isinstance(v,int) or not 1<=v<=4096 for v in canvas):
-                raise ValueError('Dimensioni canvas non valide')
+                raise ValueError(tr('Dimensioni canvas non valide'))
         for source_index in order:
             c,r = source_index%columns,source_index//columns
             x0,x1 = round(c*pix.width()/columns),round((c+1)*pix.width()/columns)
@@ -283,7 +283,7 @@ class SpriteSheet:
             if rects is not None:
                 x,y,w,h=rects[source_index]
                 if min(x,y)<0 or min(w,h)<1 or x+w>pix.width() or y+h>pix.height():
-                    raise ValueError('Ritaglio fuori tavola')
+                    raise ValueError(tr('Ritaglio fuori tavola'))
                 cell=QPixmap(*canvas);cell.fill(Qt.GlobalColor.transparent)
                 painter=QPainter(cell)
                 if clip_rows is not None:
@@ -291,7 +291,7 @@ class SpriteSheet:
                     ox,oy=offsets[source_index]
                     for row,left,length in clip_rows[source_index]:
                         if min(row,left)<0 or length<1 or row>=h or left+length>w:
-                            raise ValueError('Maschera fuori fotogramma')
+                            raise ValueError(tr('Maschera fuori fotogramma'))
                         region=region.united(QRegion(QRect(ox+left,oy+row,length,1)))
                     painter.setClipRegion(region)
                 painter.drawPixmap(QPoint(*offsets[source_index]),pix.copy(x,y,w,h))
@@ -325,7 +325,7 @@ class SpriteSheet:
             center=float(spec['sequence_center']);ground=float(spec['sequence_ground'])
             height=float(spec['sequence_body_height'])
             if height<=0 or not x0<center<x1 or ground<=y0:
-                raise ValueError('Ancoraggio sequenza non valido')
+                raise ValueError(tr('Ancoraggio sequenza non valido'))
             rx=ref_bounds.center().x();ry=ref_bounds.bottom()+1
             # One ISOTROPIC scale for the whole clip: never squeeze the artwork
             # horizontally to compensate for differences in generated anatomy.
@@ -364,7 +364,7 @@ class YunJinPet(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setMouseTracking(True)
         self.setWindowIcon(QIcon(self.sheet.frames[0, 0]))
-        self.setToolTip('Doppio clic: pannello · Clic destro: menu')
+        self.setToolTip(tr('Doppio clic: pannello · Clic destro: menu'))
         self.mode = self.settings.value('mode', 'normal')
         if self.mode not in ('normal', 'lively', 'quiet', 'asleep'):
             self.mode = 'normal'
@@ -899,72 +899,72 @@ class YunJinPet(QWidget):
         menu.clear()
         self.add_companion_menu(menu)
         menu.addSeparator()
-        behavior = menu.addMenu('Comportamento')
-        behavior.addAction('Riprendi', self.resume)
-        pause = behavior.addAction('Pausa completa')
+        behavior = menu.addMenu(tr('Comportamento'))
+        behavior.addAction(tr('Riprendi'), self.resume)
+        pause = behavior.addAction(tr('Pausa completa'))
         pause.setCheckable(True)
         pause.setChecked(self.paused)
         pause.triggered.connect(self.set_paused)
-        behavior.addAction('Seguimi', lambda: self.perform_manual(self.call_later))
-        behavior.addAction('Passeggia', lambda: self.perform_manual(self.wander))
-        behavior.addAction('Esibizione', lambda: self.perform_manual(self.performance))
-        modes = behavior.addMenu('Carattere')
+        behavior.addAction(tr('Seguimi'), lambda: self.perform_manual(self.call_later))
+        behavior.addAction(tr('Passeggia'), lambda: self.perform_manual(self.wander))
+        behavior.addAction(tr('Esibizione'), lambda: self.perform_manual(self.performance))
+        modes = behavior.addMenu(tr('Carattere'))
         group = QActionGroup(modes)
-        for key, label in [('asleep', 'Addormentata'), ('quiet', 'Tranquilla'), ('normal', 'Normale'), ('lively', 'Vivace')]:
+        for key, label in [('asleep', tr('Addormentata')), ('quiet', tr('Tranquilla')), ('normal', tr('Normale')), ('lively', tr('Vivace'))]:
             action = modes.addAction(label)
             action.setCheckable(True)
             action.setChecked(self.mode == key)
             group.addAction(action)
             action.triggered.connect(lambda checked, k=key: self.perform_manual(lambda: self.set_mode(k)))
-        for label, value, callback in [('Passeggiate spontanee', self.allow_walk, self.set_walk),
-                                       ('Segui spontaneamente il cursore', self.allow_follow, self.set_follow),
-                                       ('Sguardo sul cursore', self.allow_gaze, self.set_gaze)]:
+        for label, value, callback in [(tr('Passeggiate spontanee'), self.allow_walk, self.set_walk),
+                                       (tr('Segui spontaneamente il cursore'), self.allow_follow, self.set_follow),
+                                       (tr('Sguardo sul cursore'), self.allow_gaze, self.set_gaze)]:
             action = behavior.addAction(label)
             action.setCheckable(True)
             action.setChecked(value)
             action.triggered.connect(callback)
-        animations = menu.addMenu('Animazioni')
+        animations = menu.addMenu(tr('Animazioni'))
         self.populate_animation_groups(animations)
         animations.addSeparator()
-        self.populate_animation_groups(animations.addMenu('Ripeti'), repeat=True)
-        stop = animations.addAction('Termina', self.resume)
+        self.populate_animation_groups(animations.addMenu(tr('Ripeti')), repeat=True)
+        stop = animations.addAction(tr('Termina'), self.resume)
         stop.setEnabled(self.state not in ('idle', 'walk', 'follow', 'follow_pending'))
-        appearance = menu.addMenu('Aspetto')
-        sizes = appearance.addMenu('Dimensioni')
+        appearance = menu.addMenu(tr('Aspetto'))
+        sizes = appearance.addMenu(tr('Dimensioni'))
         size_group = QActionGroup(sizes)
         for size in [100, 130, 160, 190, 230]:
-            action = sizes.addAction(f'{size} px' + ('' if size == 130 else ''))
+            action = sizes.addAction(tr('{v0} px', v0=size) + ('' if size == 130 else ''))
             action.setCheckable(True)
             action.setChecked(self.width() == size)
             size_group.addAction(action)
             action.triggered.connect(lambda checked, s=size: self.set_size(s))
-        opacity = appearance.addMenu('Opacità')
+        opacity = appearance.addMenu(tr('Opacità'))
         for value in [1., .85, .65, .45]:
             opacity.addAction(f'{round(value*100)}%', lambda checked=False, v=value: self.set_opacity(v))
-        screens = appearance.addMenu('Monitor')
+        screens = appearance.addMenu(tr('Monitor'))
         for i, screen in enumerate(QApplication.screens(), 1):
             screens.addAction(f'{i} · {screen.name()}', lambda checked=False, s=screen: self.move_to_screen(s))
-        appearance.addAction('Riporta sullo schermo', self.ensure_visible)
+        appearance.addAction(tr('Riporta sullo schermo'), self.ensure_visible)
         self.add_companion_footer(menu)
         menu.addSeparator()
-        menu.addAction('Chiudi', self.close)
+        menu.addAction(tr('Chiudi'), self.close)
 
     def populate_animation_groups(self, menu, repeat=False):
         for title, names in ANIMATION_GROUPS:
             available = [name for name in names if name in ANIMATIONS]
             if not available: continue
-            group = menu.addMenu(title)
+            group = menu.addMenu(tr(title))
             for name in available:
-                group.addAction(LABELS[name], lambda checked=False, n=name, r=repeat:
+                group.addAction(tr(LABELS[name]), lambda checked=False, n=name, r=repeat:
                                 self.perform_manual(lambda: self.hold_pose(n) if r else self.sequence([(n, 1)])))
             if title == 'Riposo':
                 if repeat:
-                    group.addAction('Sonno', lambda: self.perform_manual(lambda: self.set_mode('asleep')))
-                    group.addAction('Direzioni dello sguardo', lambda: self.perform_manual(self.gaze_demo))
+                    group.addAction(tr('Sonno'), lambda: self.perform_manual(lambda: self.set_mode('asleep')))
+                    group.addAction(tr('Direzioni dello sguardo'), lambda: self.perform_manual(self.gaze_demo))
                 else:
-                    group.addAction('Sonnellino', lambda: self.perform_manual(lambda: self.start_sleep(6)))
+                    group.addAction(tr('Sonnellino'), lambda: self.perform_manual(lambda: self.start_sleep(6)))
             if title == 'Movimento' and not repeat:
-                group.addAction('Riposo → salto → riposo',
+                group.addAction(tr('Riposo → salto → riposo'),
                                 lambda: self.perform_manual(lambda: self.sequence([('idle', 1), ('jump', 1), ('idle', 1)])))
 
     def add_companion_footer(self, menu):
@@ -1037,7 +1037,7 @@ def main():
         pet = YunJinPet()
     except Exception as exc:
         from yun_jin_dialogs import Messages
-        Messages.critical(None, 'Yun Jin · avvio non riuscito', str(exc))
+        Messages.critical(None, tr('Yun Jin · avvio non riuscito'), str(exc))
         return 1
     pet.show()
     mac_all_spaces(pet)

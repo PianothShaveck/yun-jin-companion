@@ -1,3 +1,10 @@
+﻿[Console]::OutputEncoding = [Text.UTF8Encoding]::new()
+$OutputEncoding = [Console]::OutputEncoding
+# Choose the app language in its first-run window, once.
+if (-not $env:YUNJIN_LANGUAGE) { $env:YUNJIN_LANGUAGE = 'en' }
+function T([string]$It,[string]$En,[string]$Zh) {
+    switch ($env:YUNJIN_LANGUAGE) { 'it' { $It } 'zh-CN' { $Zh } default { $En } }
+}
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $Project = Split-Path $PSScriptRoot -Parent
@@ -10,7 +17,7 @@ function Find-Python {
         try {
             $Found = & $Launcher.Source -3 -c 'import sys; print(sys.executable)' 2>$null
             if ($LASTEXITCODE -eq 0 -and $Found) { $Candidates.Add([string]$Found) }
-        } catch { } 
+        } catch { }
     }
     foreach ($Registry in @('HKCU:\Software\Python\PythonCore','HKLM:\Software\Python\PythonCore')) {
         if (Test-Path $Registry) {
@@ -35,26 +42,26 @@ function Find-Python {
     return $null
 }
 try {
-    if (-not [Environment]::Is64BitOperatingSystem) { throw 'Serve Windows a 64 bit.' }
+    if (-not [Environment]::Is64BitOperatingSystem) { throw (T 'Serve Windows a 64 bit.' '64-bit Windows is required.' '需要 64 位 Windows。') }
     $Python = Find-Python
     if (-not $Python) {
-        Write-Host 'Scarico Python 3.13 dal sito ufficiale e verifico la sua integrita...'
+        Write-Host (T 'Scarico Python 3.13 dal sito ufficiale e verifico la sua integrita...' 'Downloading Python 3.13 from the official website and verifying it…' '正在从官方网站下载并验证 Python 3.13…')
         $Download = Join-Path ([IO.Path]::GetTempPath()) ('yun-jin-python-' + [guid]::NewGuid().ToString() + '.exe')
         try {
             Invoke-WebRequest -UseBasicParsing -Uri 'https://www.python.org/ftp/python/3.13.17/python-3.13.17-amd64.exe' -OutFile $Download
             $Expected = '5da012101ba2e17113a9a1cd901e9ce1441086f2b7ecb5de06ec94163899a190'
-            if ((Get-FileHash -LiteralPath $Download -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Expected) { throw 'Verifica SHA256 di Python fallita. Il file non verra eseguito.' }
+            if ((Get-FileHash -LiteralPath $Download -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Expected) { throw (T 'Verifica SHA256 di Python fallita. Il file non verra eseguito.' 'Python SHA-256 verification failed. The file will not run.' 'Python 的 SHA-256 校验失败。不会运行该文件。') }
             $Arguments = '/passive InstallAllUsers=0 Include_pip=1 Include_launcher=0 Include_test=0 Include_doc=0 Include_tcltk=0 PrependPath=0 Shortcuts=0 TargetDir="' + $Runtime + '"'
             $Process = Start-Process -FilePath $Download -ArgumentList $Arguments -Wait -PassThru
-            if ($Process.ExitCode -notin @(0,3010)) { throw ('Installazione Python terminata con codice ' + $Process.ExitCode) }
+            if ($Process.ExitCode -notin @(0,3010)) { throw ((T 'Installazione Python terminata con codice ' 'Python installation exited with code ' 'Python 安装退出代码：') + $Process.ExitCode) }
         } finally { if (Test-Path -LiteralPath $Download) { Remove-Item -LiteralPath $Download -Force } }
         $Python = Find-Python
-        if (-not $Python) { throw 'Python non trovato. Installa Python 3.13 a 64 bit da python.org e riapri questo file.' }
+        if (-not $Python) { throw (T 'Python non trovato. Installa Python 3.13 a 64 bit da python.org e riapri questo file.' 'Python not found. Install 64-bit Python 3.13 from python.org and reopen this file.' '未找到 Python。请从 python.org 安装 64 位 Python 3.13，再重新打开此文件。') }
     }
     & $Python (Join-Path $PSScriptRoot 'install.py')
-    if ($LASTEXITCODE -ne 0) { throw 'Chiudi eventuali istanze di Yun Jin e controlla il messaggio qui sopra.' }
+    if ($LASTEXITCODE -ne 0) { throw (T 'Chiudi eventuali istanze di Yun Jin e controlla il messaggio qui sopra.' 'Close any running Yun Jin instances and check the message above.' '请关闭所有正在运行的云堇，并检查上方消息。') }
 } catch {
-    Write-Host ('ERRORE: ' + $_.Exception.Message) -ForegroundColor Red
-    Read-Host 'Premi Invio per chiudere'
+    Write-Host ((T 'ERRORE: ' 'ERROR: ' '错误：') + $_.Exception.Message) -ForegroundColor Red
+    Read-Host (T 'Premi Invio per chiudere' 'Press Enter to close' '按回车键关闭')
     exit 1
 }

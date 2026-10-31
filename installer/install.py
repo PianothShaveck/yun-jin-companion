@@ -15,12 +15,14 @@ import tempfile
 import venv
 
 SOURCE = Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(SOURCE/'app'))
+from yun_jin_i18n import tr
 NAME = 'Yun Jin Companion'
-VERSION = '1.5.6'
+VERSION = '1.6.0'
 MAC_APPLICATIONS = Path('/Applications')
 MAC_BUNDLE_ID = 'pianoth.yunjin.desktoppet.v1'
 RUNTIME_CHECK = 'import csv, ctypes, hashlib, json, pip, sqlite3, ssl, zipfile'
-DEPENDENCY_CHECK = 'import PyQt6.QtMultimedia, edge_tts, gtts, fsrs, fsrs_rs_python'
+DEPENDENCY_CHECK = 'import PyQt6.QtMultimedia, edge_tts, gtts, fsrs, fsrs_rs_python, pillow_jxl, keyring'
 PIP_WHEEL = ('https://files.pythonhosted.org/packages/3f/06/'
              '3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/'
              'pip-26.2.2-py3-none-any.whl#sha256='
@@ -40,11 +42,11 @@ def supported_python(version, system):
 
 def secure_pip(executable):
     if not python_works(executable, PIP_CHECK):
-        print('Aggiorno pip con verifica SHA-256…', flush=True)
+        print(tr('Aggiorno pip con verifica SHA-256…'), flush=True)
         run([executable, '-I', '-m', 'pip', '--isolated', '--disable-pip-version-check',
              'install', '--no-index', '--no-deps', '--upgrade', 'pip @ ' + PIP_WHEEL])
         if not python_works(executable, PIP_CHECK):
-            raise RuntimeError('Aggiornamento di sicurezza di pip non riuscito.')
+            raise RuntimeError(tr('Aggiornamento di sicurezza di pip non riuscito.'))
 
 
 def location():
@@ -81,14 +83,14 @@ def environment(root):
                      f'sys.exit(0 if os.path.normcase(os.path.realpath(sys.base_prefix)) == {base!r} '
                      f'and sys.version_info[:3] >= {tuple(sys.version_info[:3])!r} else 1)')
     if not python_works(executable, runtime_check):
-        print('Preparo l’ambiente Python di Yun Jin…', flush=True)
+        print(tr('Preparo l’ambiente Python di Yun Jin…'), flush=True)
         # Recreate at its final path: venv launchers contain absolute paths.
         # Only the disposable environment is removed, never program or data.
         if env.is_symlink(): env.unlink()
         elif env.exists(): shutil.rmtree(env)
         venv.EnvBuilder(with_pip=True, clear=False).create(env)
         if not python_works(executable, runtime_check):
-            raise RuntimeError('Python non funziona. Reinstalla Python e riapri il programma di installazione.')
+            raise RuntimeError(tr('Python non funziona. Reinstalla Python e riapri il programma di installazione.'))
     ready = False
     try:
         ready = json.loads(marker.read_text())['requirements']==signature
@@ -100,11 +102,11 @@ def environment(root):
     if ready:
         ready = python_works(executable, DEPENDENCY_CHECK + '; ' + CERTIFICATE_CHECK)
     if not ready:
-        print('Installo le dipendenze. Al primo avvio serve Internet…', flush=True)
+        print(tr('Installo le dipendenze. Al primo avvio serve Internet…'), flush=True)
         marker.unlink(missing_ok=True)
         run([executable,'-I','-m','pip','install','--disable-pip-version-check','--only-binary=:all:','-r',requirements])
         if not python_works(executable, DEPENDENCY_CHECK + '; ' + CERTIFICATE_CHECK):
-            raise RuntimeError('Verifica delle dipendenze non riuscita. Riapri il programma di installazione.')
+            raise RuntimeError(tr('Verifica delle dipendenze non riuscita. Riapri il programma di installazione.'))
         marker.write_text(json.dumps({'requirements':signature}),encoding='utf-8')
     return executable
 
@@ -126,13 +128,14 @@ def deploy(root):
         for relative in manifest['files']:
             path = Path(relative)
             if path.is_absolute() or '..' in path.parts:
-                raise ValueError('Percorso non valido nel manifest.')
+                raise ValueError(tr('Percorso non valido nel manifest.'))
             if path.parts[0] == 'app':
                 target = staging/path
                 target.parent.mkdir(parents=True,exist_ok=True)
                 shutil.copy2(SOURCE/path,target)
         shutil.copy2(SOURCE/'app/release-manifest.json',staging/'app/release-manifest.json')
-        shutil.copy2(SOURCE/'Guida.pdf',staging/'Guida.pdf')
+        for name in ('Guida.pdf','Guide.pdf','Guide.zh-CN.pdf'):
+            shutil.copy2(SOURCE/name,staging/name)
         # Keep old program until copying is complete; never touch personal data.
         previous = root/'program-previous'
         if previous.exists(): shutil.rmtree(previous)
@@ -181,7 +184,7 @@ def publish_mac_bundle(staged,bundle):
         run(command)
     else:
         # Only the launcher copy needs authorization, never Python or pip.
-        print('macOS richiederà il permesso per installare in /Applications.',flush=True)
+        print(tr('macOS richiederà il permesso per installare in /Applications.'),flush=True)
         shell_command=shlex.join([str(part) for part in command])
         # Pass as an argument, not interpolated AppleScript source.
         script=('on run argv\n'
@@ -204,7 +207,7 @@ def write_mac_bundle(bundle,executable,program,root):
         # interpreter that installed the wheels, even with universal Python.
         architecture=platform.machine().lower()
         if architecture not in ('arm64','x86_64'):
-            raise RuntimeError('Architettura macOS non supportata: '+architecture)
+            raise RuntimeError(tr('Architettura macOS non supportata: ')+architecture)
         info['LSArchitecturePriority']=[architecture]
         command=['/usr/bin/arch','-'+architecture,*command]
     (contents/'Info.plist').write_bytes(plistlib.dumps(info))
@@ -223,14 +226,14 @@ def mac_shortcut(executable,program,root):
     bundle=MAC_APPLICATIONS/f'{NAME}.app'
     legacy=Path.home()/'Applications'/f'{NAME}.app'
     if (bundle.exists() or bundle.is_symlink()) and not mac_bundle_owned_by_user(bundle,program):
-        raise RuntimeError(f'{bundle} contiene un’altra installazione. Spostala prima di riprovare.')
+        raise RuntimeError(tr('{bundle} contiene un’altra installazione. Spostala prima di riprovare.',bundle=bundle))
     with tempfile.TemporaryDirectory(prefix='mac-app-new-',dir=root) as tmp:
         staged=Path(tmp)/f'{NAME}.app'
         write_mac_bundle(staged,executable,program,root)
         publish_mac_bundle(staged,bundle)
         for relative in ('Contents/Info.plist','Contents/MacOS/YunJin','Contents/Resources/YunJin.icns'):
             if (bundle/relative).read_bytes() != (staged/relative).read_bytes():
-                raise RuntimeError('Verifica dell’app in /Applications non riuscita; la vecchia copia è conservata.')
+                raise RuntimeError(tr('Verifica dell’app in /Applications non riuscita; la vecchia copia è conservata.'))
     desktop=Path.home()/'Desktop'/f'{NAME}.app'
     if desktop.is_symlink():
         target=(desktop.parent/os.readlink(desktop)).resolve()
@@ -238,11 +241,11 @@ def mac_shortcut(executable,program,root):
             desktop.unlink()
     if not desktop.exists() and not desktop.is_symlink():
         try:desktop.symlink_to(bundle)
-        except OSError: print('Puoi aprire Yun Jin da /Applications o crearne un alias sulla Scrivania.')
+        except OSError: print(tr('Puoi aprire Yun Jin da /Applications o crearne un alias sulla Scrivania.'))
     if legacy.resolve() != bundle.resolve() and mac_bundle_owned_by_user(legacy,program):
         try:shutil.rmtree(legacy)
         except OSError:
-            print(f'App aggiornata in /Applications. Puoi eliminare manualmente la vecchia copia: {legacy}')
+            print(tr('App aggiornata in /Applications. Puoi eliminare manualmente la vecchia copia: {legacy}',legacy=legacy))
     return bundle
 
 
@@ -266,18 +269,18 @@ def linux_shortcut(executable,program,root):
 
 def main():
     if not supported_python(sys.version_info, sys.platform):
-        raise RuntimeError('Aggiorna Python (3.13.17 o 3.14.9). Su Windows/Mac usa il programma di avvio incluso.')
-    if sys.maxsize<=2**32:raise RuntimeError('Serve Python a 64 bit.')
+        raise RuntimeError(tr('Aggiorna Python (3.13.17 o 3.14.9). Su Windows/Mac usa il programma di avvio incluso.'))
+    if sys.maxsize<=2**32:raise RuntimeError(tr('Serve Python a 64 bit.'))
     if sys.platform=='darwin' and int(platform.mac_ver()[0].split('.')[0])<13:
-        raise RuntimeError('Questa versione richiede macOS 13 o successivo.')
+        raise RuntimeError(tr('Questa versione richiede macOS 13 o successivo.'))
     root=location();root.mkdir(parents=True,exist_ok=True)
     executable=environment(root)
     code,lock=check_running(root)
     result=subprocess.run([str(executable),'-c',code,lock])
     if result.returncode==2:
-        print('Yun Jin è già aperta. Chiudila dal suo menu e riapri questo programma per aggiornare.',flush=True)
+        print(tr('Yun Jin è già aperta. Chiudila dal suo menu e riapri questo programma per aggiornare.'),flush=True)
         return 2
-    if result.returncode:raise RuntimeError('Non riesco a controllare l’istanza già aperta.')
+    if result.returncode:raise RuntimeError(tr('Non riesco a controllare l’istanza già aperta.'))
     program=deploy(root)
     if sys.platform=='win32':
         windows_shortcut(executable,program)
@@ -288,11 +291,11 @@ def main():
         linux_shortcut(executable,program,root)
         with open(root/'launcher.log','ab') as log:
             subprocess.Popen([str(executable),str(program/'app/yun_jin_pet.py')],stdout=log,stderr=log,start_new_session=True)
-    print('Installazione completata. D’ora in poi usa Yun Jin Companion sul desktop.',flush=True)
+    print(tr('Installazione completata. D’ora in poi usa Yun Jin Companion sul desktop.'),flush=True)
     return 0
 
 if __name__=='__main__':
     try:sys.exit(main())
     except Exception as exc:
-        print('\nInstallazione non riuscita: '+str(exc)+'\nConsulta Guida.pdf; i dati personali sono conservati.',file=sys.stderr)
+        print(tr('\nInstallazione non riuscita: ')+str(exc)+tr('\nConsulta Guida.pdf; i dati personali sono conservati.'),file=sys.stderr)
         sys.exit(1)

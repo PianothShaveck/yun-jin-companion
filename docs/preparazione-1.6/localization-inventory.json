@@ -1,0 +1,6046 @@
+{
+  "kind": "candidate call-site inventory, not a translation catalog",
+  "count": 856,
+  "unique_candidates": 659,
+  "by_file": {
+    "app/yun_jin_agenda.py": 36,
+    "app/yun_jin_agenda_service.py": 12,
+    "app/yun_jin_alarms_ui.py": 31,
+    "app/yun_jin_anki.py": 13,
+    "app/yun_jin_app.py": 27,
+    "app/yun_jin_bubble.py": 1,
+    "app/yun_jin_calendar_download.py": 4,
+    "app/yun_jin_calendar_ui.py": 79,
+    "app/yun_jin_context.py": 1,
+    "app/yun_jin_core.py": 28,
+    "app/yun_jin_data.py": 4,
+    "app/yun_jin_dialogs.py": 2,
+    "app/yun_jin_forecast.py": 5,
+    "app/yun_jin_forecast_ui.py": 17,
+    "app/yun_jin_hotkeys.py": 17,
+    "app/yun_jin_macos.py": 3,
+    "app/yun_jin_macos_access.py": 5,
+    "app/yun_jin_music.py": 4,
+    "app/yun_jin_music_panel.py": 42,
+    "app/yun_jin_panel.py": 142,
+    "app/yun_jin_speech.py": 1,
+    "app/yun_jin_srs.py": 34,
+    "app/yun_jin_study.py": 13,
+    "app/yun_jin_study_ui.py": 62,
+    "app/yun_jin_study_widgets.py": 47,
+    "app/yun_jin_tts_worker.py": 3,
+    "app/yun_jin_ui.py": 1,
+    "app/yun_jin_update.py": 22,
+    "app/yun_jin_updates_ui.py": 9,
+    "app/yun_jin_weather.py": 4,
+    "app/yun_jin_weather_ui.py": 12,
+    "app/yun_jin_windows.py": 1,
+    "docs/build_guide.py": 164,
+    "installer/install.py": 10
+  },
+  "records": [
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 59,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Fuso orario non valido."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 65,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Fuso orario non disponibile."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 76,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Data o ora non disponibile nel fuso scelto."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 89,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Data non valida."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 101,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scrivi un titolo."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 106,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il titolo non può essere vuoto."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 108,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il titolo può contenere al massimo 200 caratteri."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 114,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Le note possono contenere al massimo 4000 caratteri."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 120,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Colore non valido."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 129,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Ripetizione non valida."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 134,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Ripetizione non valida."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 145,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scegli una data finale oppure un numero di ripetizioni."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 39,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Data non valida."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 54,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Data o ora non valida."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 63,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Fuso orario non valido."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 140,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scegli almeno un giorno della settimana."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 143,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "I giorni della settimana richiedono una ripetizione settimanale."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 149,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La fine della ripetizione precede l’inizio."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 301,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Elemento non trovato."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 303,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Tipo di elemento non valido."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 305,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Hai raggiunto il limite di 2000 elementi. Elimina quelli non più necessari."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 339,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Ora non valida."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 374,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La fine deve essere successiva all’inizio."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 376,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Un impegno può durare al massimo un anno."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 401,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Elemento non trovato."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 424,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Elemento non trovato."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 428,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Occorrenza non valida."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 443,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Per una sveglia modifica la ripetizione completa."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 446,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Modifica non valida."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 461,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La fine deve essere successiva all’inizio, entro un anno."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 481,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Troppe modifiche alle ripetizioni. Elimina le serie non più necessarie."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 534,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scegli un intervallo di calendario non superiore a due anni."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 703,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Avviso non più attivo."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 343,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Ora non valida."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 541,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Troppi impegni nell’intervallo scelto. Seleziona un periodo più breve."
+    },
+    {
+      "file": "app/yun_jin_agenda.py",
+      "line": 353,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scegli una data e un’ora future."
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 23,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Yun Jin · Agenda"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 28,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 29,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "calendar"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 29,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Apri agenda"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 30,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "close"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 30,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Chiudi avviso"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 33,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 36,
+      "call": "button",
+      "dynamic": false,
+      "text": "Ferma"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 37,
+      "call": "button",
+      "dynamic": false,
+      "text": "Tra 10 min"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 54,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'Tra {self.alert.get(\"snooze_minutes\",10)} min'"
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 191,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Chiusura non salvata. Riprova."
+    },
+    {
+      "file": "app/yun_jin_agenda_service.py",
+      "line": 200,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Rinvio non salvato. Riprova."
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 42,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Nome (facoltativo)"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 43,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Nome sveglia"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 46,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Ora sveglia"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 50,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Ripetizione sveglia"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 53,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Ripeti"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 64,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Data sveglia"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 66,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " min"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 67,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Minuti del rinvio"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 69,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Suono"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 70,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Leggi l’avviso"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 72,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "alert"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 74,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salva"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 75,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Annulla"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 103,
+      "call": "button",
+      "dynamic": false,
+      "text": "Nuova sveglia"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 65,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Rimanda di"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 121,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Nessuna sveglia"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 121,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 132,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 134,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Attiva"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 137,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "settings"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 137,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Modifica sveglia"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 138,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "trash"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 138,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Elimina sveglia"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 159,
+      "call": "question",
+      "dynamic": false,
+      "text": "Elimina sveglia"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 159,
+      "call": "question",
+      "dynamic": true,
+      "text": "f'Eliminare la sveglia «{alarm[\"title\"]}» delle {alarm[\"clock\"]}?'"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 84,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scegli almeno un giorno della settimana."
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 95,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salvataggio non riuscito. Riprova."
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 130,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 131,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 142,
+      "call": "button",
+      "dynamic": true,
+      "text": "f'Mostra altre ({len(alarms)-self.visible_alarm_limit})'"
+    },
+    {
+      "file": "app/yun_jin_alarms_ui.py",
+      "line": 156,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Sveglia"
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 91,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Configurazione Anki non valida."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 166,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Modello Anki avanzato non supportato."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 225,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Seleziona collection.anki2 del tuo profilo Anki."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 176,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Campo del modello Anki non supportato."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 191,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Modello Anki mancante."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 195,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Modello Anki mancante."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 88,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Configurazione Anki incompleta."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 97,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Configurazione Anki incompleta."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 101,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Configurazione Anki non supportata."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 182,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Filtro del modello Anki non supportato."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 338,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Testo della carta troppo lungo."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 348,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il modello non contiene un fronte e un retro leggibili senza script."
+    },
+    {
+      "file": "app/yun_jin_anki.py",
+      "line": 353,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Testo della carta troppo lungo."
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 98,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Promemoria"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 99,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "note"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 99,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Elenco promemoria"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 100,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "close"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 100,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Nascondi"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 103,
+      "call": "button",
+      "dynamic": false,
+      "text": "Fatto"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 104,
+      "call": "button",
+      "dynamic": false,
+      "text": "Tra 10 min"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 194,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Yun Jin"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 843,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Appunti…"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 847,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Promemoria…"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 863,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Impostazioni voce…"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 874,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Impostazioni…"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 875,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Guida"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 930,
+      "call": "information",
+      "dynamic": false,
+      "text": "Yun Jin è già aperta"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 935,
+      "call": "critical",
+      "dynamic": false,
+      "text": "Yun Jin · errore"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 429,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Impossibile aprire"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 429,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Non riesco ad aprire questo elemento."
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 505,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Animazione non trovata: controlla la cartella assets."
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 777,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Nessun contenuto negli appunti."
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 832,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Suoni sospesi per un’ora."
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 865,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Riattiva suoni"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 867,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Silenzio per 1 ora"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 977,
+      "call": "critical",
+      "dynamic": false,
+      "text": "Yun Jin · avvio non riuscito"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 426,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Appunto non salvato"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 715,
+      "call": "critical",
+      "dynamic": false,
+      "text": "Promemoria non disponibili"
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 715,
+      "call": "critical",
+      "dynamic": false,
+      "text": "Non riesco a leggere o salvare i promemoria. Riavvia il pet dopo aver controllato il log nella cartella dati."
+    },
+    {
+      "file": "app/yun_jin_app.py",
+      "line": 882,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Appunto non salvato"
+    },
+    {
+      "file": "app/yun_jin_bubble.py",
+      "line": 25,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Yun Jin"
+    },
+    {
+      "file": "app/yun_jin_calendar_download.py",
+      "line": 24,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid calendar catalog"
+    },
+    {
+      "file": "app/yun_jin_calendar_download.py",
+      "line": 85,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid image name"
+    },
+    {
+      "file": "app/yun_jin_calendar_download.py",
+      "line": 90,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid image metadata"
+    },
+    {
+      "file": "app/yun_jin_calendar_download.py",
+      "line": 155,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid download"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 124,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Ripetizione"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 129,
+      "call": "setPrefix",
+      "dynamic": false,
+      "text": "Ogni "
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 130,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Intervallo di ripetizione"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 136,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Fine ripetizione"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 139,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Ultimo giorno della serie"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 140,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " volte"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 141,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Numero di ripetizioni"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 182,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Titolo"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 183,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Titolo impegno"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 184,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Tutto il giorno"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 186,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Data inizio"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 187,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Data fine"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 188,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Ora inizio"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 189,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Ora fine"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 198,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Anticipo avviso"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 207,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Leggi l’avviso"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 211,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Note"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 211,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Note impegno"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 217,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "alert"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 219,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salva"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 220,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Annulla"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 281,
+      "call": "button",
+      "dynamic": false,
+      "text": "Solo questo"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 282,
+      "call": "button",
+      "dynamic": false,
+      "text": "Tutta la serie"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 283,
+      "call": "button",
+      "dynamic": false,
+      "text": "Annulla"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 289,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Vai al mese"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 292,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Mese"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 293,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Anno"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 295,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Vai"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 295,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Annulla"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 303,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Illustrazione del calendario"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 326,
+      "call": "setWindowTitle",
+      "dynamic": true,
+      "text": "f'{day.day} {MONTHS[day.month-1].lower()} {day.year} · Yun Jin'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 330,
+      "call": "button",
+      "dynamic": false,
+      "text": "Riprova"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 332,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "close"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 332,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Chiudi"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 351,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{self.fallback_status} · Caricamento originale…'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 367,
+      "call": "setToolTip",
+      "dynamic": true,
+      "text": "f'{size.width()} × {size.height()}'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 388,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Illustrazione del calendario"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 390,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Scegli mese e anno"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 397,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Apri illustrazione"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 397,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Apri illustrazione"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 417,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{MONTHS[day.month-1]}\\n{day.year}'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 522,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'Avvisi recenti ({len(self.rows)})'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 563,
+      "call": "button",
+      "dynamic": false,
+      "text": "Oggi"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 564,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "left"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 564,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Mese precedente"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 564,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "right"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 564,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Mese successivo"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 578,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 579,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "plus"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 579,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Nuovo impegno"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 613,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{MONTHS[self.month.month-1]}\\n{self.month.year}'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 135,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Termina"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 197,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Avviso"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 202,
+      "call": "addItem",
+      "dynamic": true,
+      "text": "f'{minutes} minuti prima'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 244,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Le note possono contenere al massimo 4000 caratteri."
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 245,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il titolo non può essere vuoto."
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 256,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La serie non può terminare prima dell’inizio."
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 372,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{fallback} · Originale non disponibile.'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 537,
+      "call": "plain_label",
+      "dynamic": true,
+      "text": "f'{when:%d/%m · %H:%M} · {state}'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 537,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 539,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "check"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 539,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Chiudi avviso"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 568,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 626,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Nessun impegno"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 626,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 632,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 641,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "trash"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 641,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Elimina impegno"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 160,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scegli almeno un giorno della settimana."
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 214,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 248,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La fine deve essere dopo l’inizio."
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 252,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La fine deve essere dopo l’inizio."
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 270,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salvataggio non riuscito. Riprova."
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 627,
+      "call": "button",
+      "dynamic": false,
+      "text": "Aggiungi"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 637,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 644,
+      "call": "button",
+      "dynamic": true,
+      "text": "f'Mostra altri ({len(rows)-self.visible_event_limit})'"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 639,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 695,
+      "call": "question",
+      "dynamic": false,
+      "text": "Elimina impegno"
+    },
+    {
+      "file": "app/yun_jin_calendar_ui.py",
+      "line": 695,
+      "call": "question",
+      "dynamic": true,
+      "text": "f'Eliminare «{row[\"title\"]}»?'"
+    },
+    {
+      "file": "app/yun_jin_context.py",
+      "line": 182,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Città non valida."
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 357,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Yun Jin"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 367,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Doppio clic: pannello · Clic destro: menu"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 903,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Riprendi"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 904,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Pausa completa"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 908,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Seguimi"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 909,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Passeggia"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 910,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Esibizione"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 930,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Termina"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 947,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Riporta sullo schermo"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 950,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Chiudi"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 156,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Non riesco a leggere spritesheet-yun-jin-v2.png.\nMettilo nella stessa cartella di yun_jin_pet.py."
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 159,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Lo spritesheet è troppo piccolo o non valido."
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 272,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Maschere fotogrammi incomplete"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 943,
+      "call": "addAction",
+      "dynamic": true,
+      "text": "f'{round(value*100)}%'"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 946,
+      "call": "addAction",
+      "dynamic": true,
+      "text": "f'{i} · {screen.name()}'"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 1040,
+      "call": "critical",
+      "dynamic": false,
+      "text": "Yun Jin · avvio non riuscito"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 275,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Ritagli o ancoraggi incompleti"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 277,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Dimensioni canvas non valide"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 328,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Ancoraggio sequenza non valido"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 967,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Riposo → salto → riposo"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 217,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Griglia o numero di frame non valido"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 223,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Durate fotogrammi non valide"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 227,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Ordine dei fotogrammi non valido"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 286,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Ritaglio fuori tavola"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 962,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Sonno"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 963,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Direzioni dello sguardo"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 965,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Sonnellino"
+    },
+    {
+      "file": "app/yun_jin_core.py",
+      "line": 294,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Maschera fuori fotogramma"
+    },
+    {
+      "file": "app/yun_jin_data.py",
+      "line": 108,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scrivi cosa vuoi ricordare."
+    },
+    {
+      "file": "app/yun_jin_data.py",
+      "line": 110,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Data non valida."
+    },
+    {
+      "file": "app/yun_jin_data.py",
+      "line": 83,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Appunto non trovato; il testo resta nell’editor."
+    },
+    {
+      "file": "app/yun_jin_data.py",
+      "line": 116,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Promemoria non trovato."
+    },
+    {
+      "file": "app/yun_jin_dialogs.py",
+      "line": 164,
+      "call": "question",
+      "dynamic": false,
+      "text": "Sostituisci file"
+    },
+    {
+      "file": "app/yun_jin_dialogs.py",
+      "line": 165,
+      "call": "question",
+      "dynamic": false,
+      "text": "Il file esiste già. Sostituirlo?"
+    },
+    {
+      "file": "app/yun_jin_forecast.py",
+      "line": 52,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Missing forecast"
+    },
+    {
+      "file": "app/yun_jin_forecast.py",
+      "line": 54,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid forecast length"
+    },
+    {
+      "file": "app/yun_jin_forecast.py",
+      "line": 58,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Unaligned forecast"
+    },
+    {
+      "file": "app/yun_jin_forecast.py",
+      "line": 61,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid timestamp"
+    },
+    {
+      "file": "app/yun_jin_forecast.py",
+      "line": 62,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid timeline"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 59,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Andamento orario della temperatura"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 124,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 125,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "reset"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 125,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Aggiorna previsioni"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 129,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 134,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 135,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "metric"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 136,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 137,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 146,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Ora per ora"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 146,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 150,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Previsioni orarie"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 155,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Probabilità di precipitazioni nell’ora."
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 156,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Precipitazioni totali nell’ora, in millimetri."
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 158,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 160,
+      "call": "QLabel",
+      "dynamic": false,
+      "text": "<a href=\"https://open-meteo.com/\" style=\"color:#b8b2c8\">Open-Meteo · Best Match</a>"
+    },
+    {
+      "file": "app/yun_jin_forecast_ui.py",
+      "line": 161,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Modelli selezionati da Open-Meteo in base alla località. Condizioni attuali stimate dal modello."
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 41,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Usa una sola combinazione di tasti."
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 49,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Usa una lettera, un numero, un tasto F1–F20, spazio o una freccia."
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 50,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "F12 è riservato da Windows."
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 160,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Questo tasto non è disponibile nel layout corrente."
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 375,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Scorciatoie"
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 397,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "alert"
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 401,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salva"
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 403,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Annulla"
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 39,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Combinazione non valida."
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 332,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Assegna combinazioni diverse alle azioni."
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 333,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scorciatoie non disponibili. Riavvia Yun Jin."
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 148,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Layout tastiera non disponibile."
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 209,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Combinazione usata da macOS"
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 388,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Nessuna"
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 389,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "close"
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 207,
+      "call": "warning",
+      "dynamic": false,
+      "text": "macOS system shortcuts: %s"
+    },
+    {
+      "file": "app/yun_jin_hotkeys.py",
+      "line": 208,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Impossibile verificare le scorciatoie di macOS"
+    },
+    {
+      "file": "app/yun_jin_macos.py",
+      "line": 68,
+      "call": "RuntimeError",
+      "dynamic": true,
+      "text": "f'Modalità applicazione macOS: richiesta {requested}, '\n                               f'attuale {current}, risposta {bool(reply)}.'"
+    },
+    {
+      "file": "app/yun_jin_macos.py",
+      "line": 77,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Finestra nativa macOS non disponibile."
+    },
+    {
+      "file": "app/yun_jin_macos.py",
+      "line": 86,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "La finestra overlay deve essere un pannello nativo macOS."
+    },
+    {
+      "file": "app/yun_jin_macos_access.py",
+      "line": 66,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Impossibile creare il menu di Yun Jin."
+    },
+    {
+      "file": "app/yun_jin_macos_access.py",
+      "line": 104,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Barra menu macOS non disponibile."
+    },
+    {
+      "file": "app/yun_jin_macos_access.py",
+      "line": 45,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Icona di Yun Jin non disponibile."
+    },
+    {
+      "file": "app/yun_jin_macos_access.py",
+      "line": 79,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Impossibile collegare il menu di Yun Jin."
+    },
+    {
+      "file": "app/yun_jin_macos_access.py",
+      "line": 287,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Yun Jin menu-bar item is not visible after repair"
+    },
+    {
+      "file": "app/yun_jin_music.py",
+      "line": 25,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "I BPM devono essere tra 20 e 400."
+    },
+    {
+      "file": "app/yun_jin_music.py",
+      "line": 27,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Accento, incremento o intervallo non valido."
+    },
+    {
+      "file": "app/yun_jin_music.py",
+      "line": 29,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Modalità di scalata non valida."
+    },
+    {
+      "file": "app/yun_jin_music.py",
+      "line": 72,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "negative frame count"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 27,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " BPM"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 28,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Tempo in BPM"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 31,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "metric"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 34,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 36,
+      "call": "button",
+      "dynamic": false,
+      "text": "Avvia"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 37,
+      "call": "button",
+      "dynamic": false,
+      "text": "Ferma"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 38,
+      "call": "button",
+      "dynamic": false,
+      "text": "Tap tempo"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 41,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Accento"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 43,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " battiti"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 43,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Battiti per accento"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 47,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Scalata"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 48,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " BPM"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 49,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " BPM"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 50,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "battiti"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 50,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "beats"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 50,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "secondi"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 50,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "seconds"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 52,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "Continua"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 52,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "hold"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 52,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "Ferma dopo l’ultimo intervallo"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 52,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "stop"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 55,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Arrivo"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 55,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Passo"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 56,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Ogni"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 57,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Al termine"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 61,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Volume metronomo"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 62,
+      "call": "plain_label",
+      "dynamic": true,
+      "text": "f'{self.metro.volume}%'"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 65,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "alert"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 66,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Metronomo"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 74,
+      "call": "button",
+      "dynamic": false,
+      "text": "Avvia"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 75,
+      "call": "button",
+      "dynamic": false,
+      "text": "Pausa"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 76,
+      "call": "button",
+      "dynamic": false,
+      "text": "Parziale"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 77,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "reset"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 77,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Azzera"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 83,
+      "call": "button",
+      "dynamic": false,
+      "text": "Copia"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 83,
+      "call": "button",
+      "dynamic": false,
+      "text": "CSV…"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 84,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Cronometro"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 125,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{bpm} BPM'"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 59,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Volume"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 118,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{self.metro.bpm} BPM'"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 63,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{v}%'"
+    },
+    {
+      "file": "app/yun_jin_music_panel.py",
+      "line": 170,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Esportazione non riuscita"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 29,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Cosa vuoi ricordare?"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 30,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Promemoria"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 32,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Quando"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 34,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " min"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 34,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Minuti"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 48,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salva"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 49,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Annulla"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 75,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Yun Jin"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 101,
+      "call": "button",
+      "dynamic": false,
+      "text": "Guida"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 109,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Musica"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 111,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Studio"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 112,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Meteo"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 113,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Calendario"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 114,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Sveglie"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 160,
+      "call": "button",
+      "dynamic": false,
+      "text": "Nuovo"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 161,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Appunti copiati"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 162,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "File…"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 162,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Cartella…"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 166,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Cerca"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 167,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Cerca appunti"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 173,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Titolo"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 173,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Titolo"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 174,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Scrivi o trascina un file…"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 175,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Testo"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 176,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 177,
+      "call": "button",
+      "dynamic": false,
+      "text": "Apri"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 180,
+      "call": "button",
+      "dynamic": false,
+      "text": "Leggi"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 181,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "stop"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 181,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Interrompi voce"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 184,
+      "call": "button",
+      "dynamic": false,
+      "text": "ChatGPT"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 186,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Salva"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 186,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Elimina"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 187,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Azioni appunto"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 187,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Azioni appunto"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 191,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Richiesta ChatGPT"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 192,
+      "call": "button",
+      "dynamic": false,
+      "text": "Copia e apri"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 193,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Istruzioni facoltative"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 196,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Appunti"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 202,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "metric"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 205,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " min"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 207,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Durata focus"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 211,
+      "call": "button",
+      "dynamic": false,
+      "text": "Avvia"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 212,
+      "call": "button",
+      "dynamic": false,
+      "text": "Interrompi"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 213,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Focus"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 229,
+      "call": "button",
+      "dynamic": false,
+      "text": "Nuovo"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 230,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Completati"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 238,
+      "call": "button",
+      "dynamic": false,
+      "text": "Fatto"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 240,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " min"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 240,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Rimanda di"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 241,
+      "call": "button",
+      "dynamic": false,
+      "text": "Rimanda"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 242,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Modifica"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 242,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Elimina"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 243,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Azioni promemoria"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 243,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Azioni promemoria"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 246,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Promemoria"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 252,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Effetti sonori"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 255,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Campanello e suoni del personaggio. Voce e metronomo hanno volumi separati."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 258,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Saluti e conferme"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 260,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Suoni di saluto, salvataggio e completamento."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 265,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Volume effetti"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 266,
+      "call": "plain_label",
+      "dynamic": true,
+      "text": "f'{self.volume.value()}%'"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 269,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "volume"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 269,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Ascolta campanello"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 274,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "alert"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 278,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Mostra Yun Jin"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 282,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Animazioni aggiuntive"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 310,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "<a href=\"https://open-meteo.com/\" style=\"color:#b8b2c8\">Open-Meteo</a>"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 310,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 313,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Meteo: Open-Meteo · CC BY 4.0. Città: GeoNames."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 322,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Aggiornamenti automatici"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 323,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Controlla ogni 2 ore. Puoi leggere le note prima di aggiornare, rimandare o saltare la versione."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 327,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 331,
+      "call": "button",
+      "dynamic": false,
+      "text": "Controlla ora"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 332,
+      "call": "button",
+      "dynamic": false,
+      "text": "Note di rilascio…"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 340,
+      "call": "button",
+      "dynamic": false,
+      "text": "Backup…"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 341,
+      "call": "button",
+      "dynamic": false,
+      "text": "Cartella dati"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 343,
+      "call": "button",
+      "dynamic": false,
+      "text": "Scorciatoie"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 344,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "alert"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 346,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Impostazioni"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 385,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Leggi i promemoria alla scadenza"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 390,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Voce attiva"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 395,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Ripristina voce"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 395,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Svuota cache"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 396,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Opzioni voce"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 396,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Opzioni voce"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 399,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "Microsoft Edge"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 399,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "edge"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 399,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "Google Translate"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 399,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "google"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 400,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Servizio"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 403,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Lingua"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 404,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Voce"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 405,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " %"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 407,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Velocità"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 408,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " Hz"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 410,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Intonazione"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 411,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Lettura lenta"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 414,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Volume voce"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 417,
+      "call": "plain_label",
+      "dynamic": true,
+      "text": "f'{self.tts_volume.value()}%'"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 418,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Volume"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 421,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Il testo viene inviato online al servizio scelto. Google sceglie la voce per la lingua."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 423,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Testo da leggere"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 423,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Testo da leggere"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 425,
+      "call": "button",
+      "dynamic": false,
+      "text": "Ascolta"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 426,
+      "call": "button",
+      "dynamic": false,
+      "text": "Leggi testo copiato"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 427,
+      "call": "button",
+      "dynamic": false,
+      "text": "Stop"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 437,
+      "call": "addTab",
+      "dynamic": false,
+      "text": "Voce"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 518,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salvato"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 579,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salvato"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 43,
+      "call": "button",
+      "dynamic": true,
+      "text": "f'{minute} min'"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 67,
+      "call": "information",
+      "dynamic": false,
+      "text": "Data passata"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 67,
+      "call": "information",
+      "dynamic": false,
+      "text": "Scegli una data futura."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 84,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Yun Jin"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 84,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "brand"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 220,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{seconds//60:02d}:{seconds%60:02d}'"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 251,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Suoni"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 251,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 263,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Volume"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 277,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Personaggio"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 277,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 297,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Orario e meteo"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 297,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 321,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Aggiornamenti"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 321,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 339,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Dati e strumenti"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 339,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 389,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Voce"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 389,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 499,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salvataggio…"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 625,
+      "call": "information",
+      "dynamic": false,
+      "text": "Materiale non trovato"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 625,
+      "call": "information",
+      "dynamic": false,
+      "text": "Il file è stato spostato o eliminato."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 631,
+      "call": "question",
+      "dynamic": false,
+      "text": "Elimina appunto"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 631,
+      "call": "question",
+      "dynamic": false,
+      "text": "Eliminare l’appunto? Il file collegato rimane."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 662,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Aggiungi testo o un file."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 723,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Backup salvato."
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 221,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Pausa"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 222,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{self.focus_minutes.value():02d}:00'"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 268,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{v}%'"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 418,
+      "call": "setText",
+      "dynamic": true,
+      "text": "f'{v}%'"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 712,
+      "call": "question",
+      "dynamic": false,
+      "text": "Elimina promemoria"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 712,
+      "call": "question",
+      "dynamic": false,
+      "text": "Eliminare il promemoria?"
+    },
+    {
+      "file": "app/yun_jin_panel.py",
+      "line": 737,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Appunto non salvato"
+    },
+    {
+      "file": "app/yun_jin_speech.py",
+      "line": 260,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "File vocale non valido."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 89,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Usa al massimo 20 passi."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 97,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La ritenzione deve essere tra 70% e 99%."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 105,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Soglia non valida: scegli un valore tra 2 e 1000."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 114,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Inserisci almeno una lacuna, per esempio {{c1::你好::saluto}}."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 117,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Controlla le parentesi delle lacune. Le lacune annidate non sono supportate."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 139,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Tipo di carta non supportato."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 143,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Testo troppo lungo (massimo 100.000 caratteri per lato)."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 148,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il fronte è vuoto."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 150,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il retro è vuoto."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 82,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Passi non validi. Esempio: 10s 30s 1m 10m."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 86,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Ogni passo deve durare almeno un secondo."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 101,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Limite giornaliero non valido."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 146,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Allegati non validi (massimo 12 per lato)."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 175,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Mazzo non trovato."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 182,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il nome del mazzo non può essere vuoto."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 183,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il nome del mazzo non può superare 120 caratteri."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 186,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Esiste già un mazzo con questo nome, anche nell’archivio."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 226,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Carta non trovata."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 252,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Carta non trovata."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 257,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Formato non supportato."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 259,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scegli un file fino a 32 MB."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 281,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Allegato non valido."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 283,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Allegato non valido."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 399,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Valutazione non valida."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 270,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il file è vuoto."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 403,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La sessione è terminata."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 406,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La carta è cambiata. Riapri lo studio."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 407,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Mazzo non valido."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 409,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "L’orologio di sistema precede l’ultima risposta. Correggi l’ora prima di continuare."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 415,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La carta è cambiata. Riprova."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 427,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La carta è stata modificata dopo questa risposta."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 208,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Un allegato non è disponibile."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 212,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Carta non trovata."
+    },
+    {
+      "file": "app/yun_jin_srs.py",
+      "line": 267,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il file supera 32 MB."
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 26,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "close"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 26,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Ignora"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 29,
+      "call": "button",
+      "dynamic": false,
+      "text": "Ripassa"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 30,
+      "call": "button",
+      "dynamic": false,
+      "text": "Non oggi"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 25,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Un piccolo ripasso?"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 25,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 158,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Completa l’aggiornamento"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 298,
+      "call": "information",
+      "dynamic": false,
+      "text": "Ripasso Anki"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 231,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Anki: %s %s"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 245,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Anki worker: %s; %s"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 323,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Optimizer did not complete"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 326,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Optimizer deck mismatch"
+    },
+    {
+      "file": "app/yun_jin_study.py",
+      "line": 336,
+      "call": "warning",
+      "dynamic": false,
+      "text": "FSRS optimizer: %s"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 29,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 30,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 31,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "reset"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 31,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Annulla ultima risposta"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 32,
+      "call": "button",
+      "dynamic": false,
+      "text": "Termina"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 36,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 37,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 38,
+      "call": "button",
+      "dynamic": false,
+      "text": "Mostra risposta"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 39,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Spazio"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 46,
+      "call": "button",
+      "dynamic": false,
+      "text": "Avanti"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 194,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Mazzo"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 196,
+      "call": "button",
+      "dynamic": false,
+      "text": "Nuovo mazzo"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 197,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Opzioni del mazzo…"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 198,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Richiami e Anki…"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 198,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Archivia mazzo"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 199,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Mazzi archiviati…"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 210,
+      "call": "button",
+      "dynamic": false,
+      "text": "Studia"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 211,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 215,
+      "call": "button",
+      "dynamic": false,
+      "text": "Aggiungi carta"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 216,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Cerca carte"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 217,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Passaggi ostinati"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 217,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Carte che hanno raggiunto la soglia di errori del mazzo."
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 224,
+      "call": "button",
+      "dynamic": false,
+      "text": "Modifica"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 225,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Metti in pausa / Riattiva"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 225,
+      "call": "addAction",
+      "dynamic": false,
+      "text": "Elimina"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 227,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "left"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 227,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Pagina precedente"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 228,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "right"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 228,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Pagina successiva"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 230,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 231,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Crea un mazzo per iniziare."
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 231,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "section"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 273,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Ritenzione osservata: risposte ricordate nei ripassi distanziati di almeno un giorno. Non comprende i passi brevi."
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 309,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Mazzi archiviati"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 320,
+      "call": "button",
+      "dynamic": false,
+      "text": "Chiudi"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 320,
+      "call": "button",
+      "dynamic": false,
+      "text": "Ripristina"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 337,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Richiami e Anki"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 339,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Richiami durante la giornata"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 340,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Ogni 90–150 minuti, al massimo 3 volte al giorno. Solo carte difficili dei mazzi studiati oggi. Nessun richiamo durante il focus."
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 342,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Includi le carte di Anki"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 343,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Passaggi ostinati e 10% delle carte più difficili dei mazzi studiati oggi. Nessuna risposta viene registrata in Anki."
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 345,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Includi passaggi ostinati sospesi"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 346,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Solo per gli esercizi Anki. Le carte rimangono sospese nella collezione originale."
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 350,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Profilo Anki"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 355,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "Scegli profilo"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 360,
+      "call": "button",
+      "dynamic": false,
+      "text": "Sfoglia…"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 361,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 364,
+      "call": "button",
+      "dynamic": false,
+      "text": "Ripasso Anki"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 365,
+      "call": "button",
+      "dynamic": false,
+      "text": "Aggiorna"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 366,
+      "call": "button",
+      "dynamic": false,
+      "text": "Chiudi"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 134,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Carta modificata. Rileggi il fronte."
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 206,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "0"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 206,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "metric"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 306,
+      "call": "question",
+      "dynamic": false,
+      "text": "Archivia mazzo"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 306,
+      "call": "question",
+      "dynamic": false,
+      "text": "Rimuovere il mazzo dallo studio? I dati restano nel backup."
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 150,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Risposta non salvata"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 160,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Annulla risposta"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 207,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 302,
+      "call": "question",
+      "dynamic": false,
+      "text": "Elimina carta"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 302,
+      "call": "question",
+      "dynamic": false,
+      "text": "Eliminare questa carta e le sue lacune?"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 63,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Mazzo archiviato"
+    },
+    {
+      "file": "app/yun_jin_study_ui.py",
+      "line": 111,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Controlla l’orologio di sistema prima di continuare."
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 30,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Flashcard"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 59,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "alert"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 114,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Audio non disponibile"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 124,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Mazzo"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 130,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Nome del mazzo"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 131,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Nome del mazzo"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 132,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "FSRS"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 135,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " %"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 136,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Probabilità di ricordare una carta alla sua scadenza. Più alta richiede più ripassi."
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 137,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Ritenzione desiderata"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 138,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Nuove al giorno"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 139,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Ripassi al giorno"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 143,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Passi nuove carte"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 143,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Passi dopo un errore"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 145,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Numero di errori nei ripassi che segna una carta come “passaggio ostinato”."
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 146,
+      "call": "addRow",
+      "dynamic": false,
+      "text": "Passaggio ostinato dopo"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 146,
+      "call": "setSuffix",
+      "dynamic": false,
+      "text": " errori"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 148,
+      "call": "QCheckBox",
+      "dynamic": false,
+      "text": "Metti in pausa i passaggi ostinati"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 152,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "alert"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 154,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Salva"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 154,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Annulla"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 191,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "Fronte / retro"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 191,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "basic"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 191,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "Cloze"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 191,
+      "call": "addItem",
+      "dynamic": false,
+      "text": "cloze"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 192,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Tipo di carta"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 194,
+      "call": "button",
+      "dynamic": false,
+      "text": "Lacuna"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 195,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Seleziona il testo da nascondere. Esempio: {{c1::你好::saluto}}"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 196,
+      "call": "button",
+      "dynamic": false,
+      "text": "Anteprima"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 210,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "alert"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 212,
+      "call": "button",
+      "dynamic": false,
+      "text": "Annulla"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 214,
+      "call": "button",
+      "dynamic": false,
+      "text": "Salva"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 258,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Anteprima"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 269,
+      "call": "button",
+      "dynamic": false,
+      "text": "Risposta"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 270,
+      "call": "button",
+      "dynamic": false,
+      "text": "Chiudi"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 100,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Voce disattivata"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 102,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Suoni disattivati"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 142,
+      "call": "setToolTip",
+      "dynamic": false,
+      "text": "Passi separati da spazi: s = secondi, m = minuti, h = ore, d = giorni. Senza unità: minuti. Vuoto: intervalli FSRS."
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 205,
+      "call": "button",
+      "dynamic": false,
+      "text": "Immagine"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 206,
+      "call": "button",
+      "dynamic": false,
+      "text": "Audio"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 207,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "close"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 207,
+      "call": "icon_button",
+      "dynamic": false,
+      "text": "Rimuovi allegato"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 213,
+      "call": "button",
+      "dynamic": false,
+      "text": "Salva e aggiungi"
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 231,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Massimo 99 numeri di lacuna per nota."
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 173,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il nome del mazzo non può essere vuoto."
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 246,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Massimo 12 allegati per lato."
+    },
+    {
+      "file": "app/yun_jin_study_widgets.py",
+      "line": 265,
+      "call": "addItem",
+      "dynamic": true,
+      "text": "f'Lacuna {ordinal}'"
+    },
+    {
+      "file": "app/yun_jin_tts_worker.py",
+      "line": 21,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Scegli un testo da 1 a 3000 caratteri."
+    },
+    {
+      "file": "app/yun_jin_tts_worker.py",
+      "line": 47,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il servizio non ha restituito audio valido."
+    },
+    {
+      "file": "app/yun_jin_tts_worker.py",
+      "line": 45,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Servizio vocale non riconosciuto."
+    },
+    {
+      "file": "app/yun_jin_ui.py",
+      "line": 261,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Battiti"
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 83,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Indirizzo della release non valido."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 93,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Pacchetto di aggiornamento non valido."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 113,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Risposta di GitHub troppo grande."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 136,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Formato di aggiornamento non supportato. Usa l’installer della nuova release."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 139,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Elenco dei file non valido."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 149,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Il pacchetto non contiene tutti i file essenziali."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 156,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "La versione nello ZIP non corrisponde alla release."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 202,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Questa release richiede un’altra versione di Python. Apri la release e usa il suo installer."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 206,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Aggiorna Python usando l’installer della release."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 209,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Requisiti del pacchetto mancanti."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 56,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Destinazione del download non autorizzata."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 143,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Hash dei file non valido."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 169,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Dimensioni del pacchetto non valide."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 182,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Struttura ZIP non riconosciuta."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 216,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Questa release aggiorna anche le dipendenze. Apri la release e usa il suo installer."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 238,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Verifica SHA-256 fallita. Nessun file è stato modificato."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 491,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Destinazione di recupero non corrispondente."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 110,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "GitHub ha limitato le richieste. Riprova più tardi."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 176,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Collegamenti o file speciali non ammessi nello ZIP."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 179,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Percorso duplicato nel pacchetto."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 234,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Dimensione del download inattesa."
+    },
+    {
+      "file": "app/yun_jin_update.py",
+      "line": 441,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Foreign journal entry"
+    },
+    {
+      "file": "app/yun_jin_updates_ui.py",
+      "line": 35,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Yun Jin · Aggiornamento"
+    },
+    {
+      "file": "app/yun_jin_updates_ui.py",
+      "line": 51,
+      "call": "QPushButton",
+      "dynamic": false,
+      "text": "Apri release su GitHub"
+    },
+    {
+      "file": "app/yun_jin_updates_ui.py",
+      "line": 54,
+      "call": "QPushButton",
+      "dynamic": false,
+      "text": "Più tardi"
+    },
+    {
+      "file": "app/yun_jin_updates_ui.py",
+      "line": 55,
+      "call": "QPushButton",
+      "dynamic": false,
+      "text": "Salta questa versione"
+    },
+    {
+      "file": "app/yun_jin_updates_ui.py",
+      "line": 57,
+      "call": "QPushButton",
+      "dynamic": false,
+      "text": "Aggiorna e riavvia"
+    },
+    {
+      "file": "app/yun_jin_updates_ui.py",
+      "line": 236,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Download e verifica del pacchetto…"
+    },
+    {
+      "file": "app/yun_jin_updates_ui.py",
+      "line": 301,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Update not installed: %s"
+    },
+    {
+      "file": "app/yun_jin_updates_ui.py",
+      "line": 162,
+      "call": "warning",
+      "dynamic": false,
+      "text": "Update check: %s"
+    },
+    {
+      "file": "app/yun_jin_updates_ui.py",
+      "line": 278,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Preparazione del riavvio…"
+    },
+    {
+      "file": "app/yun_jin_weather.py",
+      "line": 21,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Response too large"
+    },
+    {
+      "file": "app/yun_jin_weather.py",
+      "line": 24,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid response"
+    },
+    {
+      "file": "app/yun_jin_weather.py",
+      "line": 63,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Geocoding unavailable"
+    },
+    {
+      "file": "app/yun_jin_weather.py",
+      "line": 65,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid search results"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 19,
+      "call": "setWindowTitle",
+      "dynamic": false,
+      "text": "Città per il meteo"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 24,
+      "call": "setPlaceholderText",
+      "dynamic": false,
+      "text": "Cerca una città"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 24,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Città"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 26,
+      "call": "button",
+      "dynamic": false,
+      "text": "Cerca"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 28,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Città trovate"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 30,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "muted"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 34,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Usa città"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 36,
+      "call": "setText",
+      "dynamic": false,
+      "text": "Annulla"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 115,
+      "call": "plain_label",
+      "dynamic": false,
+      "text": "Città"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 116,
+      "call": "setAccessibleName",
+      "dynamic": false,
+      "text": "Scegli città per il meteo"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 81,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Invalid response"
+    },
+    {
+      "file": "app/yun_jin_weather_ui.py",
+      "line": 83,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "No results"
+    },
+    {
+      "file": "app/yun_jin_windows.py",
+      "line": 190,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Shortcut AppUserModelID was not saved"
+    },
+    {
+      "file": "installer/install.py",
+      "line": 226,
+      "call": "RuntimeError",
+      "dynamic": true,
+      "text": "f'{bundle} contiene un’altra installazione. Spostala prima di riprovare.'"
+    },
+    {
+      "file": "installer/install.py",
+      "line": 269,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Aggiorna Python (3.13.17 o 3.14.9). Su Windows/Mac usa il programma di avvio incluso."
+    },
+    {
+      "file": "installer/install.py",
+      "line": 270,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Serve Python a 64 bit."
+    },
+    {
+      "file": "installer/install.py",
+      "line": 272,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Questa versione richiede macOS 13 o successivo."
+    },
+    {
+      "file": "installer/install.py",
+      "line": 280,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Non riesco a controllare l’istanza già aperta."
+    },
+    {
+      "file": "installer/install.py",
+      "line": 47,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Aggiornamento di sicurezza di pip non riuscito."
+    },
+    {
+      "file": "installer/install.py",
+      "line": 91,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Python non funziona. Reinstalla Python e riapri il programma di installazione."
+    },
+    {
+      "file": "installer/install.py",
+      "line": 107,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Verifica delle dipendenze non riuscita. Riapri il programma di installazione."
+    },
+    {
+      "file": "installer/install.py",
+      "line": 129,
+      "call": "ValueError",
+      "dynamic": false,
+      "text": "Percorso non valido nel manifest."
+    },
+    {
+      "file": "installer/install.py",
+      "line": 233,
+      "call": "RuntimeError",
+      "dynamic": false,
+      "text": "Verifica dell’app in /Applications non riuscita; la vecchia copia è conservata."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 35,
+      "call": "p",
+      "dynamic": false,
+      "text": "h"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 138,
+      "call": "p",
+      "dynamic": false,
+      "text": "Una compagna per imparare, ricordare e fare musica."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 139,
+      "call": "call",
+      "dynamic": false,
+      "text": "<b>Windows 10/11, 64 bit.</b> Estrai tutto lo ZIP prima di avviare l’app."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 140,
+      "call": "h",
+      "dynamic": false,
+      "text": "Installa"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 140,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>1.</b> Chiudi Yun Jin, se è già aperta.<br/><b>2.</b> Estrai lo <b>ZIP di distribuzione della release</b> in una cartella.<br/><b>3.</b> Apri <b>Windows.cmd</b> e attendi il completamento."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 141,
+      "call": "p",
+      "dynamic": false,
+      "text": "L’avviatore cerca Python. Se manca, scarica Python ufficiale e verifica il file. Installa l’app nel tuo profilo, con un ambiente separato, e crea i collegamenti su Desktop e nel menu Start."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 142,
+      "call": "h",
+      "dynamic": false,
+      "text": "Dopo l’installazione"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 142,
+      "call": "p",
+      "dynamic": false,
+      "text": "Apri <b>Yun Jin Companion</b> dal collegamento. Un doppio clic sul personaggio apre il pannello; il clic destro apre il menu. Scegli uno strumento dalla barra laterale."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 144,
+      "call": "p",
+      "dynamic": false,
+      "text": "Chiudere il pannello lascia Yun Jin aperta; <b>Chiudi</b> nel menu termina l’app."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 144,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 145,
+      "call": "p",
+      "dynamic": false,
+      "text": "In <b>Impostazioni</b>, <b>Mostra anche sopra le app a schermo intero</b> è attivo inizialmente. Disattivandolo, Yun Jin scompare quando l’app in primo piano occupa tutto il suo monitor e torna quando esci dallo schermo intero o cambi app."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 145,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 147,
+      "call": "h",
+      "dynamic": false,
+      "text": "macOS"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 147,
+      "call": "p",
+      "dynamic": false,
+      "text": "Su <b>macOS 13 o successivo</b>, Intel o Apple Silicon, estrai lo ZIP e apri <b>Mac.command</b>. Se Python manca, completa l’installer ufficiale proposto. In seguito usa <b>Yun Jin Companion.app</b> in <b>/Applications</b> o sulla Scrivania. macOS può chiedere il permesso per la copia."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 148,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Se macOS blocca l’apertura perché lo sviluppatore non è verificato:</b> dopo il tentativo vai in <b>Impostazioni di Sistema → Privacy e Sicurezza → Apri comunque</b>, quindi conferma <b>Apri</b>. Autorizza solo il pacchetto ottenuto dalla release ufficiale. Il doppio clic, da solo, può non bastare."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 148,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 149,
+      "call": "p",
+      "dynamic": false,
+      "text": "L’icona di Yun Jin è sempre nella barra dei menu, anche con Yun Jin nascosta: scegli <b>Mostra Yun Jin</b> per farla riapparire o <b>Pannello</b> per usare gli strumenti. L’app non compare nel Dock. In <b>Impostazioni</b> puoi disattivare <b>Mostra anche sopra le app a schermo intero</b>, attivo inizialmente."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 149,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 150,
+      "call": "h",
+      "dynamic": false,
+      "text": "Linux"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 150,
+      "call": "p",
+      "dynamic": false,
+      "text": "Servono un desktop grafico, Python aggiornato (3.11.17, 3.12.15, 3.13.17 o 3.14.9 e successivi nella stessa serie), a 64 bit, e il modulo venv. Dalla cartella estratta esegui <b>bash Linux.sh</b>; poi usa il menu applicazioni. Su Wayland la posizione del personaggio dipende dal compositor; X11 offre maggiore compatibilità."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 151,
+      "call": "h",
+      "dynamic": false,
+      "text": "Muovi e controlla Yun Jin"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 158,
+      "call": "p",
+      "dynamic": false,
+      "text": "Le scorciatoie si personalizzano in <b>Impostazioni → Scorciatoie</b>. Su Windows e macOS funzionano anche mentre usi altre app. Su Linux funzionano nelle finestre di Yun Jin."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 158,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 167,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>In ChatGPT incolla la richiesta.</b> Eventuali immagini o file vanno allegati manualmente: il pet non li invia."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 168,
+      "call": "p",
+      "dynamic": false,
+      "text": "Le immagini incollate vengono conservate. File e cartelle restano collegamenti agli originali: se li sposti, aggiorna il riferimento. Eliminare l’appunto non elimina il file collegato."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 168,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 172,
+      "call": "h",
+      "dynamic": false,
+      "text": "Crea un promemoria"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 173,
+      "call": "p",
+      "dynamic": false,
+      "text": "Apri <b>Promemoria → Nuovo</b>. Scrivi il contenuto, scegli <b>Tra</b> per un intervallo o <b>Data e ora</b> per una scadenza. I valori rapidi impostano 5, 15, 25 o 60 minuti. Premi <b>Salva</b>."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 176,
+      "call": "h",
+      "dynamic": false,
+      "text": "Gestisci l’elenco"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 176,
+      "call": "p",
+      "dynamic": false,
+      "text": "Seleziona una riga per completarla o rimandarla. Il menu <b>⋯</b> contiene <b>Modifica</b> ed <b>Elimina</b>; il doppio clic modifica. Attiva <b>Completati</b> per vedere anche gli avvisi già gestiti."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 177,
+      "call": "call",
+      "dynamic": false,
+      "text": "<b>Yun Jin deve essere aperta per avvisarti.</b> Dopo una sospensione o al successivo avvio recupera le scadenze passate."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 178,
+      "call": "p",
+      "dynamic": false,
+      "text": "Il numero sul pet e nella barra laterale indica gli avvisi da gestire. Il silenzio temporaneo sospende voce e campanelli; gli avvisi visivi rimangono attivi. Durante il metronomo il campanello dei promemoria suona; la lettura vocale resta sospesa, senza interrompere il ritmo."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 178,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 181,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Voce attiva</b>, nel menu Voce e nel pannello, controlla tutte le letture. Disattivandola restano fumetti, avvisi e animazioni; anche l’audio delle flashcard resta silenzioso. <b>Leggi i promemoria alla scadenza</b> riguarda solo la lettura automatica dei promemoria."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 182,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Ascolta</b> legge il campo di testo; <b>Leggi testo copiato</b> usa gli appunti. <b>Stop</b> interrompe la lettura o il fumetto. Puoi assegnare una scorciatoia per attivare e disattivare la voce."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 183,
+      "call": "p",
+      "dynamic": false,
+      "text": "Durante ogni lettura compare un <b>fumetto</b> accanto a Yun Jin. I testi lunghi scorrono in brevi parti; <b>Stop</b> interrompe voce e fumetto. Saluti e commenti meteo usano la lingua selezionata qui."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 185,
+      "call": "p",
+      "dynamic": false,
+      "text": "Il menu <b>⋯</b> svuota la cache o ripristina Elsa: italiano, +20% di velocità, +15 Hz, volume 70%. La lettura accetta fino a 3.000 caratteri; seleziona un passaggio per testi più lunghi."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 186,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>La sintesi vocale usa Internet e invia il testo al servizio scelto.</b> Non servono chiavi API. Edge e gTTS sono accessi non ufficiali: disponibilità e limiti dipendono dai servizi. Gli audio già letti restano nella cache locale."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 186,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 187,
+      "call": "p",
+      "dynamic": false,
+      "text": "I volumi sono separati: voce in <b>Voce</b>, effetti in <b>Impostazioni</b>, click nel <b>Metronomo</b>. Disattivando <b>Effetti sonori</b> spegni campanelli e suoni di saluto e conferma. Una lettura manuale ferma il metronomo."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 187,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 194,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Esempio:</b> 80 → 120 BPM, passo 4, ogni 16 battiti. La scalata può anche scendere; il cambio avviene sul primo battito alla soglia o dopo di essa, senza saltare il tempo finale."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 195,
+      "call": "p",
+      "dynamic": false,
+      "text": "Premi <b>Avvia</b>; per cambiare i parametri premi <b>Ferma</b>. Il volume resta regolabile. Chiudere il pannello lascia suonare il metronomo; la sospensione del computer lo ferma. Cuffie Bluetooth possono ritardare l’audio rispetto al gesto."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 195,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 198,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Avvia / Riprendi</b> continua il conteggio; <b>Pausa</b> lo sospende. <b>Parziale</b> registra il tempo dall’ultimo passaggio e il totale. L’icona con la freccia circolare azzera tempo e parziali."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 199,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Copia</b> trasferisce la tabella negli appunti; <b>CSV</b> esporta durate e totali in secondi. Il cronometro prosegue a pannello chiuso. Chiudendo Yun Jin viene salvato e messo in pausa."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 200,
+      "call": "h",
+      "dynamic": false,
+      "text": "Focus"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 201,
+      "call": "p",
+      "dynamic": false,
+      "text": "Imposta da 1 a 180 minuti e premi <b>Avvia</b>. Yun Jin sospende passeggiate ed esibizioni spontanee; i comandi manuali e i promemoria continuano a funzionare."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 202,
+      "call": "p",
+      "dynamic": false,
+      "text": "Alla fine arriva l’avviso di pausa e lo stiracchiamento, quando voce e pannello lo consentono. La sessione non riparte da sola. <b>Interrompi</b> annulla il conto alla rovescia; una scadenza passata viene recuperata al riavvio."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 202,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 204,
+      "call": "h",
+      "dynamic": false,
+      "text": "Dove sono i dati"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 204,
+      "call": "p",
+      "dynamic": false,
+      "text": "In <b>Impostazioni → Cartella dati</b> trovi appunti, immagini, promemoria e preferenze. Gli strumenti musicali e i dati personali funzionano localmente."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 206,
+      "call": "h",
+      "dynamic": false,
+      "text": "Backup"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 206,
+      "call": "p",
+      "dynamic": false,
+      "text": "Scegli <b>Impostazioni → Backup</b> e salva lo ZIP. Include appunti, promemoria, calendario, sveglie, mazzi, cronologia dei ripassi e relativi audio e immagini. Appunti e promemoria hanno anche una copia leggibile. I file esterni collegati e le collezioni di Anki non sono inclusi. Posizione, carattere e dimensione del pet sono impostazioni del sistema e non fanno parte del backup."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 207,
+      "call": "h",
+      "dynamic": false,
+      "text": "Ripristino manuale"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 207,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>1.</b> Chiudi Yun Jin e copia la cartella dati in un luogo sicuro.<br/><b>2.</b> Sposta dalla cartella dati <b>companion.sqlite3</b> e gli eventuali file <b>companion.sqlite3-wal</b> e <b>companion.sqlite3-shm</b>.<br/><b>3.</b> Inserisci il database e le cartelle <b>attachments</b> e <b>study-media</b> del backup.<br/><b>4.</b> Riapri Yun Jin. Se hai cambiato computer, aggiorna i collegamenti ai file esterni."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 208,
+      "call": "h",
+      "dynamic": false,
+      "text": "Installazione manuale e riparazione"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 208,
+      "call": "p",
+      "dynamic": false,
+      "text": "Per aggiornare manualmente o riparare l’installazione, chiudi Yun Jin, estrai il nuovo pacchetto e avvia <b>Windows.cmd</b>, <b>Mac.command</b> o <b>Linux.sh</b>. L’installer sostituisce il programma e aggiorna le dipendenze conservando i dati. Ripeti l’avvio se il collegamento smette di funzionare dopo aver rimosso Python."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 209,
+      "call": "h",
+      "dynamic": false,
+      "text": "Disinstalla"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 209,
+      "call": "p",
+      "dynamic": false,
+      "text": "Chiudi l’app e rimuovi i collegamenti. Sul Mac elimina anche l’app in <b>/Applications</b>. Nella cartella dati rimuovi <b>program</b> e <b>runtime</b>; su Windows anche l’eventuale <b>python-3.13</b>. Conserva database, attachments e study-media per riusarli, oppure esporta un backup prima di eliminare tutta la cartella."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 210,
+      "call": "call",
+      "dynamic": false,
+      "text": "Per condividere l’app invia lo <b>ZIP di distribuzione</b>. La tua cartella dati contiene appunti personali e non va inclusa."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 213,
+      "call": "p",
+      "dynamic": false,
+      "text": "Il controllo è attivo di default: circa 30 secondi dopo l’avvio e poi ogni <b>2 ore</b>. L’avviso automatico attende la fine di voce, metronomo, cronometro o focus."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 218,
+      "call": "p",
+      "dynamic": false,
+      "text": "In <b>Impostazioni</b> puoi disattivare il controllo, usare <b>Controlla ora</b> o riaprire le note. Un controllo manuale mostra anche una versione saltata."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 218,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 219,
+      "call": "p",
+      "dynamic": false,
+      "text": "I file vengono aggiornati nella <b>cartella effettivamente in uso</b>, anche se spostata. Dati personali e file aggiunti da te restano al loro posto. In caso di errore nella copia o nel nuovo avvio viene ripristinato il programma precedente."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 219,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 220,
+      "call": "p",
+      "dynamic": false,
+      "text": "Serve Internet. Se una release richiede un nuovo Python o nuove dipendenze, l’app lo segnala e rimanda all’installer. Gli aggiornamenti integrati usano il Python già installato senza aprire Mac.command."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 220,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 222,
+      "call": "h",
+      "dynamic": false,
+      "text": "Tre fasi, un movimento continuo"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 223,
+      "call": "p",
+      "dynamic": false,
+      "text": "Yun Jin sbadiglia, si siede e appoggia la testa sulle mani. Il sonno è un ciclo lento di respiro; al risveglio si rialza gradualmente e torna al comportamento normale."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 230,
+      "call": "h",
+      "dynamic": false,
+      "text": "Un comportamento occasionale"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 231,
+      "call": "p",
+      "dynamic": false,
+      "text": "Con le animazioni aggiuntive attive può addormentarsi spontaneamente. Il primo episodio non arriva nei primi 10 minuti; dopo ogni risveglio attende almeno 15 minuti prima di poterlo fare ancora. Gli episodi spontanei durano circa 30-55 secondi di sonno."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 232,
+      "call": "h",
+      "dynamic": false,
+      "text": "Strumenti e promemoria"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 233,
+      "call": "p",
+      "dynamic": false,
+      "text": "Il sonno non spegne i promemoria: gli avvisi e i suoni restano attivi. Voce e metronomo possono farla svegliare per la propria animazione. Focus e metronomo impediscono nuovi sonnellini spontanei."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 234,
+      "call": "call",
+      "dynamic": false,
+      "text": "La modalità <b>Addormentata</b> è sopra <b>Tranquilla</b> nel menu Carattere. Non è la Pausa completa: il respiro continua ad animarsi."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 237,
+      "call": "h",
+      "dynamic": false,
+      "text": "Un saluto quando apri l’app"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 238,
+      "call": "p",
+      "dynamic": false,
+      "text": "Yun Jin ti saluta <b>una sola volta all’avvio</b>, secondo l’orologio del computer, usando lingua, voce e volume scelti in <b>Voce</b>. Le frasi variano e compaiono nel fumetto; il gesto può essere anche un inchino. Riaprire il pannello non ripete il saluto."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 244,
+      "call": "p",
+      "dynamic": false,
+      "text": "Ogni cambio di fascia produce al massimo una reazione. Al ritorno dalla sospensione considera solo la fascia attuale, senza recuperare tutte quelle trascorse. Puoi provarle da <b>Animazioni → Orario oppure Meteo</b>. Con le animazioni aggiuntive disattivate usa i gesti originali."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 244,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 245,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Applauso</b>, in <b>Animazioni → Gesti</b>, si esegue solo su comando: non è un comportamento casuale."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 245,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 246,
+      "call": "h",
+      "dynamic": false,
+      "text": "Il tempo fuori"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 247,
+      "call": "p",
+      "dynamic": false,
+      "text": "Dopo circa un minuto, poi ogni <b>ora</b>, cerca il meteo in background. Distingue 16 condizioni, dal cielo sereno alla grandine, con frasi diverse nella lingua scelta e animazioni coerenti. Commenta i cambiamenti con almeno <b>due ore</b> tra due interventi."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 248,
+      "call": "p",
+      "dynamic": false,
+      "text": "Serve una città selezionata in <b>Impostazioni → Orario e meteo</b>. La scheda <b>Meteo</b> mostra anche le previsioni complete."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 248,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 249,
+      "call": "call",
+      "dynamic": false,
+      "text": "Saluto e reazioni si disattivano separatamente. Non interrompono le altre attività. Senza dati o connessione, Yun Jin continua normalmente e non mostra errori."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 251,
+      "call": "p",
+      "dynamic": false,
+      "text": "Scegli una città in <b>Impostazioni → Orario e meteo</b>: nella barra laterale compare <b>Meteo</b>. Il pulsante con il nome della città permette di cambiarla."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 253,
+      "call": "p",
+      "dynamic": false,
+      "text": "Seleziona un <b>giorno</b> per vedere temperature minime e massime, pioggia e vento. La tabella <b>Ora per ora</b> mostra il dettaglio: clicca un’ora per aggiornare il riquadro illustrato. Gli orari seguono il fuso della città."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 254,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Precip.</b> è la probabilità di precipitazioni; <b>mm</b> è la quantità prevista nell’ora. Nel riepilogo giornaliero la probabilità è il massimo delle ore e i millimetri sono il totale. Il simbolo del giorno indica la condizione più intensa prevista."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 254,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 255,
+      "call": "p",
+      "dynamic": false,
+      "text": "Open-Meteo <b>Best Match</b> seleziona i modelli in base alla località. Anche le condizioni attuali sono stime del modello. Le previsioni possono cambiare, soprattutto nei giorni più lontani."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 255,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 256,
+      "call": "p",
+      "dynamic": false,
+      "text": "Le previsioni complete si caricano aprendo la scheda e si aggiornano al massimo ogni ora. La freccia circolare richiede un aggiornamento. Senza connessione restano visibili per un massimo di 24 ore, con la dicitura <b>Dati salvati</b> e l’orario del download."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 256,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 258,
+      "call": "p",
+      "dynamic": false,
+      "text": "Apri <b>Studio</b> dalla barra laterale. Crea un mazzo, aggiungi alcune carte e premi <b>Studia</b>."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 260,
+      "call": "h",
+      "dynamic": false,
+      "text": "Una risposta alla volta"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 260,
+      "call": "p",
+      "dynamic": false,
+      "text": "Pensa alla risposta, poi premi <b>Spazio</b> o <b>Mostra risposta</b>. Valuta quanto ricordavi, senza confondere una risposta dimenticata con una risposta difficile."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 264,
+      "call": "p",
+      "dynamic": false,
+      "text": "Sotto ogni valutazione compare il prossimo intervallo. <b>Spazio</b> dopo la risposta equivale a Bene. La freccia circolare o <b>Ctrl+Z</b> (⌘Z su Mac) annulla l’ultima risposta."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 264,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 265,
+      "call": "p",
+      "dynamic": false,
+      "text": "Ogni risposta è salvata subito. <b>Termina</b> chiude la sessione; puoi riprendere più tardi. Nuove e ripassi sono mescolati; i passi brevi in scadenza hanno la precedenza."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 265,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 267,
+      "call": "p",
+      "dynamic": false,
+      "text": "Con <b>Aggiungi carta</b> scegli Fronte / retro oppure Cloze. Le schede Fronte e Retro contengono testo e allegati indipendenti."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 269,
+      "call": "h",
+      "dynamic": false,
+      "text": "Fronte / retro"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 269,
+      "call": "p",
+      "dynamic": false,
+      "text": "Scrivi la domanda sul fronte e la risposta sul retro. Per il cinese puoi usare un carattere sul fronte e pinyin, significato e una frase sul retro."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 270,
+      "call": "h",
+      "dynamic": false,
+      "text": "Cloze: nascondi una parte"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 270,
+      "call": "p",
+      "dynamic": false,
+      "text": "Seleziona il testo e premi <b>Lacuna</b>, oppure scrivi <b>{{c1::testo}}</b>. Un suggerimento è facoltativo: <b>{{c1::testo::indizio}}</b>. Ogni numero distinto crea una carta; lo stesso numero nasconde più parti insieme. Le lacune annidate non sono supportate."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 271,
+      "call": "h",
+      "dynamic": false,
+      "text": "Immagini e audio"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 271,
+      "call": "p",
+      "dynamic": false,
+      "text": "I pulsanti <b>Immagine</b> e <b>Audio</b> copiano i file nella cartella dati: puoi spostare gli originali. Massimo 12 allegati per lato e 32 MB per file. Durante lo studio premi Audio per ascoltare; il silenzio e le impostazioni dei suoni restano rispettati."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 272,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Anteprima</b> mostra domanda e risposta prima del salvataggio. <b>Salva e aggiungi</b> apre subito una nuova carta. Modificare il testo conserva i progressi delle carte esistenti."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 272,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 274,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>FSRS 6</b> stima difficoltà, stabilità della memoria e probabilità di ricordare. Pianifica ogni carta in base alle tue risposte. Nel menu del mazzo, apri <b>Opzioni del mazzo</b> per personalizzarlo."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 281,
+      "call": "p",
+      "dynamic": false,
+      "text": "I passi accettano s, m, h e d; senza unità il valore è in minuti. Da rivedere torna al primo passo; Bene avanza, Difficile ripete il passo (sul primo usa una media), Facile passa ai ripassi. Con passi vuoti decide FSRS. I limiti giornalieri ripartono alle 04:00 locali."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 281,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 282,
+      "call": "h",
+      "dynamic": false,
+      "text": "Si adatta al tuo studio"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 282,
+      "call": "p",
+      "dynamic": false,
+      "text": "Dopo le sessioni, FSRS si adatta automaticamente ai tuoi risultati quando c’è abbastanza cronologia. Le scadenze già fissate restano invariate."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 283,
+      "call": "p",
+      "dynamic": false,
+      "text": "La ritenzione a 30 giorni nel pannello indica quante risposte hai ricordato nei ripassi distanziati di almeno un giorno. I passi brevi sono esclusi."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 283,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 284,
+      "call": "h",
+      "dynamic": false,
+      "text": "Piccoli richiami"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 284,
+      "call": "p",
+      "dynamic": false,
+      "text": "Ogni 90-150 minuti, al massimo tre volte al giorno, può comparire un fumetto. Sceglie tra i <b>passaggi ostinati</b> e il <b>10% più difficile</b> di ogni mazzo studiato oggi, considerando anche gli errori recenti. La scelta varia in tutto questo gruppo e favorisce le note viste meno spesso, senza includere carte più facili. Esclude le note già proposte o ripassate qui oggi e ieri, anche dopo un riavvio. Aspetta almeno 30 minuti dall’ultimo ripasso della carta. <b>Ripassa</b> apre fino a tre carte; <b>×</b> ignora e <b>Non oggi</b> sospende i richiami. Scompare dopo 18 secondi."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 285,
+      "call": "p",
+      "dynamic": false,
+      "text": "Durante il focus o altre attività non interrompe. Puoi disattivare i richiami in <b>Studio → menu → Richiami e Anki</b>. I ripassi extra delle carte native vengono registrati e FSRS ne tiene conto."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 285,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 287,
+      "call": "h",
+      "dynamic": false,
+      "text": "Scegli i tuoi tasti"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 287,
+      "call": "p",
+      "dynamic": false,
+      "text": "Apri <b>Impostazioni → Scorciatoie</b>, scegli la funzione e premi la combinazione. <b>Salva</b> applica; <b>×</b> disattiva; <b>Ripristina</b> torna ai valori iniziali."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 289,
+      "call": "p",
+      "dynamic": false,
+      "text": "Puoi aprire <b>Meteo, Calendario e Sveglie</b>, creare un impegno o una sveglia, fermare o rinviare una sveglia, attivare/disattivare la voce, mostrare o nascondere Yun Jin e controllare cronometro, metronomo e focus anche a pannello chiuso. Avvia / Pausa conserva il tempo; Parziale registra un giro; Azzera cancella tempo e parziali. Metronomo e focus usano le impostazioni correnti o le ultime salvate."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 289,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 290,
+      "call": "p",
+      "dynamic": false,
+      "text": "Su Windows e macOS, le combinazioni occupate vengono segnalate mentre le imposti. Il controllo legge le scorciatoie di sistema e verifica quelle registrate dalle altre app; le app che intercettano direttamente i tasti possono sfuggirgli. Su Linux le scorciatoie funzionano nelle finestre di Yun Jin."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 290,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 291,
+      "call": "h",
+      "dynamic": false,
+      "text": "Collega Anki, se vuoi"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 291,
+      "call": "p",
+      "dynamic": false,
+      "text": "In <b>Studio → menu → Richiami e Anki</b> abilita <b>Includi le carte di Anki</b>. Se c’è un solo profilo viene selezionato; con più profili scegli quello da usare. <b>Sfoglia</b> apre la cartella di Anki, se devi selezionare una collezione diversa. Non servono plugin."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 292,
+      "call": "call",
+      "dynamic": false,
+      "text": "Anki viene <b>solo letto</b>. I richiami includono passaggi ostinati e carte difficili dei <b>mazzi studiati nella sua giornata corrente</b>. Puoi includere i passaggi ostinati sospesi con l’apposita spunta: restano sospesi in Anki. Carte nuove, sepolte e nei mazzi filtrati sono escluse. Sono esercizi liberi: non cambiano la pianificazione di Anki."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 293,
+      "call": "p",
+      "dynamic": false,
+      "text": "La lettura si aggiorna ogni 15 minuti, anche con Anki aperto. Supporta fronte/retro e cloze, immagini e audio locali. Gli script non vengono eseguiti; i modelli senza contenuto statico leggibile vengono segnalati. Puoi scollegare Anki quando vuoi."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 293,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 296,
+      "call": "p",
+      "dynamic": false,
+      "text": "Seleziona un giorno per vedere gli impegni. <b>Nuovo impegno</b> aggiunge titolo, inizio e fine, note e un eventuale avviso. <b>Tutto il giorno</b> è adatto a viaggi e ricorrenze."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 297,
+      "call": "h",
+      "dynamic": false,
+      "text": "Le tue ricorrenze"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 297,
+      "call": "p",
+      "dynamic": false,
+      "text": "Ripeti ogni giorno, settimana, mese o anno, scegliendo intervallo, giorni e fine della serie. Quando modifichi o elimini un evento ricorrente, scegli <b>Solo questo</b> oppure <b>Tutta la serie</b>."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 298,
+      "call": "p",
+      "dynamic": false,
+      "text": "<b>Avviso</b> sceglie quanto prima ricevere la notifica; <b>Voce</b> ne abilita la lettura, secondo l’interruttore generale. Gli impegni seguono l’ora locale del computer."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 299,
+      "call": "p",
+      "dynamic": false,
+      "text": "Le frecce cambiano mese; <b>Oggi</b> torna alla data corrente. Il titolo apre mese e anno. Da tastiera: frecce per il giorno, Invio per un impegno, Pagina su/giù per il mese e Home per oggi."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 299,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 300,
+      "call": "p",
+      "dynamic": false,
+      "text": "Da ottobre a luglio ogni giorno selezionato ha un’illustrazione diversa, con un ordine che cambia ogni anno. Ad agosto e settembre l’immagine resta mensile. Clicca l’illustrazione per ingrandirla: l’originale si scarica quando serve ed è conservato in una cache limitata; chiudila con la <b>×</b> in alto a destra o con <b>Esc</b>. Una serie il 31 salta i mesi senza quel giorno; il 29 febbraio torna negli anni bisestili."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 300,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 303,
+      "call": "p",
+      "dynamic": false,
+      "text": "Apri <b>Sveglie → Nuova sveglia</b> e scegli l’ora. Puoi usarla una volta, in una data precisa, ogni giorno, nei giorni lavorativi o in giorni della settimana a tua scelta."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 304,
+      "call": "p",
+      "dynamic": false,
+      "text": "Ogni sveglia ha suono, voce e durata del rinvio regolabili. <b>Attiva</b> la abilita o disabilita. Una sveglia singola si disattiva dopo l’avviso; riattivandola riparte alla prossima occorrenza dell’ora scelta."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 309,
+      "call": "p",
+      "dynamic": false,
+      "text": "Al ritorno recupera solo l’ultima scadenza di ogni serie: le sveglie entro 10 minuti, gli impegni entro due ore dall’avviso e prima della fine. Gli avvisi più vecchi rimangono nell’elenco, senza suonare. Una notifica già mostrata torna silenziosamente dopo il riavvio."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 309,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 310,
+      "call": "p",
+      "dynamic": false,
+      "text": "Il suono di una sveglia dura al massimo un minuto; la notifica resta da gestire. <b>Effetti sonori</b> e <b>Silenzio per un’ora</b> controllano il suono; <b>Voce attiva</b> controlla la lettura. Sveglie e avvisi funzionano anche con Yun Jin nascosta e durante il focus."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 310,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 321,
+      "call": "h",
+      "dynamic": false,
+      "text": "Requisiti e accesso alla rete"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 321,
+      "call": "p",
+      "dynamic": false,
+      "text": "Prima installazione, voce, meteo, aggiornamenti e download degli originali del calendario richiedono Internet. Studio, appunti, promemoria, calendario, sveglie e strumenti musicali funzionano offline. iOS e Android non sono inclusi. Il programma usa Python a 64 bit; gli avviatori gestiscono un ambiente privato."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 321,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 322,
+      "call": "h",
+      "dynamic": false,
+      "text": "Crediti e licenze"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 322,
+      "call": "p",
+      "dynamic": false,
+      "text": "Progetto fan non ufficiale. Yun Jin è un personaggio di Genshin Impact; personaggio e marchi appartengono ai rispettivi titolari."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 322,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 323,
+      "call": "p",
+      "dynamic": false,
+      "text": "Codice: <b>GNU GPL v3 o successiva</b>, in <b>app/licenses/GPL-3.0.txt</b>. La licenza del codice non concede diritti ulteriori sulle illustrazioni o sui marchi. Python, PyQt6/Qt, edge-tts, gTTS e FSRS mantengono le rispettive licenze. FSRS 6 è di Open Spaced Repetition; le licenze sono in app/licenses. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 323,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 324,
+      "call": "p",
+      "dynamic": false,
+      "text": "Meteo: <link href=\"https://open-meteo.com/\" color=\"#3e777e\">Open-Meteo</link>, dati CC BY 4.0. Ricerca delle città: <link href=\"https://www.geonames.org/\" color=\"#3e777e\">GeoNames</link>. Per la voce, il testo viene inviato al servizio selezionato; per il meteo, Open-Meteo riceve le coordinate della città scelta e l’indirizzo IP della connessione."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 324,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 325,
+      "call": "h",
+      "dynamic": false,
+      "text": "Progetti di riferimento"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 325,
+      "call": "p",
+      "dynamic": false,
+      "text": "<link href=\"https://www.python.org\" color=\"#3e777e\">Python</link> · <link href=\"https://www.riverbankcomputing.com/software/pyqt/\" color=\"#3e777e\">PyQt</link> · <link href=\"https://doc.qt.io\" color=\"#3e777e\">Qt</link> · <link href=\"https://github.com/rany2/edge-tts\" color=\"#3e777e\">edge-tts</link> · <link href=\"https://gtts.readthedocs.io\" color=\"#3e777e\">gTTS</link>"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 325,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 326,
+      "call": "p",
+      "dynamic": false,
+      "text": "Revisione della guida: 24 ottobre 2026."
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 326,
+      "call": "p",
+      "dynamic": false,
+      "text": "small"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 44,
+      "call": "p",
+      "dynamic": false,
+      "text": "call"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 37,
+      "call": "p",
+      "dynamic": false,
+      "text": "th"
+    },
+    {
+      "file": "docs/build_guide.py",
+      "line": 37,
+      "call": "p",
+      "dynamic": false,
+      "text": "cell"
+    }
+  ],
+  "manual_review": [
+    "arguments through variables and data tables",
+    "month/day names, plurals, units, date/time formatting",
+    "native Qt dialogs and accessibility labels",
+    "installer shell/PowerShell/launchers and startup failures",
+    "guide tables, HTML fragments, screenshots and CJK fonts",
+    "README, release notes, GitHub description",
+    "voice selection separate from interface language",
+    "existing translated greeting/weather pools",
+    "AI prompts, error propagation and text coming from services"
+  ]
+}

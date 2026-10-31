@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Configurable native global hotkeys, no keyboard polling or event tap."""
+from yun_jin_i18n import tr
 import ctypes
 import logging
 import sqlite3
@@ -36,18 +37,18 @@ def normalize(value, platform=None):
     platform=sys.platform if platform is None else platform
     seq=QKeySequence(value,QKeySequence.SequenceFormat.PortableText)
     if not value or seq.isEmpty():
-        if value: raise ValueError('Combinazione non valida.')
+        if value: raise ValueError(tr('Combinazione non valida.'))
         return ''
-    if seq.count()!=1: raise ValueError('Usa una sola combinazione di tasti.')
+    if seq.count()!=1: raise ValueError(tr('Usa una sola combinazione di tasti.'))
     combination=seq[0]; key=int(combination.key()); mods=combination.keyboardModifiers()
     if not mods & (Qt.KeyboardModifier.ControlModifier|Qt.KeyboardModifier.AltModifier|Qt.KeyboardModifier.MetaModifier):
-        raise ValueError('Aggiungi Ctrl, Alt oppure '+('⌘.' if platform=='darwin' else 'Win.'))
+        raise ValueError(tr('Aggiungi Ctrl, Alt oppure ')+('⌘.' if platform=='darwin' else 'Win.'))
     special={int(k) for k in (Qt.Key.Key_Space,Qt.Key.Key_Home,Qt.Key.Key_End,Qt.Key.Key_PageUp,Qt.Key.Key_PageDown,
                              Qt.Key.Key_Left,Qt.Key.Key_Right,Qt.Key.Key_Up,Qt.Key.Key_Down)}
     if not (ord('A')<=key<=ord('Z') or ord('0')<=key<=ord('9') or
             int(Qt.Key.Key_F1)<=key<=int(Qt.Key.Key_F20) or key in special):
-        raise ValueError('Usa una lettera, un numero, un tasto F1–F20, spazio o una freccia.')
-    if platform=='win32' and key==int(Qt.Key.Key_F12): raise ValueError('F12 è riservato da Windows.')
+        raise ValueError(tr('Usa una lettera, un numero, un tasto F1–F20, spazio o una freccia.'))
+    if platform=='win32' and key==int(Qt.Key.Key_F12): raise ValueError(tr('F12 è riservato da Windows.'))
     return seq.toString(QKeySequence.SequenceFormat.PortableText)
 
 
@@ -126,7 +127,7 @@ class MacBackend:
         self.handler=self.Handler(self.handle);self.handler_ref=p()
         specs=(self.Spec*2)(self.Spec(0x6b657962,self.HOTKEY_PRESSED),self.Spec(0x6b657962,self.HOTKEY_RELEASED))
         if c.InstallEventHandler(c.GetApplicationEventTarget(),self.handler,2,specs,None,ctypes.byref(self.handler_ref)):
-            raise OSError('Scorciatoie globali macOS non disponibili.')
+            raise OSError(tr('Scorciatoie globali macOS non disponibili.'))
 
     def keycode(self,key):
         if key in self.SPECIAL: return self.SPECIAL[key]
@@ -145,7 +146,7 @@ class MacBackend:
         try:
             prop=p.in_dll(c,'kTISPropertyUnicodeKeyLayoutData')
             data=c.TISGetInputSourceProperty(source,prop)
-            if not data: raise ValueError('Layout tastiera non disponibile.')
+            if not data: raise ValueError(tr('Layout tastiera non disponibile.'))
             layout=cf.CFDataGetBytePtr(data)
             keypad={65,67,69,71,75,76,78,81,82,83,84,85,86,87,88,89,91,92}
             for modifier in (0,2):
@@ -157,7 +158,7 @@ class MacBackend:
 
         finally:
             if source: cf.CFRelease(source)
-        raise ValueError('Questo tasto non è disponibile nel layout corrente.')
+        raise ValueError(tr('Questo tasto non è disponibile nel layout corrente.'))
 
     def system_shortcuts(self):
         """Ask macOS before RegisterEventHotKey, which can accept system conflicts."""
@@ -174,13 +175,13 @@ class MacBackend:
         cf.CFRelease.argtypes=[p];cf.CFRelease.restype=None
         array=p()
         if c.CopySymbolicHotKeys(ctypes.byref(array)) or not array:
-            raise OSError('Elenco delle scorciatoie di sistema non disponibile.')
+            raise OSError(tr('Elenco delle scorciatoie di sistema non disponibile.'))
         keys=[]
         try:
             # These three SDK names are CFSTR macros, not exported symbols.
             keys=[cf.CFStringCreateWithCString(None,name,0x08000100) for name in
                   (b'kHISymbolicHotKeyEnabled',b'kHISymbolicHotKeyCode',b'kHISymbolicHotKeyModifiers')]
-            if not all(keys):raise OSError('Scorciatoie di sistema non leggibili.')
+            if not all(keys):raise OSError(tr('Scorciatoie di sistema non leggibili.'))
             enabled_key,code_key,mods_key=keys
             result=set()
             for i in range(min(2048,cf.CFArrayGetCount(array))):
@@ -205,8 +206,8 @@ class MacBackend:
             try:reserved=self.system_shortcuts()
             except (OSError,AttributeError,ValueError) as exc:
                 logging.warning('macOS system shortcuts: %s',exc)
-                raise ValueError('Impossibile verificare le scorciatoie di macOS') from exc
-            if (code,modifiers) in reserved:raise ValueError('Combinazione usata da macOS')
+                raise ValueError(tr('Impossibile verificare le scorciatoie di macOS')) from exc
+            if (code,modifiers) in reserved:raise ValueError(tr('Combinazione usata da macOS'))
             ref=ctypes.c_void_p()
             status=self.carbon.RegisterEventHotKey(code,modifiers,
                 self.ID(self.SIGNATURE,ident),self.carbon.GetApplicationEventTarget(),self.EXCLUSIVE,ctypes.byref(ref))
@@ -285,7 +286,7 @@ class Hotkeys:
             self.errors=self.register(self.bindings)
         except Exception:
             logging.exception('Hotkey initialization');self.backend=None
-            self.errors={name:'Servizio non disponibile' for name,value in self.bindings.items() if value}
+            self.errors={name:tr('Servizio non disponibile') for name,value in self.bindings.items() if value}
         self.update_status()
 
     def dispatch(self,ident):
@@ -322,20 +323,20 @@ class Hotkeys:
         for name,sequence in bindings.items():
             try:
                 sequence=normalize(sequence)
-                if sequence and not self.backend.register(IDENTS[name],sequence): errors[name]='Già in uso o riservata dal sistema'
+                if sequence and not self.backend.register(IDENTS[name],sequence): errors[name]=tr('Già in uso o riservata dal sistema')
             except ValueError as exc: errors[name]=str(exc)
         return errors
 
     def apply(self,bindings):
         normalized={name:normalize(bindings.get(name,'')) for name in ACTIONS}
         values=[s for s in normalized.values() if s]
-        if len(values)!=len(set(values)): raise ValueError('Assegna combinazioni diverse alle azioni.')
-        if self.backend is None: raise ValueError('Scorciatoie non disponibili. Riavvia Yun Jin.')
+        if len(values)!=len(set(values)): raise ValueError(tr('Assegna combinazioni diverse alle azioni.'))
+        if self.backend is None: raise ValueError(tr('Scorciatoie non disponibili. Riavvia Yun Jin.'))
         self.backend.unregister_all()
         errors=self.register(normalized)
         if errors:
             self.backend.unregister_all();self.errors=self.register(self.bindings);self.update_status()
-            raise ValueError('\n'.join(ACTIONS[key]+': '+value+'.' for key,value in errors.items()))
+            raise ValueError('\n'.join(tr(ACTIONS[key])+': '+value+'.' for key,value in errors.items()))
         self.bindings=normalized;self.errors={}
         self.pet.store.set_preference('shortcuts_'+sys.platform,normalized);self.update_status()
 
@@ -347,10 +348,10 @@ class Hotkeys:
             try:
                 sequence=normalize(bindings.get(name,''));normalized[name]=sequence
                 if sequence and sequence in seen:
-                    errors[name]='Già assegnata a '+ACTIONS[seen[sequence]].lower()
+                    errors[name]=tr('Già assegnata a ')+tr(ACTIONS[seen[sequence]]).lower()
                 elif sequence:seen[sequence]=name
             except ValueError as exc:errors[name]=str(exc)
-        if self.backend is None:return {name:'Scorciatoie non disponibili' for name in normalized if normalized[name]}
+        if self.backend is None:return {name:tr('Scorciatoie non disponibili') for name in normalized if normalized[name]}
         self.backend.unregister_all()
         try:
             errors.update(self.register({k:v for k,v in normalized.items() if k not in errors}))
@@ -358,8 +359,8 @@ class Hotkeys:
         return errors
 
     def update_status(self):
-        self.pet.hotkey_status=('Non disponibili: '+', '.join(ACTIONS[k] for k in self.errors)) if self.errors else (
-            'Scorciatoie globali attive.' if sys.platform in ('win32','darwin') else 'Scorciatoie attive nelle finestre di Yun Jin.')
+        self.pet.hotkey_status=(tr('Non disponibili: ')+', '.join(tr(ACTIONS[k]) for k in self.errors)) if self.errors else (
+            tr('Scorciatoie globali attive.') if sys.platform in ('win32','darwin') else tr('Scorciatoie attive nelle finestre di Yun Jin.'))
 
     def label(self,text,name):
         seq=self.bindings.get(name,'')
@@ -372,7 +373,7 @@ class Hotkeys:
 
 class ShortcutDialog(QDialog):
     def __init__(self,pet,parent=None):
-        super().__init__(parent);self.pet=pet;self.setWindowTitle('Scorciatoie');self.setStyleSheet(STYLE)
+        super().__init__(parent);self.pet=pet;self.setWindowTitle(tr('Scorciatoie'));self.setStyleSheet(STYLE)
         self.resize(680,490);layout=QVBoxLayout(self);layout.setContentsMargins(20,20,20,18);layout.setSpacing(16)
         self.tabs=QTabWidget();layout.addWidget(self.tabs,1)
         self.edits={};self.clear_buttons={}
@@ -382,26 +383,26 @@ class ShortcutDialog(QDialog):
             page=QWidget();grid=QGridLayout(page);grid.setContentsMargins(4,16,4,4)
             grid.setHorizontalSpacing(20);grid.setVerticalSpacing(10);grid.setColumnMinimumWidth(0,220);grid.setColumnStretch(1,1)
             for row,name in enumerate(names):
-                label=ACTIONS[name];grid.addWidget(plain_label(label.split(' · ')[-1]),row,0)
+                label=tr(ACTIONS[name]);grid.addWidget(plain_label(label.split(' · ')[-1]),row,0)
                 edit=QKeySequenceEdit(QKeySequence(pet.hotkeys.bindings[name]));edit.setMaximumSequenceLength(1)
                 edit.setClearButtonEnabled(False);edit.setAccessibleName(label);grid.addWidget(edit,row,1)
-                edit.findChild(QLineEdit).setPlaceholderText('Nessuna')
-                clear=icon_button('close','Disattiva '+label.lower(),edit.clear)
+                edit.findChild(QLineEdit).setPlaceholderText(tr('Nessuna'))
+                clear=icon_button('close',tr('Disattiva ')+label.lower(),edit.clear)
                 clear.setEnabled(not edit.keySequence().isEmpty());grid.addWidget(clear,row,2)
                 edit.keySequenceChanged.connect(lambda sequence,b=clear:b.setEnabled(not sequence.isEmpty()))
                 edit.keySequenceChanged.connect(lambda _sequence:self.validation.start())
                 self.clear_buttons[name]=clear
                 if name in pet.hotkeys.errors:edit.setToolTip(pet.hotkeys.errors[name])
                 self.edits[name]=edit
-            grid.setRowStretch(len(names),1);self.tabs.addTab(scroll_page(page),category)
+            grid.setRowStretch(len(names),1);self.tabs.addTab(scroll_page(page),tr(category))
         self.error=plain_label('','alert');self.error.hide();layout.addWidget(self.error)
         if pet.hotkeys.errors:
-            self.error.setText('\n'.join(ACTIONS[k]+': '+v+'.' for k,v in pet.hotkeys.errors.items()));self.error.show()
+            self.error.setText('\n'.join(tr(ACTIONS[k])+': '+v+'.' for k,v in pet.hotkeys.errors.items()));self.error.show()
         buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Save|QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Save).setText('Salva')
+        buttons.button(QDialogButtonBox.StandardButton.Save).setText(tr('Salva'))
         self.save_button=buttons.button(QDialogButtonBox.StandardButton.Save)
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Annulla')
-        reset=buttons.addButton('Ripristina',QDialogButtonBox.ButtonRole.ResetRole)
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(tr('Annulla'))
+        reset=buttons.addButton(tr('Ripristina'),QDialogButtonBox.ButtonRole.ResetRole)
         reset.clicked.connect(lambda:[edit.setKeySequence(QKeySequence(DEFAULTS[name])) for name,edit in self.edits.items()])
         buttons.accepted.connect(self.save);buttons.rejected.connect(self.reject);layout.addWidget(buttons)
 
@@ -420,7 +421,7 @@ class ShortcutDialog(QDialog):
         for name,edit in self.edits.items():
             rule='QKeySequenceEdit QLineEdit {border-color:#e3c293;}' if name in errors else ''
             edit.setStyleSheet(rule);edit.setToolTip(errors.get(name,''))
-        self.error.setText('\n'.join(ACTIONS[k]+': '+value+'.' for k,value in errors.items()))
+        self.error.setText('\n'.join(tr(ACTIONS[k])+': '+value+'.' for k,value in errors.items()))
         self.error.setVisible(bool(errors));self.save_button.setEnabled(not errors)
 
     def done(self,result):

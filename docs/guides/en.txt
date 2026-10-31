@@ -1,0 +1,99 @@
+# Getting started
+## Install
+Download the application ZIP from the GitHub release and extract the whole folder. On Windows 10/11 (64-bit), open Windows.cmd. On macOS 13 or later, open Mac.command and complete any Python installation prompt. The Mac app is installed in /Applications. On Linux, install a supported Python and python3-venv, then run sh Linux.sh. The installer uses a separate environment and preserves existing personal data.
+## Choose your language
+At first launch choose Italiano, English or 简体中文. Settings → Language changes the interface at the next launch. Guide opens the matching guide. The language under Voice is independent and controls speech, greetings and weather comments.
+## Open and control Yun Jin
+Double-click the character to open the panel; right-click for the menu. Drag her to move her. The menu controls walking, following, animations, size and opacity. Spontaneous walking and pointer following can be enabled separately. Manual animations take effect immediately.
+Hide Yun Jin hides the character while tools, reminders and alarms keep working. On macOS, use the menu bar icon to reopen the panel. The full-screen setting controls whether she appears over full-screen applications. Close from the character menu quits the app; closing the panel only hides the panel.
+## Shortcuts
+Settings → Shortcuts lets you assign keys, clear a binding or restore defaults. Windows and macOS support global shortcuts; Linux shortcuts work inside Yun Jin windows. Conflicting combinations are marked. Shortcuts can control tools, visibility, voice, events and alarms.
+
+# Notes and reminders
+## Notes
+New creates a note. The title and text save automatically. Import accepts clipboard content, files and folders; you can also drop files onto the panel or character. Open opens a linked item in its original application. Linked files stay in their original location; move them only if you also update the note. Captured clipboard images are stored with the app's data.
+Search finds titles, text and paths. Read speaks the current note. The note's ⋯ menu offers Save and Delete. Deleting a note does not delete its linked file.
+## Using ChatGPT
+Open ChatGPT within the note, choose Explain, Translate, Review or Question, then Copy and open. Paste the prepared request into ChatGPT. Attach any referenced file yourself; the app does not upload it or send the request automatically.
+## Reminders
+New reminder accepts a delay or a date and time. Quick buttons set common delays. When due, the reminder offers Done or In 10 min. Hide closes the notification without completing the reminder. Reminders lists pending items; Completed shows finished ones. Edit, snooze or delete items from their controls.
+Voice and sound settings control audible feedback. If audio is off, text notifications remain available. Reminders require the app to be running; they cannot wake a shut-down computer.
+
+# Calendar and alarms
+## Events
+Select a day, then New event. Enter a title, start, end and optional notes. All day uses inclusive dates in the editor: selecting Monday through Tuesday covers both days. Reminder controls the advance warning; Read the alert aloud enables speech for that event.
+Repeat daily, weekly, monthly or yearly, with an interval and optional end date or occurrence count. When editing or deleting a series, choose This occurrence or Entire series. A monthly event on the 31st skips months without that date; a February 29 event occurs in leap years. Named time zones received from Google are retained; local events follow the computer's time zone.
+## Navigation and artwork
+Arrows change month; Today returns to today. Click the month title to jump to another month or year. Keyboard arrows select a day, Enter creates an event, Page Up/Down changes month and Home returns to today.
+Each month has daily artwork in a stable order that varies by year. Open the illustration to view the full original; uncached originals download when needed. The Original/Preview label identifies what is displayed. Close with the mouse or Esc.
+## Alarms
+New alarm accepts a time, optional name, recurrence, sound, voice and snooze interval. A one-time alarm disables after ringing; enabling it again schedules its next occurrence. Stop dismisses it; snoozing schedules it again. Ringing stops after one minute, but the notification remains.
+After sleep or a restart, only the latest occurrence is recovered: alarms within 10 minutes and event reminders within two hours and before the event ends. Older alerts remain listed silently. Alarms work with the character hidden and during focus, while the app is running.
+
+# Google Calendar
+## Connect and select calendars
+Google connection is currently available to accounts added to the project’s test users. During testing, Google requires you to reconnect every 7 days; use Reconnect account when prompted. Events and pending changes are preserved.
+In Calendar, choose Connect Google Calendar. Your browser opens: choose your Google account and allow Yun Jin to connect. The same controls are also available in Settings. Credentials are stored in your operating system's keychain; the app does not save your Google password.
+Select the calendars to synchronize. New events sets the default destination. In the event editor, choose a calendar or Only on this device. Existing local events remain local until you assign them. Alarms, notes and flashcards are not uploaded to Google Calendar.
+## Across devices
+Connect the same Google account on each computer and select the same calendars. Changes also appear in Google Calendar on your phone. Sync updates immediately on request; automatic synchronization runs after local edits and periodically while connected. The app must be running to receive changes.
+Edits made offline remain saved and synchronize when the connection returns. Do not create extra copies to retry a pending upload. Account → Disconnect this device stops synchronization on this device and keeps Google events intact. Other devices remain connected; reconnecting the same account preserves event mappings.
+Use Account → Manage Google access to review or revoke the app’s authorization through Google; revocation can affect all connected devices.
+## Conflicts and read-only events
+Changes to different fields can be combined. When the same information changes on both sides, Conflicts offers Use local, Use Google or Keep both. Keep both retains Google's shared version and a separate local copy; that copy is not uploaded.
+Shared read-only calendars and unsupported event types or recurrence rules are protected from editing in the app. Open in Google Calendar to manage them there. Google-only fields such as guests and locations are preserved when you edit supported fields in Yun Jin.
+
+# Study and flashcards
+## Create and review
+New deck starts a collection. Add card offers Front / back or Cloze. Write the question and answer on their respective sides. Select text and choose Cloze, or use {{c1::text}}; add a hint with {{c1::text::hint}}. Different numbers create different cards; the same number hides several passages together. Nested clozes are not supported.
+Each side can hold text and up to 12 image or audio attachments, up to 32 MB each. Attachments are copied into the app's data folder. Preview shows the result; Save and add starts another card. Editing text preserves the progress of existing cards.
+## During a session
+Study shows the question. Show answer or Space reveals the answer. Rate your recall with Again, Hard, Good or Easy; use keys 1–4 for the same ratings. Undo last answer restores the previous state. Short learning steps may require waiting before the next card.
+The deck overview shows new, learning and review cards. Search cards finds and edits notes; Suspend / Resume controls whether a card is scheduled. Delete card removes the card and its related clozes. Archive deck removes a deck from active study while keeping its data; Archived decks lets you restore it.
+## Scheduling
+FSRS uses your answers to plan reviews and adapts when enough history is available. Existing due dates are not moved just because parameters improve. Conventional intervals are available by disabling FSRS in Deck options.
+Observed 30-day retention counts remembered answers in reviews at least a day apart; short learning steps are excluded. A higher desired retention requires more reviews.
+
+# Study settings and Anki
+## Deck options
+Desired retention starts at 90%. Daily new-card and review limits start unlimited; zero blocks new work of that kind, while learning steps already started that day continue. Daily limits reset at 04:00 local time.
+New-card steps start at 10s 30s 1m 10m; lapse steps at 10s 30s 1m. Separate steps with spaces: s = seconds, m = minutes, h = hours, d = days. No unit means minutes. Leave steps empty to let FSRS choose intervals. Again returns to the first step; Good advances; Hard repeats an adjusted step; Easy graduates to reviews.
+Cards become leeches after 16 review lapses by default and are suspended. Adjust the threshold or disable automatic suspension in Deck options. Leeches lists these cards.
+## Review reminders
+Reminders and Anki controls occasional practice prompts: every 90–150 minutes, up to three times a day. They select difficult cards from decks studied today, wait at least 30 minutes after the last review and avoid repeating notes shown today or yesterday. Focus and other activities suppress interruptions. Review opens up to three cards; Not today pauses the prompts.
+## Anki
+Enable Include Anki cards, then choose an Anki profile or browse to collection.anki2. No Anki add-on is needed. Reading refreshes every 15 minutes and can work while Anki is open; if it is busy, retry later or close Anki.
+Practice selects leeches and the hardest 10% of cards from decks studied today. Anki answers and scheduling are never changed. Front/back and cloze templates with readable static content, local images and audio are supported; scripts do not run. Including suspended leeches affects practice only: the originals remain suspended.
+
+# Music, time and focus
+## Metronome
+Set a tempo from 20 to 400 BPM and press Start. Tap tempo estimates the tempo from your taps. Accent sets the number of beats per accented click; volume is independent of voice and character sounds.
+Tempo ramp gradually moves toward a target tempo using a step and beat interval. Choose whether to continue or stop after the last interval. Stop ends playback. After the computer sleeps or an audio device fails, check the output and press Start again.
+## Stopwatch
+Start / Pause preserves elapsed time. Lap records both split duration and total time. Reset clears the timer and laps. Copy places the lap table on the clipboard; CSV exports it. Stopped and running state is saved, so a normal restart preserves recorded work.
+## Focus
+Choose a duration and press Start. The timer becomes a reminder when finished. Stop ends the session. Focus suppresses optional study interruptions; it does not disable scheduled alarms or events. Metronome and stopwatch remain separate tools.
+## Character behavior
+Walking, following the pointer and looking at it are separate options. The menu provides manual gestures and animations, personality, size, opacity and display selection. Bring back on screen recovers a character moved outside the visible area. Pause everything stops character activity; hiding her leaves tools available.
+
+# Voice, sounds and weather
+## Voice
+Voice on controls spoken output. Disabling it keeps text bubbles, notifications and animations. Read uses the text field or a note; Read clipboard text uses copied text. Stop cancels speech and its bubble. Long text is shown in short parts; select a passage of up to 3,000 characters for reading.
+Microsoft Edge provides voice, speed, pitch and volume controls. Google Translate provides language, slow reading and volume; its service chooses the voice. No API key is needed. Speech sends text to the selected online service; availability depends on that service. Previously generated audio is cached locally. The ⋯ menu clears the cache or restores voice defaults.
+Voice, sound effects and metronome have separate volume controls. Mute for 1 hour silences character sounds temporarily. A manual reading stops the metronome. Automatic reminder reading has its own switch.
+## Time and weather
+Settings → Time and weather enables startup greetings, time-based animations and local weather reactions separately. Choose a city manually; the app does not need device location access. Weather appears in navigation after a city is selected.
+The weather page shows current estimates, daily forecasts and hourly detail. Select a day or hour to inspect temperature, precipitation and wind. Refresh requests new data; saved results remain visible when offline. Time labels follow the forecast location's time zone. Weather data comes from Open-Meteo; city search uses GeoNames.
+
+# Data, updates and help
+## Back up and restore
+Settings → Backup exports the database and captured images, flashcard media and preferences. Linked external files are not copied. Keep them separately. Data folder opens the storage location.
+To restore, close Yun Jin, preserve a copy of the current data folder, then extract companion.sqlite3, attachments and study-media from the backup into that folder. Replace the database only while the app is closed. Restored calendar data is local: Google credentials and synchronization links are not restored. Reconnect accounts deliberately after reviewing the restored events.
+## Updates and removal
+Automatic updates check about every two hours. Read release notes, choose Later, Skip this version or Update and restart. Updates requiring new dependencies use the release installer. Failed restarts restore the previous program. Personal data is preserved; old successful update packages are cleaned up automatically.
+To remove the app, close it and remove shortcuts; on macOS also remove the app from /Applications. The data folder contains program and runtime. Preserve companion.sqlite3, attachments and study-media, or export a backup before deleting that folder.
+## Troubleshooting
+If a window seems missing, use the tray/menu bar or a panel shortcut. If sound fails, check its separate volume, mute state and output device. If speech fails, retry or switch service. If Anki is busy, close Anki and retry. Reconnect Google after revoking access or if the app requests authorization again. Pending edits remain saved.
+Run the installer again to repair the environment. If the problem persists, check yun-jin.log in Data folder; do not share personal notes, databases or credentials with a bug report. Alarms and reminders cannot run while the app is closed or the computer is off.
+## Credits and privacy
+Unofficial fan project. Yun Jin and Genshin Impact belong to their respective rights holders. Code is GPL-3.0-or-later; dependency licenses remain with their packages. Open-Meteo data is CC BY 4.0; cities are from GeoNames. Voice services receive the text you ask them to read; weather requests include the chosen coordinates and connection IP. Google receives events in the calendars you select. No affiliation with HoYoverse, Microsoft, Google or OpenAI.

@@ -1,6 +1,7 @@
 """Interaction and background boundaries, including focus and macOS ownership."""
 import json,os,sys,tempfile,time,unittest
 from pathlib import Path
+from datetime import datetime
 from types import SimpleNamespace
 from unittest.mock import Mock,patch
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
@@ -74,7 +75,8 @@ class StudyUiTests(unittest.TestCase):
         self.s.db.execute('UPDATE sr_cards SET difficulty=9,lapses=5,due=? WHERE id=?',(time.time()+86400,cid));self.s.db.commit()
         return cid
 
-    def test_prompts_are_targeted_sparse_dismissable_and_blocked_by_focus(self):
+    @patch('time.time', return_value=datetime(2032,6,15,12).timestamp())
+    def test_prompts_are_targeted_sparse_dismissable_and_blocked_by_focus(self, clock):
         cid=self.make_hard();tools=self.pet.study_tools;tools.next_prompt=0
         with patch.object(self.pet.context,'can_react',return_value=True):tools.poll()
         self.assertIsNotNone(tools.prompt);self.assertTrue(tools.prompt.isVisible())

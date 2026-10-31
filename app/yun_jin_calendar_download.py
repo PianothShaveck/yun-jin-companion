@@ -39,9 +39,11 @@ def matches(path, record):
 
 def trim_cache(directory, keep, limit=CACHE_BYTES):
     # Only files owned by this cache are candidates for eviction.
+    if not directory.is_dir():
+        return
     entries = []
-    for path in directory.glob('*.webp'):
-        if re.fullmatch(r'[0-9a-f]{64}\.webp', path.name) and not path.is_symlink():
+    for path in directory.iterdir():
+        if re.fullmatch(r'[0-9a-f]{64}\.(?:webp|jxl)', path.name) and not path.is_symlink():
             try:
                 stat = path.stat()
                 entries.append((stat.st_mtime_ns, path, stat.st_size))
@@ -69,6 +71,7 @@ class OriginalLoader(QObject):
         self.network = None
         self.reply = None
         self.cancelled = False
+        self.source = None
         self.payload = bytearray()
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
@@ -77,6 +80,7 @@ class OriginalLoader(QObject):
     def start(self, preview):
         if self.cancelled or self.reply is not None:
             return
+        self.source = None
         try:
             name = Path(preview).name
             if not re.fullmatch(r'(?:YJ-\d{3}|m\d{2}-[a-z])\.webp', name):
@@ -86,25 +90,29 @@ class OriginalLoader(QObject):
             digest = self.record['sha256']
             if not re.fullmatch(r'[0-9a-f]{64}', digest) or not 0 < self.record['bytes'] <= MAX_IMAGE_BYTES:
                 raise ValueError('Invalid image metadata')
-            candidates = [Path(preview), ASSETS / 'calendar' / name]
+            original=self.record.get('file',name)
+            if not isinstance(original,str) or not re.fullmatch(r'(?:YJ-\d{3}|m\d{2}-[a-z])\.(?:webp|jxl)',original):
+                raise ValueError('Invalid original name')
+            candidates = [Path(preview), ASSETS / 'calendar' / original]
             try:
                 local = json.loads((self.root / 'calendar-originals.json').read_text(encoding='utf-8'))
-                candidates.append(Path(local['directory']) / name)
+                candidates.append(Path(local['directory']) / original)
             except (OSError, ValueError, KeyError, TypeError):
                 pass
             self.cache = self.root / 'calendar-cache'
-            self.target = self.cache / (digest + '.webp')
+            self.target = self.cache / (digest + Path(original).suffix)
             candidates.append(self.target)
             for path in candidates:
                 if matches(path, self.record):
                     if path == self.target:
                         path.touch()
                         trim_cache(self.cache, path)
+                    self.source = 'cache' if path == self.target else 'local'
                     self.ready.emit(path)
                     return
             if self.network is None:
                 self.network = QNetworkAccessManager(self)
-            request = QNetworkRequest(QUrl(original_url(name, doc['ref'])))
+            request = QNetworkRequest(QUrl(original_url(original, doc['ref'])))
             tls = QSslConfiguration.defaultConfiguration()
             tls.setCaCertificates(QSslCertificate.fromPath(certifi.where()))
             request.setSslConfiguration(tls)
@@ -159,6 +167,7 @@ class OriginalLoader(QObject):
             finally:
                 Path(temporary).unlink(missing_ok=True)
             trim_cache(self.cache, self.target)
+            self.source = 'download'
             self.ready.emit(self.target)
         except (OSError, ValueError):
             self.failed.emit()

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Bounded forecast decoding in the disposable weather worker. No GUI imports."""
+from yun_jin_i18n import tr
 import math
 import time
 from urllib.parse import urlencode
@@ -99,14 +100,14 @@ def cache_valid(data,location,now=None,ttl=MAX_CACHE_AGE):
 
 def condition(row,day=None):
     code=row.get('weather_code');day=row.get('is_day') if day is None else day
-    if type(code) is not int or weather_kind(code,1) is None:return 'Non disponibile',None
+    if type(code) is not int or weather_kind(code,1) is None:return tr('Non disponibile'),None
     kind=detailed_weather_kind(code,day,row.get('rain'),row.get('snowfall'),
                                row.get('wind_speed_10m',row.get('wind_speed_10m_max')))
-    labels={'sun':'Sereno','clear_night':'Sereno','partly_cloudy':'Parzialmente nuvoloso',
-            'partly_cloudy_night':'Parzialmente nuvoloso','cloud':'Nuvoloso','fog':'Nebbia',
-            'drizzle':'Pioviggine','freezing_rain':'Pioggia gelata','rain':'Pioggia',
-            'heavy_rain':'Pioggia forte','snow':'Neve','heavy_snow':'Neve intensa',
-            'thunderstorm':'Temporale','storm_hail':'Temporale con grandine',
-            'sleet':'Pioggia e neve','wind':'Ventoso'}
-    label='Parzialmente nuvoloso' if code==2 and kind=='cloud' else labels.get(kind,'Sereno' if code in (0,1) else 'Non disponibile')
+    labels={'sun':tr('Sereno'),'clear_night':tr('Sereno'),'partly_cloudy':tr('Parzialmente nuvoloso'),
+            'partly_cloudy_night':tr('Parzialmente nuvoloso'),'cloud':tr('Nuvoloso'),'fog':tr('Nebbia'),
+            'drizzle':tr('Pioviggine'),'freezing_rain':tr('Pioggia gelata'),'rain':tr('Pioggia'),
+            'heavy_rain':tr('Pioggia forte'),'snow':tr('Neve'),'heavy_snow':tr('Neve intensa'),
+            'thunderstorm':tr('Temporale'),'storm_hail':tr('Temporale con grandine'),
+            'sleet':tr('Pioggia e neve'),'wind':tr('Ventoso')}
+    label=tr('Parzialmente nuvoloso') if code==2 and kind=='cloud' else labels.get(kind,tr('Sereno') if code in (0,1) else tr('Non disponibile'))
     return label,kind

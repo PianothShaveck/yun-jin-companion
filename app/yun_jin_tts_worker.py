@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """One cancellable network request per subprocess; JSON input/output, no shell."""
+from yun_jin_i18n import tr
 import hashlib
 import json
 import os
@@ -18,7 +19,7 @@ def cache_key(job):
 def synthesize(job):
     text=str(job['text']).strip()
     if not text or len(text)>MAX_CHARS:
-        raise ValueError('Scegli un testo da 1 a 3000 caratteri.')
+        raise ValueError(tr('Scegli un testo da 1 a 3000 caratteri.'))
     job=dict(job,text=text)
     root=Path(job['cache']).resolve()
     root.mkdir(parents=True,exist_ok=True)
@@ -42,9 +43,9 @@ def synthesize(job):
             gTTS(text=text,lang=job.get('language','it'),slow=int(job.get('rate',0))<0,
                  lang_check=False,timeout=(8,20)).save(str(part))
         else:
-            raise ValueError('Servizio vocale non riconosciuto.')
+            raise ValueError(tr('Servizio vocale non riconosciuto.'))
         if not part.is_file() or part.stat().st_size<=128:
-            raise ValueError('Il servizio non ha restituito audio valido.')
+            raise ValueError(tr('Il servizio non ha restituito audio valido.'))
         os.replace(part,target)
         # Bound the cache to 100 MiB / 200 clips; the current result is kept.
         entries=sorted(root.glob('*.mp3'),key=lambda p:p.stat().st_mtime,reverse=True)
@@ -64,7 +65,7 @@ def main():
         job=json.loads(sys.stdin.buffer.read().decode('utf-8'))
         result=synthesize(job)
     except ImportError:
-        result={'ok':False,'error':'Componente vocale mancante. Esegui di nuovo il programma di installazione di Yun Jin.'}
+        result={'ok':False,'error':tr('Componente vocale mancante. Esegui di nuovo il programma di installazione di Yun Jin.')}
     except Exception as exc:
         result={'ok':False,'error':type(exc).__name__+': '+str(exc)[:240]}
     sys.stdout.buffer.write(json.dumps(result,ensure_ascii=False).encode('utf-8'))

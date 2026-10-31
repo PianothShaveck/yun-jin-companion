@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Companion tools with compact navigation and contextual controls."""
+from yun_jin_i18n import tr
 import time
 import sys
 from pathlib import Path
@@ -21,17 +22,17 @@ class ReminderDialog(QDialog):
     def __init__(self, pet, existing=None):
         super().__init__(owner_window(pet))
         self.pet, self.existing = pet, existing
-        self.setWindowTitle('Modifica promemoria' if existing else 'Nuovo promemoria')
+        self.setWindowTitle(tr('Modifica promemoria') if existing else tr('Nuovo promemoria'))
         self.setWindowIcon(pet.windowIcon()); self.setStyleSheet(STYLE)
         self.setMinimumWidth(420)
         layout=QVBoxLayout(self); layout.setContentsMargins(22,22,22,18); layout.setSpacing(16)
         self.title=QLineEdit(existing['title'] if existing else '')
-        self.title.setPlaceholderText('Cosa vuoi ricordare?')
-        self.title.setAccessibleName('Promemoria'); layout.addWidget(self.title)
-        self.kind=QComboBox(); self.kind.addItems(['Tra', 'Data e ora'])
-        self.kind.setAccessibleName('Quando')
+        self.title.setPlaceholderText(tr('Cosa vuoi ricordare?'))
+        self.title.setAccessibleName(tr('Promemoria')); layout.addWidget(self.title)
+        self.kind=QComboBox(); self.kind.addItems([tr('Tra'), tr('Data e ora')])
+        self.kind.setAccessibleName(tr('Quando'))
         self.minutes=QSpinBox(); self.minutes.setRange(1,60*24*30)
-        self.minutes.setValue(20); self.minutes.setSuffix(' min'); self.minutes.setAccessibleName('Minuti')
+        self.minutes.setValue(20); self.minutes.setSuffix(tr(' min')); self.minutes.setAccessibleName(tr('Minuti'))
         self.duration_controls=stepper(self.minutes)
         self.when=QDateTimeEdit(); self.when.setCalendarPopup(True)
         self.when.setDisplayFormat('dd/MM/yyyy HH:mm')
@@ -40,13 +41,13 @@ class ReminderDialog(QDialog):
         layout.addLayout(row)
         self.quick_choices=QWidget(); quick=QHBoxLayout(self.quick_choices); quick.setSpacing(12); quick.setContentsMargins(0,0,0,0)
         for minute in (5,15,25,60):
-            button(f'{minute} min',lambda checked=False,m=minute:self.quick(m),quick,role='quiet')
+            button(tr('{v0} min', v0=minute),lambda checked=False,m=minute:self.quick(m),quick,role='quiet')
         layout.addWidget(self.quick_choices)
         self.kind.currentIndexChanged.connect(self.update_kind)
         self.kind.setCurrentIndex(1 if existing else 0); self.update_kind()
         buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
-        save=buttons.button(QDialogButtonBox.StandardButton.Save); save.setText('Salva'); save.setProperty('role','primary')
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Annulla')
+        save=buttons.button(QDialogButtonBox.StandardButton.Save); save.setText(tr('Salva')); save.setProperty('role','primary')
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(tr('Annulla'))
         buttons.accepted.connect(self.submit); buttons.rejected.connect(self.reject)
         layout.addWidget(buttons); self.title.setFocus()
 
@@ -64,7 +65,7 @@ class ReminderDialog(QDialog):
         if not self.title.text().strip():
             self.title.setFocus(); return
         if due<=time.time():
-            Messages.information(self,'Data passata','Scegli una data futura.'); return
+            Messages.information(self,tr('Data passata'),tr('Scegli una data futura.')); return
         self.pet.store.add_reminder(self.title.text(),due,self.existing['id'] if self.existing else None)
         self.pet.sound.play('saved'); self.pet.refresh_reminders(); self.accept()
 
@@ -86,9 +87,9 @@ class Panel(QDialog):
         navigation=QWidget(); nav_layout=QVBoxLayout(navigation)
         nav_layout.setContentsMargins(0,0,0,0); nav_layout.setSpacing(5)
         self.nav={}
-        for label,glyph,page,sub in [('Appunti','note',0,None),('Promemoria','bell',1,None),
-                ('Calendario','calendar',8,None),('Sveglie','alarm',9,None),
-                ('Studio','cards',6,None),('Meteo','sun',7,None),('Focus','focus',4,None),('Metronomo','metro',5,0),('Cronometro','clock',5,1)]:
+        for label,glyph,page,sub in [(tr('Appunti'),'note',0,None),(tr('Promemoria'),'bell',1,None),
+                (tr('Calendario'),'calendar',8,None),(tr('Sveglie'),'alarm',9,None),
+                (tr('Studio'),'cards',6,None),(tr('Meteo'),'sun',7,None),(tr('Focus'),'focus',4,None),(tr('Metronomo'),'metro',5,0),(tr('Cronometro'),'clock',5,1)]:
             self.add_navigation(nav_layout,label,glyph,page,sub)
         nav_layout.addStretch()
         nav_scroll=QScrollArea(); nav_scroll.setWidgetResizable(True); nav_scroll.setWidget(navigation)
@@ -96,9 +97,9 @@ class Panel(QDialog):
         nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         nav_scroll.setStyleSheet('QScrollArea {border:0;background:transparent;} QScrollArea > QWidget > QWidget {background:transparent;}')
         side.addWidget(nav_scroll,1)
-        self.add_navigation(side,'Voce','voice',3,None)
-        self.add_navigation(side,'Impostazioni','settings',2,None)
-        button('Guida',self.pet.open_guide,side,glyph='help',role='nav')
+        self.add_navigation(side,tr('Voce'),'voice',3,None)
+        self.add_navigation(side,tr('Impostazioni'),'settings',2,None)
+        button(tr('Guida'),self.pet.open_guide,side,glyph='help',role='nav')
         layout.addWidget(sidebar)
         content=QVBoxLayout(); content.setContentsMargins(0,6,0,0); content.setSpacing(8); layout.addLayout(content,1)
         # Stable indices keep hotkeys, tray actions and stored workflows compatible.
@@ -106,12 +107,12 @@ class Panel(QDialog):
         self.status=FeedbackLabel()
         self.build_notes(); self.build_reminders(); self.build_settings(); self.build_voice(); self.build_focus()
         from yun_jin_music_panel import MusicPanel
-        self.music=MusicPanel(pet); self.tabs.addTab(self.music,'Musica')
+        self.music=MusicPanel(pet); self.tabs.addTab(self.music,tr('Musica'))
         from yun_jin_study_ui import StudyPanel
-        self.study=StudyPanel(pet);self.tabs.addTab(self.study,'Studio')
-        self.weather_host=QWidget();self.weather_view=None;self.tabs.addTab(self.weather_host,'Meteo')
-        self.calendar_host=QWidget();self.calendar_view=None;self.tabs.addTab(self.calendar_host,'Calendario')
-        self.alarms_host=QWidget();self.alarms_view=None;self.tabs.addTab(self.alarms_host,'Sveglie')
+        self.study=StudyPanel(pet);self.tabs.addTab(self.study,tr('Studio'))
+        self.weather_host=QWidget();self.weather_view=None;self.tabs.addTab(self.weather_host,tr('Meteo'))
+        self.calendar_host=QWidget();self.calendar_view=None;self.tabs.addTab(self.calendar_host,tr('Calendario'))
+        self.alarms_host=QWidget();self.alarms_view=None;self.tabs.addTab(self.alarms_host,tr('Sveglie'))
         pet.context.location_changed.connect(self.sync_weather)
         self.sync_weather()
         self.music.tabs.currentChanged.connect(self.sync_navigation)
@@ -157,43 +158,43 @@ class Panel(QDialog):
     def build_notes(self):
         tab=QWidget(); main=QVBoxLayout(tab); main.setContentsMargins(0,0,0,0); main.setSpacing(12)
         tools=QHBoxLayout(); tools.setSpacing(12)
-        button('Nuovo',self.new_note,tools,glyph='plus',role='primary')
-        imports=QMenu(self); imports.addAction(icon('copy'),'Appunti copiati',self.pet.capture_clipboard)
-        imports.addAction(icon('file'),'File…',self.add_file); imports.addAction(icon('folder'),'Cartella…',self.add_folder)
-        menu_button('Importa',imports,tools,glyph='folder'); tools.addStretch(); main.addLayout(tools)
+        button(tr('Nuovo'),self.new_note,tools,glyph='plus',role='primary')
+        imports=QMenu(self); imports.addAction(icon('copy'),tr('Appunti copiati'),self.pet.capture_clipboard)
+        imports.addAction(icon('file'),tr('File…'),self.add_file); imports.addAction(icon('folder'),tr('Cartella…'),self.add_folder)
+        menu_button(tr('Importa'),imports,tools,glyph='folder'); tools.addStretch(); main.addLayout(tools)
         split=QSplitter(); split.setChildrenCollapsible(False); split.setHandleWidth(12)
         left=QWidget(); left.setMinimumWidth(160); l=QVBoxLayout(left); l.setContentsMargins(0,0,0,0); l.setSpacing(8)
-        self.search=QLineEdit(); self.search.setPlaceholderText('Cerca'); self.search.setClearButtonEnabled(True)
-        self.search.setAccessibleName('Cerca appunti'); self.search.textChanged.connect(self.refresh_notes); l.addWidget(self.search)
+        self.search=QLineEdit(); self.search.setPlaceholderText(tr('Cerca')); self.search.setClearButtonEnabled(True)
+        self.search.setAccessibleName(tr('Cerca appunti')); self.search.textChanged.connect(self.refresh_notes); l.addWidget(self.search)
         self.notes_list=QListWidget(); self.notes_list.setTextElideMode(Qt.TextElideMode.ElideRight)
         self.notes_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.notes_list.currentItemChanged.connect(self.select_note); l.addWidget(self.notes_list)
         split.addWidget(left)
         right=QWidget(); right.setMinimumWidth(340); r=QVBoxLayout(right); r.setContentsMargins(0,0,0,0); r.setSpacing(8)
-        self.title=QLineEdit(); self.title.setPlaceholderText('Titolo'); self.title.setAccessibleName('Titolo'); r.addWidget(self.title)
-        self.body=QTextEdit(); self.body.setAcceptRichText(False); self.body.setPlaceholderText('Scrivi o trascina un file…')
-        self.body.setAccessibleName('Testo'); r.addWidget(self.body,1)
+        self.title=QLineEdit(); self.title.setPlaceholderText(tr('Titolo')); self.title.setAccessibleName(tr('Titolo')); r.addWidget(self.title)
+        self.body=QTextEdit(); self.body.setAcceptRichText(False); self.body.setPlaceholderText(tr('Scrivi o trascina un file…'))
+        self.body.setAccessibleName(tr('Testo')); r.addWidget(self.body,1)
         material=QHBoxLayout(); material.setSpacing(12); self.path_label=plain_label('', 'muted'); material.addWidget(self.path_label,1)
-        self.open_file=button('Apri',self.open_material,material,glyph='file'); self.open_file.hide(); r.addLayout(material)
+        self.open_file=button(tr('Apri'),self.open_material,material,glyph='file'); self.open_file.hide(); r.addLayout(material)
         self.preview=QLabel(); self.preview.setAlignment(Qt.AlignmentFlag.AlignCenter); self.preview.setMaximumHeight(130)
         self.preview.hide(); r.addWidget(self.preview)
-        actions=QHBoxLayout(); actions.setSpacing(12); button('Leggi',self.read_note,actions,glyph='voice')
-        self.note_stop=icon_button('stop','Interrompi voce',self.pet.stop_speech,actions); self.note_stop.hide()
+        actions=QHBoxLayout(); actions.setSpacing(12); button(tr('Leggi'),self.read_note,actions,glyph='voice')
+        self.note_stop=icon_button('stop',tr('Interrompi voce'),self.pet.stop_speech,actions); self.note_stop.hide()
         self.pet.speech.status_changed.connect(lambda _:self.note_stop.setVisible(self.pet.speech.busy))
         self.pet.speech.active_changed.connect(lambda _:self.note_stop.setVisible(self.pet.speech.busy))
         ai_toggle=button('ChatGPT',None,actions,glyph='spark'); ai_toggle.setCheckable(True)
         actions.addStretch()
-        more=QMenu(self); more.addAction('Salva',self.save_clicked); more.addSeparator(); more.addAction('Elimina',self.delete_note)
-        overflow=menu_button('',more,actions); overflow.setAccessibleName('Azioni appunto'); overflow.setToolTip('Azioni appunto')
+        more=QMenu(self); more.addAction(tr('Salva'),self.save_clicked); more.addSeparator(); more.addAction(tr('Elimina'),self.delete_note)
+        overflow=menu_button('',more,actions); overflow.setAccessibleName(tr('Azioni appunto')); overflow.setToolTip(tr('Azioni appunto'))
         r.addLayout(actions)
         self.ai_box=QWidget(); ai_layout=QVBoxLayout(self.ai_box); ai_layout.setContentsMargins(0,0,0,0); ai_layout.setSpacing(8)
-        ai=QHBoxLayout(); ai.setSpacing(12); self.ai_mode=QComboBox(); self.ai_mode.addItems(['Spiega','Traduci','Rivedi','Domanda'])
-        self.ai_mode.setAccessibleName('Richiesta ChatGPT'); ai.addWidget(self.ai_mode,1)
-        button('Copia e apri',self.ask_ai,ai,glyph='copy'); ai_layout.addLayout(ai)
-        self.question=QLineEdit(); self.question.setPlaceholderText('Istruzioni facoltative'); ai_layout.addWidget(self.question)
+        ai=QHBoxLayout(); ai.setSpacing(12); self.ai_mode=QComboBox(); self.ai_mode.addItems([tr('Spiega'),tr('Traduci'),tr('Rivedi'),tr('Domanda')])
+        self.ai_mode.setAccessibleName(tr('Richiesta ChatGPT')); ai.addWidget(self.ai_mode,1)
+        button(tr('Copia e apri'),self.ask_ai,ai,glyph='copy'); ai_layout.addLayout(ai)
+        self.question=QLineEdit(); self.question.setPlaceholderText(tr('Istruzioni facoltative')); ai_layout.addWidget(self.question)
         self.ai_box.hide(); ai_toggle.toggled.connect(self.ai_box.setVisible); r.addWidget(self.ai_box)
         split.addWidget(right); split.setSizes([205,505]); main.addWidget(split)
-        self.tabs.addTab(tab,'Appunti')
+        self.tabs.addTab(tab,tr('Appunti'))
 
     def build_focus(self):
         tab=QWidget(); layout=QVBoxLayout(tab); layout.setContentsMargins(0,0,0,0); layout.setSpacing(16)
@@ -202,15 +203,15 @@ class Panel(QDialog):
         self.focus_status=plain_label('', 'metric'); self.focus_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
         display.addWidget(self.focus_status)
         self.focus_minutes=QSpinBox(); self.focus_minutes.setRange(1,180)
-        self.focus_minutes.setValue(int(self.pet.store.preference('focus_minutes',25))); self.focus_minutes.setSuffix(' min')
+        self.focus_minutes.setValue(int(self.pet.store.preference('focus_minutes',25))); self.focus_minutes.setSuffix(tr(' min'))
         self.focus_minutes.setObjectName('tempo'); self.focus_minutes.setMinimumWidth(190)
-        self.focus_minutes.setAccessibleName('Durata focus'); self.focus_minutes.valueChanged.connect(self.refresh_focus)
+        self.focus_minutes.setAccessibleName(tr('Durata focus')); self.focus_minutes.valueChanged.connect(self.refresh_focus)
         self.focus_duration_controls=stepper(self.focus_minutes)
         row=QHBoxLayout(); row.setSpacing(12); row.addStretch(); row.addWidget(self.focus_duration_controls); row.addStretch(); display.addLayout(row)
         row=QHBoxLayout(); row.setSpacing(12); row.addStretch()
-        self.focus_start=button('Avvia',lambda:self.pet.start_focus(self.focus_minutes.value()),row,glyph='play',role='primary')
-        self.focus_stop=button('Interrompi',self.pet.stop_focus,row,glyph='stop'); row.addStretch(); display.addLayout(row)
-        layout.addStretch(2); self.tabs.addTab(tab,'Focus'); self.refresh_focus()
+        self.focus_start=button(tr('Avvia'),lambda:self.pet.start_focus(self.focus_minutes.value()),row,glyph='play',role='primary')
+        self.focus_stop=button(tr('Interrompi'),self.pet.stop_focus,row,glyph='stop'); row.addStretch(); display.addLayout(row)
+        layout.addStretch(2); self.tabs.addTab(tab,tr('Focus')); self.refresh_focus()
 
     def refresh_focus(self):
         row=self.pet.focus_row(); active=False
@@ -218,7 +219,7 @@ class Panel(QDialog):
             import math
             seconds=max(0,math.ceil(row['due']-time.time())); active=True
             self.focus_status.setText(f'{seconds//60:02d}:{seconds%60:02d}')
-        elif row:self.focus_status.setText('Pausa')
+        elif row:self.focus_status.setText(tr('Pausa'))
         else:self.focus_status.setText(f'{self.focus_minutes.value():02d}:00')
         self.focus_status.setVisible(active)
         self.focus_start.setVisible(not active); self.focus_stop.setVisible(active)
@@ -226,47 +227,59 @@ class Panel(QDialog):
 
     def build_reminders(self):
         tab=QWidget(); layout=QVBoxLayout(tab); layout.setContentsMargins(0,0,0,0); layout.setSpacing(12)
-        top=QHBoxLayout(); top.setSpacing(12); button('Nuovo',self.pet.new_reminder,top,glyph='plus',role='primary'); top.addStretch()
-        self.show_done=QCheckBox('Completati'); self.show_done.toggled.connect(lambda _:self.refresh_reminders(force=True))
+        top=QHBoxLayout(); top.setSpacing(12); button(tr('Nuovo'),self.pet.new_reminder,top,glyph='plus',role='primary'); top.addStretch()
+        self.show_done=QCheckBox(tr('Completati')); self.show_done.toggled.connect(lambda _:self.refresh_reminders(force=True))
         top.addWidget(self.show_done); layout.addLayout(top)
         self.reminders=QTreeWidget(); self.reminders.setRootIsDecorated(False)
-        self.reminders.setHeaderLabels(['Promemoria','Scadenza','Stato'])
+        self.reminders.setHeaderLabels([tr('Promemoria'),tr('Scadenza'),tr('Stato')])
         self.reminders.header().setSectionResizeMode(0,QHeaderView.ResizeMode.Stretch)
         for col in (1,2):self.reminders.header().setSectionResizeMode(col,QHeaderView.ResizeMode.ResizeToContents)
         self.reminders.itemDoubleClicked.connect(lambda *_:self.edit_reminder()); layout.addWidget(self.reminders)
         self.reminder_actions=QWidget(); actions=QHBoxLayout(self.reminder_actions); actions.setSpacing(12); actions.setContentsMargins(0,0,0,0)
-        button('Fatto',self.complete_reminder,actions,glyph='check',role='primary')
+        button(tr('Fatto'),self.complete_reminder,actions,glyph='check',role='primary')
         self.snooze_minutes=QSpinBox(); self.snooze_minutes.setRange(1,1440); self.snooze_minutes.setValue(10)
-        self.snooze_minutes.setSuffix(' min'); self.snooze_minutes.setAccessibleName('Rimanda di')
-        actions.addWidget(self.snooze_minutes); button('Rimanda',self.snooze_reminder,actions); actions.addStretch()
-        more=QMenu(self); more.addAction('Modifica',self.edit_reminder); more.addAction('Elimina',self.delete_reminder)
-        overflow=menu_button('',more,actions); overflow.setToolTip('Azioni promemoria'); overflow.setAccessibleName('Azioni promemoria')
+        self.snooze_minutes.setSuffix(tr(' min')); self.snooze_minutes.setAccessibleName(tr('Rimanda di'))
+        actions.addWidget(self.snooze_minutes); button(tr('Rimanda'),self.snooze_reminder,actions); actions.addStretch()
+        more=QMenu(self); more.addAction(tr('Modifica'),self.edit_reminder); more.addAction(tr('Elimina'),self.delete_reminder)
+        overflow=menu_button('',more,actions); overflow.setToolTip(tr('Azioni promemoria')); overflow.setAccessibleName(tr('Azioni promemoria'))
         layout.addWidget(self.reminder_actions)
         self.reminders.itemSelectionChanged.connect(lambda:self.reminder_actions.setEnabled(self.selected_reminder() is not None))
-        self.reminder_actions.setEnabled(False); self.tabs.addTab(tab,'Promemoria')
+        self.reminder_actions.setEnabled(False); self.tabs.addTab(tab,tr('Promemoria'))
 
     def build_settings(self):
         tab=QWidget(); layout=QVBoxLayout(tab); layout.setContentsMargins(0,0,4,0); layout.setSpacing(16)
+        from yun_jin_i18n import LANGUAGES, language
+        _,general=card(layout)
+        language_row=QHBoxLayout()
+        language_row.addWidget(plain_label(tr('Lingua')))
+        self.interface_language=QComboBox()
+        for code,name in LANGUAGES:self.interface_language.addItem(name,code)
+        self.interface_language.setCurrentIndex(self.interface_language.findData(language()))
+        self.interface_language.setAccessibleName(tr('Lingua interfaccia'))
+        self.interface_language.currentIndexChanged.connect(self.change_language)
+        language_row.addWidget(self.interface_language,1);general.addLayout(language_row)
+        from yun_jin_google_ui import open_settings
+        button('Google Calendar',lambda:open_settings(self.pet,self),general,glyph='calendar')
         _,sounds=card(layout)
-        sounds.addWidget(plain_label('Suoni','section'))
-        self.sound_enabled=QCheckBox('Effetti sonori')
+        sounds.addWidget(plain_label(tr('Suoni'),'section'))
+        self.sound_enabled=QCheckBox(tr('Effetti sonori'))
         self.sound_enabled.setChecked(self.pet.sound.enabled)
         sounds.addWidget(self.sound_enabled)
-        self.sound_enabled.setToolTip('Campanello e suoni del personaggio. Voce e metronomo hanno volumi separati.')
+        self.sound_enabled.setToolTip(tr('Campanello e suoni del personaggio. Voce e metronomo hanno volumi separati.'))
         self.sound_options=QWidget(); options=QVBoxLayout(self.sound_options)
         options.setContentsMargins(28,0,0,0); options.setSpacing(12)
-        self.interaction_sounds=QCheckBox('Saluti e conferme')
+        self.interaction_sounds=QCheckBox(tr('Saluti e conferme'))
         self.interaction_sounds.setChecked(self.pet.sound.interactions)
-        self.interaction_sounds.setToolTip('Suoni di saluto, salvataggio e completamento.')
+        self.interaction_sounds.setToolTip(tr('Suoni di saluto, salvataggio e completamento.'))
         self.interaction_sounds.toggled.connect(self.set_interactions)
         options.addWidget(self.interaction_sounds)
-        row=QHBoxLayout(); row.setSpacing(12); row.addWidget(plain_label('Volume'))
+        row=QHBoxLayout(); row.setSpacing(12); row.addWidget(plain_label(tr('Volume')))
         self.volume=QSlider(Qt.Orientation.Horizontal); self.volume.setRange(0,100); self.volume.setValue(round(self.pet.sound.volume*100))
-        self.volume.setAccessibleName('Volume effetti'); self.volume.valueChanged.connect(self.set_volume); row.addWidget(self.volume,1)
+        self.volume.setAccessibleName(tr('Volume effetti')); self.volume.valueChanged.connect(self.set_volume); row.addWidget(self.volume,1)
         self.sound_volume_value=plain_label(f'{self.volume.value()}%'); self.sound_volume_value.setMinimumWidth(38)
         row.addWidget(self.sound_volume_value)
         self.volume.valueChanged.connect(lambda v:self.sound_volume_value.setText(f'{v}%'))
-        icon_button('volume','Ascolta campanello',lambda:self.pet.sound.play('reminder',preview=True),row)
+        icon_button('volume',tr('Ascolta campanello'),lambda:self.pet.sound.play('reminder',preview=True),row)
         options.addLayout(row); sounds.addWidget(self.sound_options)
         self.sound_options.setEnabled(self.sound_enabled.isChecked())
         self.sound_enabled.toggled.connect(self.set_sound)
@@ -274,32 +287,32 @@ class Panel(QDialog):
         self.sound_status=plain_label(self.pet.sound.status,'alert'); sounds.addWidget(self.sound_status)
         self.sound_status.setVisible(bool(self.pet.sound.status))
         _,character=card(layout)
-        character.addWidget(plain_label('Personaggio','section'))
-        self.character_visible=QCheckBox('Mostra Yun Jin')
+        character.addWidget(plain_label(tr('Personaggio'),'section'))
+        self.character_visible=QCheckBox(tr('Mostra Yun Jin'))
         self.sync_character_visibility()
         self.character_visible.toggled.connect(self.pet.set_character_visible)
         character.addWidget(self.character_visible)
-        extras=QCheckBox('Animazioni aggiuntive'); extras.setChecked(self.pet.use_extra_animations)
+        extras=QCheckBox(tr('Animazioni aggiuntive')); extras.setChecked(self.pet.use_extra_animations)
         extras.toggled.connect(self.pet.set_extra_animations); character.addWidget(extras)
         if sys.platform=='darwin':
             from yun_jin_macos import LABEL
-            self.mac_fullscreen=QCheckBox(LABEL)
+            self.mac_fullscreen=QCheckBox(tr(LABEL))
             character.addWidget(self.mac_fullscreen)
             self.sync_mac_overlay()
             self.mac_fullscreen.toggled.connect(self.pet.set_mac_overlay)
         elif sys.platform=='win32':
             from yun_jin_windows_overlay import LABEL
-            self.windows_fullscreen=QCheckBox(LABEL)
+            self.windows_fullscreen=QCheckBox(tr(LABEL))
             character.addWidget(self.windows_fullscreen)
             self.sync_windows_overlay()
             self.windows_fullscreen.toggled.connect(self.pet.set_windows_overlay)
         _,context=card(layout)
-        context.addWidget(plain_label('Orario e meteo','section'))
+        context.addWidget(plain_label(tr('Orario e meteo'),'section'))
         self.context_checks={}
         for key, label, hint in (
-                ('greeting', 'Saluto all’avvio', 'Una sola volta, secondo l’ora locale. Usa lingua, servizio e volume scelti in Voce.'),
-                ('time', 'Animazioni secondo l’ora', 'Una reazione al cambio di fascia: mattina, pomeriggio, sera e notte.'),
-                ('weather', 'Reazioni al meteo locale', 'Animazioni e brevi commenti nella lingua scelta in Voce. Meteo ogni ora per la località selezionata.')):
+                ('greeting', tr('Saluto all’avvio'), tr('Una sola volta, secondo l’ora locale. Usa lingua, servizio e volume scelti in Voce.')),
+                ('time', tr('Animazioni secondo l’ora'), tr('Una reazione al cambio di fascia: mattina, pomeriggio, sera e notte.')),
+                ('weather', tr('Reazioni al meteo locale'), tr('Animazioni e brevi commenti nella lingua scelta in Voce. Meteo ogni ora per la località selezionata.'))):
             check=QCheckBox(label); check.setChecked(self.pet.context.enabled[key]); check.setToolTip(hint)
             check.toggled.connect(lambda value, key=key:self.pet.context.set_enabled(key,value))
             if key == 'weather':
@@ -310,7 +323,7 @@ class Panel(QDialog):
         credit=plain_label('<a href="https://open-meteo.com/" style="color:#b8b2c8">Open-Meteo</a>', 'muted')
         credit.setTextFormat(Qt.TextFormat.RichText); credit.setOpenExternalLinks(False)
         credit.linkActivated.connect(lambda url:self.pet.open_external(QUrl(url),self))
-        credit.setToolTip('Meteo: Open-Meteo · CC BY 4.0. Città: GeoNames.')
+        credit.setToolTip(tr('Meteo: Open-Meteo · CC BY 4.0. Città: GeoNames.'))
         weather_row.addWidget(credit)
         from yun_jin_weather_ui import WeatherLocationRow
         self.weather_location_row=WeatherLocationRow(self.pet)
@@ -318,9 +331,9 @@ class Panel(QDialog):
         self.weather_location_row.setEnabled(self.pet.context.enabled['weather'])
         self.context_checks['weather'].toggled.connect(self.weather_location_row.setEnabled)
         _,updates=card(layout)
-        updates.addWidget(plain_label('Aggiornamenti','section'))
-        self.updates_enabled=QCheckBox('Aggiornamenti automatici')
-        self.updates_enabled.setToolTip('Controlla ogni 2 ore. Puoi leggere le note prima di aggiornare, rimandare o saltare la versione.')
+        updates.addWidget(plain_label(tr('Aggiornamenti'),'section'))
+        self.updates_enabled=QCheckBox(tr('Aggiornamenti automatici'))
+        self.updates_enabled.setToolTip(tr('Controlla ogni 2 ore. Puoi leggere le note prima di aggiornare, rimandare o saltare la versione.'))
         self.updates_enabled.setChecked(self.pet.updates.enabled)
         self.updates_enabled.toggled.connect(self.pet.updates.set_enabled)
         updates.addWidget(self.updates_enabled)
@@ -328,22 +341,27 @@ class Panel(QDialog):
         self.update_status.setWordWrap(True); updates.addWidget(self.update_status)
         self.pet.updates.status_changed.connect(self.update_status.setText)
         row=QHBoxLayout(); row.setSpacing(12)
-        self.update_check=button('Controlla ora',lambda:self.pet.updates.check(manual=True),row)
-        self.update_notes=button('Note di rilascio…',self.pet.updates.show_notes,row)
+        self.update_check=button(tr('Controlla ora'),lambda:self.pet.updates.check(manual=True),row)
+        self.update_notes=button(tr('Note di rilascio…'),self.pet.updates.show_notes,row)
         def sync_updates():
             self.update_check.setEnabled(not self.pet.updates.busy)
             self.update_notes.setEnabled(self.pet.updates.release is not None)
         self.pet.updates.available_changed.connect(sync_updates); sync_updates()
         row.addStretch(); updates.addLayout(row)
         _,data=card(layout)
-        data.addWidget(plain_label('Dati e strumenti','section'))
-        row=QHBoxLayout(); row.setSpacing(12); button('Backup…',self.backup,row,glyph='export')
-        button('Cartella dati',lambda:self.pet.open_external(QUrl.fromLocalFile(str(self.pet.store.root)),self),row,glyph='folder')
+        data.addWidget(plain_label(tr('Dati e strumenti'),'section'))
+        row=QHBoxLayout(); row.setSpacing(12); button(tr('Backup…'),self.backup,row,glyph='export')
+        button(tr('Cartella dati'),lambda:self.pet.open_external(QUrl.fromLocalFile(str(self.pet.store.root)),self),row,glyph='folder')
         row.addStretch(); data.addLayout(row)
-        row=QHBoxLayout(); row.setSpacing(12); button('Scorciatoie',self.show_shortcuts,row,glyph='help'); row.addStretch(); data.addLayout(row)
+        row=QHBoxLayout(); row.setSpacing(12); button(tr('Scorciatoie'),self.show_shortcuts,row,glyph='help'); row.addStretch(); data.addLayout(row)
         self.hotkey_status=plain_label(self.pet.hotkey_status,'alert')
-        self.hotkey_status.setVisible('Non disponibili' in self.pet.hotkey_status); layout.addWidget(self.hotkey_status)
-        layout.addStretch(); self.tabs.addTab(scroll_page(tab),'Impostazioni')
+        self.hotkey_status.setVisible(tr('Non disponibili') in self.pet.hotkey_status); layout.addWidget(self.hotkey_status)
+        layout.addStretch(); self.tabs.addTab(scroll_page(tab),tr('Impostazioni'))
+
+    def change_language(self, _):
+        code=self.interface_language.currentData()
+        self.pet.store.set_preference('ui_language',code)
+        self.status.setText(tr('La lingua cambierà al prossimo avvio.'))
 
     def show_shortcuts(self):
         from yun_jin_hotkeys import ShortcutDialog
@@ -374,56 +392,56 @@ class Panel(QDialog):
         self.mac_fullscreen.setChecked(bool(controller and controller.enabled))
         self.mac_fullscreen.setEnabled(controller is not None)
         self.mac_fullscreen.blockSignals(False)
-        text='L’icona nella barra dei menu resta disponibile anche con Yun Jin nascosta.'
+        text=tr('L’icona nella barra dei menu resta disponibile anche con Yun Jin nascosta.')
         if controller is None or controller.error:
-            text='Modalità overlay non disponibile. '+(controller.error if controller else 'Riavvia l’app e controlla il log nella cartella dati.')
+            text=tr('Modalità overlay non disponibile. ')+(controller.error if controller else tr('Riavvia l’app e controlla il log nella cartella dati.'))
         self.mac_fullscreen.setToolTip(text)
 
     def build_voice(self):
         tab=QWidget(); layout=QVBoxLayout(tab); layout.setContentsMargins(0,0,4,0); layout.setSpacing(14)
         voice=self.pet.speech
-        self.tts_reminders=QCheckBox('Leggi i promemoria alla scadenza')
+        self.tts_reminders=QCheckBox(tr('Leggi i promemoria alla scadenza'))
         self.tts_reminders.setChecked(voice.pref('auto_reminders',True))
         self.tts_reminders.toggled.connect(lambda v:voice.set_pref('auto_reminders',v))
         _,settings=card(layout)
-        row=QHBoxLayout(); row.setSpacing(12); row.addWidget(plain_label('Voce','section')); row.addStretch()
-        self.voice_enabled=QCheckBox('Voce attiva'); self.voice_enabled.setChecked(voice.enabled)
+        row=QHBoxLayout(); row.setSpacing(12); row.addWidget(plain_label(tr('Voce'),'section')); row.addStretch()
+        self.voice_enabled=QCheckBox(tr('Voce attiva')); self.voice_enabled.setChecked(voice.enabled)
         self.voice_enabled.toggled.connect(voice.set_enabled); row.addWidget(self.voice_enabled)
         def sync_voice_enabled(enabled):
             self.voice_enabled.blockSignals(True); self.voice_enabled.setChecked(enabled); self.voice_enabled.blockSignals(False)
         voice.enabled_changed.connect(sync_voice_enabled)
-        more=QMenu(self); more.addAction('Ripristina voce',self.reset_voice); more.addAction('Svuota cache',voice.clear_cache)
-        overflow=menu_button('',more,row); overflow.setToolTip('Opzioni voce'); overflow.setAccessibleName('Opzioni voce')
+        more=QMenu(self); more.addAction(tr('Ripristina voce'),self.reset_voice); more.addAction(tr('Svuota cache'),voice.clear_cache)
+        overflow=menu_button('',more,row); overflow.setToolTip(tr('Opzioni voce')); overflow.setAccessibleName(tr('Opzioni voce'))
         settings.addLayout(row)
         form=QFormLayout(); form.setVerticalSpacing(12); form.setHorizontalSpacing(18); self.voice_form=form
         self.provider=QComboBox(); self.provider.addItem('Microsoft Edge','edge'); self.provider.addItem('Google Translate','google')
-        self.provider.setCurrentIndex(max(0,self.provider.findData(voice.pref('provider','edge')))); form.addRow('Servizio',self.provider)
+        self.provider.setCurrentIndex(max(0,self.provider.findData(voice.pref('provider','edge')))); form.addRow(tr('Servizio'),self.provider)
         self.tts_language=QComboBox()
-        for label,code in [('Italiano','it'),('Inglese','en'),('Mandarino','zh-CN')]:self.tts_language.addItem(label,code)
-        self.tts_language.setCurrentIndex(max(0,self.tts_language.findData(voice.pref('language','it')))); form.addRow('Lingua',self.tts_language)
-        self.tts_voice=QComboBox(); form.addRow('Voce',self.tts_voice)
+        for label,code in [(tr('Italiano'),'it'),(tr('Inglese'),'en'),(tr('Mandarino'),'zh-CN')]:self.tts_language.addItem(label,code)
+        self.tts_language.setCurrentIndex(max(0,self.tts_language.findData(voice.pref('language','it')))); form.addRow(tr('Lingua'),self.tts_language)
+        self.tts_voice=QComboBox(); form.addRow(tr('Voce'),self.tts_voice)
         self.tts_rate=QSpinBox(); self.tts_rate.setRange(-40,40); self.tts_rate.setSuffix(' %')
         self.tts_rate.setValue(int(voice.pref('rate',20))); self.tts_rate.valueChanged.connect(lambda v:voice.set_pref('rate',v))
-        self.rate_controls=stepper(self.tts_rate); form.addRow('Velocità',self.rate_controls)
+        self.rate_controls=stepper(self.tts_rate); form.addRow(tr('Velocità'),self.rate_controls)
         self.tts_pitch=QSpinBox(); self.tts_pitch.setRange(-15,15); self.tts_pitch.setSuffix(' Hz')
         self.tts_pitch.setValue(int(voice.pref('pitch',15))); self.tts_pitch.valueChanged.connect(lambda v:voice.set_pref('pitch',v))
-        self.pitch_controls=stepper(self.tts_pitch); form.addRow('Intonazione',self.pitch_controls)
-        self.google_slow=QCheckBox('Lettura lenta'); self.google_slow.setChecked(int(voice.pref('google_slow',0))==1)
+        self.pitch_controls=stepper(self.tts_pitch); form.addRow(tr('Intonazione'),self.pitch_controls)
+        self.google_slow=QCheckBox(tr('Lettura lenta')); self.google_slow.setChecked(int(voice.pref('google_slow',0))==1)
         self.google_slow.toggled.connect(lambda v:voice.set_pref('google_slow',int(v))); form.addRow('',self.google_slow)
         self.tts_volume=QSlider(Qt.Orientation.Horizontal); self.tts_volume.setRange(0,100)
-        self.tts_volume.setValue(int(voice.pref('volume',70))); self.tts_volume.setAccessibleName('Volume voce')
+        self.tts_volume.setValue(int(voice.pref('volume',70))); self.tts_volume.setAccessibleName(tr('Volume voce'))
         self.tts_volume.valueChanged.connect(lambda v:voice.set_pref('volume',v))
         volume=QWidget(); vr=QHBoxLayout(volume); vr.setSpacing(12); vr.setContentsMargins(0,0,0,0); vr.addWidget(self.tts_volume,1)
         self.volume_label=plain_label(f'{self.tts_volume.value()}%'); self.volume_label.setMinimumWidth(38); vr.addWidget(self.volume_label)
-        self.tts_volume.valueChanged.connect(lambda v:self.volume_label.setText(f'{v}%')); form.addRow('Volume',volume)
+        self.tts_volume.valueChanged.connect(lambda v:self.volume_label.setText(f'{v}%')); form.addRow(tr('Volume'),volume)
         settings.addLayout(form)
         settings.addWidget(self.tts_reminders)
-        self.provider.setToolTip('Il testo viene inviato online al servizio scelto. Google sceglie la voce per la lingua.')
+        self.provider.setToolTip(tr('Il testo viene inviato online al servizio scelto. Google sceglie la voce per la lingua.'))
         _,reading=card(layout)
-        self.tts_test=QLineEdit(); self.tts_test.setPlaceholderText('Testo da leggere'); self.tts_test.setAccessibleName('Testo da leggere')
+        self.tts_test=QLineEdit(); self.tts_test.setPlaceholderText(tr('Testo da leggere')); self.tts_test.setAccessibleName(tr('Testo da leggere'))
         reading.addWidget(self.tts_test)
-        row=QHBoxLayout(); row.setSpacing(12); button('Ascolta',lambda:voice.speak(self.tts_test.text(),preview=True),row,glyph='play',role='primary')
-        button('Leggi testo copiato',self.pet.read_clipboard,row,glyph='copy'); row.addStretch()
+        row=QHBoxLayout(); row.setSpacing(12); button(tr('Ascolta'),lambda:voice.speak(self.tts_test.text(),preview=True),row,glyph='play',role='primary')
+        button(tr('Leggi testo copiato'),self.pet.read_clipboard,row,glyph='copy'); row.addStretch()
         self.voice_stop=button('Stop',self.pet.stop_speech,row,glyph='stop'); reading.addLayout(row)
         self.voice_status=FeedbackLabel(); reading.addWidget(self.voice_status)
         def report(text):
@@ -434,7 +452,7 @@ class Panel(QDialog):
         layout.addStretch()
         self.provider.currentIndexChanged.connect(self.voice_options); self.tts_language.currentIndexChanged.connect(self.voice_options)
         self.tts_voice.currentIndexChanged.connect(self.save_voice); self.voice_options()
-        self.voice_scroll=scroll_page(tab); self.tabs.addTab(self.voice_scroll,'Voce')
+        self.voice_scroll=scroll_page(tab); self.tabs.addTab(self.voice_scroll,tr('Voce'))
 
     def voice_options(self):
         from yun_jin_speech import VOICES
@@ -496,14 +514,14 @@ class Panel(QDialog):
     def changed(self):
         if not self.loading:
             self.dirty = True
-            self.status.setText('Salvataggio…')
+            self.status.setText(tr('Salvataggio…'))
             self.autosave.start(700)
 
     def autosave_note(self):
         try:
             self.save_note()
         except Exception as exc:
-            self.status.setText('Non salvato: ' + str(exc))
+            self.status.setText(tr('Non salvato: ') + str(exc))
 
     def save_note(self):
         self.autosave.stop()
@@ -515,7 +533,7 @@ class Panel(QDialog):
             return
         self.note_id = self.pet.store.save_note(title,body,self.note_path,self.note_id)
         self.dirty = False
-        self.status.setText('Salvato')
+        self.status.setText(tr('Salvato'))
         self.update_list_item()
 
     def update_list_item(self):
@@ -576,7 +594,7 @@ class Panel(QDialog):
         self.dirty=False
         self.loading=False
         self.show_material()
-        self.status.setText('Salvato')
+        self.status.setText(tr('Salvato'))
         self.refresh_notes()
 
     def new_note(self):
@@ -602,7 +620,7 @@ class Panel(QDialog):
     def show_material(self):
         path=self.resolved_path()
         self.open_file.setVisible(path is not None)
-        self.path_label.setText(('Immagine' if self.note_path.startswith('attachment:') else path.name) if path else '')
+        self.path_label.setText((tr('Immagine') if self.note_path.startswith('attachment:') else path.name) if path else '')
         self.path_label.setToolTip(str(path) if path else '')
         self.preview.clear()
         self.preview.hide()
@@ -622,13 +640,13 @@ class Panel(QDialog):
         if path and path.exists():
             self.pet.open_external(QUrl.fromLocalFile(str(path)),self)
         else:
-            Messages.information(self,'Materiale non trovato','Il file è stato spostato o eliminato.')
+            Messages.information(self,tr('Materiale non trovato'),tr('Il file è stato spostato o eliminato.'))
 
     def delete_note(self):
         if not self.note_id:
             self.new_note()
             return
-        if Messages.question(self,'Elimina appunto','Eliminare l’appunto? Il file collegato rimane.') != QMessageBox.StandardButton.Yes:
+        if Messages.question(self,tr('Elimina appunto'),tr('Eliminare l’appunto? Il file collegato rimane.')) != QMessageBox.StandardButton.Yes:
             return
         self.autosave.stop()
         self.pet.store.delete_note(self.note_id)
@@ -637,12 +655,12 @@ class Panel(QDialog):
         self.refresh_notes()
 
     def add_file(self):
-        files=choose_files(self,'Aggiungi file')
+        files=choose_files(self,tr('Aggiungi file'))
         if files:
             self.pet.add_paths(files)
 
     def add_folder(self):
-        folders=choose_files(self,'Aggiungi cartella',mode='folder')
+        folders=choose_files(self,tr('Aggiungi cartella'),mode='folder')
         folder=folders[0] if folders else ''
         if folder:
             self.pet.add_paths([folder])
@@ -651,22 +669,22 @@ class Panel(QDialog):
         self.save_note()
         selected=self.body.textCursor().selectedText().replace('\u2029','\n')
         text=selected or self.body.toPlainText()
-        instruction=['Spiega questo contenuto in modo chiaro e preciso.',
-                     'Traduci questo contenuto in italiano, preservando significato e tono.',
-                     'Rivedi questo testo e proponi una versione migliorata, spiegando brevemente le modifiche.',
-                     self.question.text().strip() or 'Aiutami a capire questo contenuto.'][self.ai_mode.currentIndex()]
+        instruction=[tr('Spiega questo contenuto in modo chiaro e preciso.'),
+                     tr('Traduci questo contenuto in italiano, preservando significato e tono.'),
+                     tr('Rivedi questo testo e proponi una versione migliorata, spiegando brevemente le modifiche.'),
+                     self.question.text().strip() or tr('Aiutami a capire questo contenuto.')][self.ai_mode.currentIndex()]
         if self.question.text().strip() and self.ai_mode.currentIndex()!=3:
             instruction+='\n'+self.question.text().strip()
         material=self.resolved_path()
         if not text.strip() and material is None:
-            self.status.setText('Aggiungi testo o un file.')
+            self.status.setText(tr('Aggiungi testo o un file.'))
             return
         prompt=instruction+'\n\n'+text
         if material:
-            prompt+='\n\nMateriale a cui mi riferisco: '+material.name+' (da allegare a questa conversazione).'
+            prompt+=tr('\n\nMateriale a cui mi riferisco: ')+material.name+tr(' (da allegare a questa conversazione).')
         QApplication.clipboard().setText(prompt.strip())
         self.pet.open_external(QUrl('https://chatgpt.com/'),self)
-        self.status.setText('Incolla in ChatGPT.'+(' Allega anche il file.' if material else ''))
+        self.status.setText(tr('Incolla in ChatGPT.')+(tr(' Allega anche il file.') if material else ''))
 
     def selected_reminder(self):
         item=self.reminders.currentItem()
@@ -681,14 +699,14 @@ class Panel(QDialog):
         self.reminder_signature=signature
         self.reminders.clear()
         for reminder in rows:
-            status={'pending':'In attesa','due':'Da gestire','done':'Completato'}[reminder['status']]
+            status={'pending':tr('In attesa'),'due':tr('Da gestire'),'done':tr('Completato')}[reminder['status']]
             item=QTreeWidgetItem([reminder['title'],datetime.fromtimestamp(reminder['due']).strftime('%d/%m/%Y %H:%M'),status])
             item.setData(0,Qt.ItemDataRole.UserRole,reminder['id'])
             self.reminders.addTopLevelItem(item)
             if reminder['id']==selected:
                 self.reminders.setCurrentItem(item)
         count=sum(r['status']=='due' for r in rows)
-        self.nav[(1,None)].setText('Promemoria'+(f' · {count}' if count else ''))
+        self.nav[(1,None)].setText(tr('Promemoria')+(f' · {count}' if count else ''))
         self.reminder_actions.setEnabled(self.selected_reminder() is not None)
 
     def complete_reminder(self):
@@ -709,18 +727,18 @@ class Panel(QDialog):
 
     def delete_reminder(self):
         rid=self.selected_reminder()
-        if rid and Messages.question(self,'Elimina promemoria','Eliminare il promemoria?')==QMessageBox.StandardButton.Yes:
+        if rid and Messages.question(self,tr('Elimina promemoria'),tr('Eliminare il promemoria?'))==QMessageBox.StandardButton.Yes:
             self.pet.store.delete_reminder(rid)
             self.pet.refresh_reminders()
 
     def backup(self):
         self.save_note()
-        files=choose_files(self,'Esporta backup',mode='save',
+        files=choose_files(self,tr('Esporta backup'),mode='save',
             filename='YunJin-backup-'+datetime.now().strftime('%Y%m%d')+'.zip',name_filter='ZIP (*.zip)')
         filename=files[0] if files else ''
         if filename:
             self.pet.store.export_backup(filename)
-            self.status.setText('Backup salvato.')
+            self.status.setText(tr('Backup salvato.'))
 
     def dragEnterEvent(self,event):
         if self.pet.accepts_mime(event.mimeData()):

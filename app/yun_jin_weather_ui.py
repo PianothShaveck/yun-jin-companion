@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """On-demand city search; no requests or active timers while settings are idle."""
+from yun_jin_i18n import tr
 import json
 import sys
 from pathlib import Path
@@ -16,24 +17,24 @@ class CityDialog(QDialog):
     def __init__(self,pet,parent):
         super().__init__(owner_window(parent))
         self.pet=pet;self.selection=None;self.process=None;self.closed=False
-        self.setWindowTitle('Città per il meteo');self.setWindowIcon(pet.windowIcon())
+        self.setWindowTitle(tr('Città per il meteo'));self.setWindowIcon(pet.windowIcon())
         self.setStyleSheet(STYLE);self.resize(530,330)
         layout=QVBoxLayout(self);layout.setContentsMargins(20,20,20,18);layout.setSpacing(12)
         row=QHBoxLayout();row.setSpacing(12)
         self.query=QLineEdit();self.query.setMaxLength(100)
-        self.query.setPlaceholderText('Cerca una città');self.query.setAccessibleName('Città')
+        self.query.setPlaceholderText(tr('Cerca una città'));self.query.setAccessibleName(tr('Città'))
         row.addWidget(self.query,1)
-        self.search=button('Cerca',self.start_search,row);self.search.setAutoDefault(False)
+        self.search=button(tr('Cerca'),self.start_search,row);self.search.setAutoDefault(False)
         self.search.setEnabled(False);layout.addLayout(row)
-        self.results=QListWidget();self.results.setAccessibleName('Città trovate')
+        self.results=QListWidget();self.results.setAccessibleName(tr('Città trovate'))
         layout.addWidget(self.results,1)
         self.status=plain_label('','muted');self.status.setWordWrap(True);self.status.hide()
         layout.addWidget(self.status)
         buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Ok|QDialogButtonBox.StandardButton.Cancel)
         self.use=buttons.button(QDialogButtonBox.StandardButton.Ok)
-        self.use.setText('Usa città');self.use.setProperty('role','primary')
+        self.use.setText(tr('Usa città'));self.use.setProperty('role','primary')
         self.use.setEnabled(False);self.use.setAutoDefault(False)
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Annulla')
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(tr('Annulla'))
         buttons.accepted.connect(self.accept_selection);buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
         self.timeout=QTimer(self);self.timeout.setSingleShot(True);self.timeout.timeout.connect(self.timed_out)
@@ -52,7 +53,7 @@ class CityDialog(QDialog):
     def start_search(self):
         name=' '.join(self.query.text().split())
         if self.closed or len(name)<2:return
-        self.cancel_request();self.results.clear();self.message('Cerco…');self.search.setEnabled(False)
+        self.cancel_request();self.results.clear();self.message(tr('Cerco…'));self.search.setEnabled(False)
         # The context outlives the dialog, so a cancelled process can finish
         # asynchronously after the dialog has been destroyed.
         process=QProcess(self.pet.context);self.process=process
@@ -86,13 +87,13 @@ class CityDialog(QDialog):
                 if city:
                     item=QListWidgetItem(location_label(city));item.setData(Qt.ItemDataRole.UserRole,city)
                     item.setToolTip(item.text());self.results.addItem(item)
-            self.message('' if self.results.count() else 'Nessuna città trovata.')
+            self.message('' if self.results.count() else tr('Nessuna città trovata.'))
         except (ValueError,TypeError):
-            self.message('Ricerca non disponibile. Riprova.')
+            self.message(tr('Ricerca non disponibile. Riprova.'))
 
     def timed_out(self):
         self.cancel_request();self.search.setEnabled(len(self.query.text().strip())>=2)
-        self.message('Ricerca non disponibile. Riprova.')
+        self.message(tr('Ricerca non disponibile. Riprova.'))
 
     def cancel_request(self):
         self.timeout.stop();process,self.process=self.process,None
@@ -112,16 +113,16 @@ class WeatherLocationRow(QWidget):
     def __init__(self,pet,parent=None):
         super().__init__(parent);self.pet=pet
         row=QHBoxLayout(self);row.setContentsMargins(0,0,0,0);row.setSpacing(12)
-        label=plain_label('Città');row.addWidget(label)
-        self.choice=button('',self.choose,row);self.choice.setAccessibleName('Scegli città per il meteo')
+        label=plain_label(tr('Città'));row.addWidget(label)
+        self.choice=button('',self.choose,row);self.choice.setAccessibleName(tr('Scegli città per il meteo'))
         self.choice.setSizePolicy(QSizePolicy.Policy.Ignored,QSizePolicy.Policy.Fixed)
         row.setStretch(1,1);label.setBuddy(self.choice)
         pet.context.location_changed.connect(self.refresh);self.refresh()
 
     def refresh(self):
         location=self.pet.context.weather_location
-        self.choice.setText(location['city']+'…' if location else 'Scegli città…')
-        self.choice.setToolTip(location_label(location) if location else 'Scegli una città per attivare il meteo.')
+        self.choice.setText(location['city']+'…' if location else tr('Scegli città…'))
+        self.choice.setToolTip(location_label(location) if location else tr('Scegli una città per attivare il meteo.'))
 
     def choose(self):
         dialog=CityDialog(self.pet,self)

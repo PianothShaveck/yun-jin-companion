@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Deck browser and fast native review, with no web engine."""
+from yun_jin_i18n import tr
 import json
 from pathlib import Path
 import time
@@ -21,30 +22,30 @@ class ReviewDialog(QDialog):
         self.session=None if self.external else self.study.start_session(deck_id,'quick' if quick_cards is not None else 'study')
         self.finished_session=False;self.row=None;self.answer=False;self.prefer_new=False
         self.answered=0;self.history=[];self.started=time.monotonic();self.revealed_at=0
-        self.setWindowTitle('Ripasso Anki' if self.external else 'Studio');self.setStyleSheet(STYLE)
+        self.setWindowTitle(tr('Ripasso Anki') if self.external else tr('Studio'));self.setStyleSheet(STYLE)
         self.resize(720,580);self.setMinimumSize(590,460)
         main=QVBoxLayout(self);main.setContentsMargins(24,20,24,22);main.setSpacing(16)
         head=QHBoxLayout();head.setSpacing(12)
-        name='Anki · esercizio libero' if self.external else (self.study.deck(deck_id)['name'] if deck_id else 'Ripasso rapido')
+        name=tr('Anki · esercizio libero') if self.external else (self.study.deck(deck_id)['name'] if deck_id else tr('Ripasso rapido'))
         self.title=plain_label(name,'section');head.addWidget(self.title,1)
         self.progress=plain_label('','muted');head.addWidget(self.progress)
-        self.undo_button=icon_button('reset','Annulla ultima risposta',self.undo,head);self.undo_button.setVisible(not self.external)
-        button('Termina',self.close,head,role='quiet');main.addLayout(head)
+        self.undo_button=icon_button('reset',tr('Annulla ultima risposta'),self.undo,head);self.undo_button.setVisible(not self.external)
+        button(tr('Termina'),self.close,head,role='quiet');main.addLayout(head)
         self.hero,hero_layout=card(main,hero=True)
         self.face=CardFace(pet);hero_layout.addWidget(self.face,1)
         main.setStretchFactor(self.hero,1)
         self.message=plain_label('','section');self.message.setAlignment(Qt.AlignmentFlag.AlignCenter);hero_layout.addWidget(self.message);self.message.hide()
         self.detail=plain_label('','muted');self.detail.setAlignment(Qt.AlignmentFlag.AlignCenter);main.addWidget(self.detail)
-        self.reveal_button=button('Mostra risposta',self.reveal,main,role='primary')
-        self.reveal_button.setToolTip('Spazio')
+        self.reveal_button=button(tr('Mostra risposta'),self.reveal,main,role='primary')
+        self.reveal_button.setToolTip(tr('Spazio'))
         self.rating_box=QWidget();ratings=QHBoxLayout(self.rating_box);ratings.setContentsMargins(0,0,0,0);ratings.setSpacing(10)
         self.rating_buttons={}
-        for number,label in enumerate(('Da rivedere','Difficile','Bene','Facile'),1):
+        for number,label in enumerate((tr('Da rivedere'),tr('Difficile'),tr('Bene'),tr('Facile')),1):
             b=button(label,lambda checked=False,n=number:self.rate(n),ratings,role='primary' if number==3 else '')
             b.setToolTip(str(number));self.rating_buttons[number]=b
         main.addWidget(self.rating_box)
-        self.external_next=button('Avanti',self.advance_external,main,role='primary');self.external_next.hide()
-        self.done_button=button('Torna ai mazzi' if not self.external else 'Fatto',self.close,main,role='primary');self.done_button.hide()
+        self.external_next=button(tr('Avanti'),self.advance_external,main,role='primary');self.external_next.hide()
+        self.done_button=button(tr('Torna ai mazzi') if not self.external else tr('Fatto'),self.close,main,role='primary');self.done_button.hide()
         self.shortcuts=[]
         for key,callback in [('Space',self.space),('1',lambda:self.rate(1)),('2',lambda:self.rate(2)),
                              ('3',lambda:self.rate(3)),('4',lambda:self.rate(4)),('Ctrl+Z',self.undo)]:
@@ -60,7 +61,7 @@ class ReviewDialog(QDialog):
             try:self.study.deck(self.deck_id)
             except ValueError:
                 self.row=None;self.finish_session();self.face.hide();self.reveal_button.hide()
-                self.message.setText('Mazzo archiviato');self.message.show();self.done_button.show();self.undo_button.setEnabled(False)
+                self.message.setText(tr('Mazzo archiviato'));self.message.show();self.done_button.show();self.undo_button.setEnabled(False)
                 return
         if self.external:
             self.row=self.external_cards[0] if self.external_cards else None
@@ -84,9 +85,9 @@ class ReviewDialog(QDialog):
                 self.face.hide();self.reveal_button.hide();self.message.show();self.wait_tick();self.wait_timer.start();return
             self.finish_session()
             self.face.hide();self.message.show();self.reveal_button.hide();self.done_button.show()
-            self.message.setText('Sessione completata' if self.answered else 'Nessuna carta in scadenza')
-            if due is not None and due>time.time(): self.detail.setText('Prossima carta tra '+duration_label(due-time.time()))
-            else: self.detail.setText(f'{self.answered} risposte' if self.answered else '')
+            self.message.setText(tr('Sessione completata') if self.answered else tr('Nessuna carta in scadenza'))
+            if due is not None and due>time.time(): self.detail.setText(tr('Prossima carta tra ')+duration_label(due-time.time()))
+            else: self.detail.setText(tr('{v0} risposte', v0=self.answered) if self.answered else '')
             return
         self.progress.setText(f'{self.answered} '+('risposta' if self.answered==1 else 'risposte') if self.answered else '')
         self.face.present(self.row,external=self.external);self.started=time.monotonic();self.reveal_button.setFocus()
@@ -99,7 +100,7 @@ class ReviewDialog(QDialog):
         except ValueError:self.next_card();return
         due=self.study.next_learning_due(self.deck_id)
         if due is None or due<=time.time(): self.next_card();return
-        self.message.setText('Prossima carta tra '+duration_label(due-time.time()))
+        self.message.setText(tr('Prossima carta tra ')+duration_label(due-time.time()))
 
     def reveal(self):
         if self.row is None or self.answer or self.finished_session: return
@@ -108,7 +109,7 @@ class ReviewDialog(QDialog):
         if not self.external:
             try:
                 if self.row['last_review'] is not None and now<self.row['last_review']:
-                    raise ValueError('Controlla l’orologio di sistema prima di continuare.')
+                    raise ValueError(tr('Controlla l’orologio di sistema prima di continuare.'))
                 predictions={n:self.study.predict(self.row,n,now) for n in self.rating_buttons}
             except Exception as exc:
                 self.detail.setText(str(exc));return
@@ -120,7 +121,7 @@ class ReviewDialog(QDialog):
             self.external_next.show();return
         for number,b in self.rating_buttons.items():
             predicted=predictions[number]
-            label=('Da rivedere','Difficile','Bene','Facile')[number-1]
+            label=(tr('Da rivedere'),tr('Difficile'),tr('Bene'),tr('Facile'))[number-1]
             b.setText(label+'\n'+duration_label(predicted['due']-now))
         self.rating_box.show()
 
@@ -131,7 +132,7 @@ class ReviewDialog(QDialog):
         if current['suspended']:
             self.next_card();return False
         if current['revision']!=self.row['revision']:
-            self.next_card(restored=current['id']);self.detail.setText('Carta modificata. Rileggi il fronte.');return False
+            self.next_card(restored=current['id']);self.detail.setText(tr('Carta modificata. Rileggi il fronte.'));return False
         return True
 
     def space(self):
@@ -191,44 +192,44 @@ class StudyPanel(QWidget):
         super().__init__();self.pet=pet;self.study=pet.store.study;self.offset=0
         layout=QVBoxLayout(self);layout.setContentsMargins(0,0,0,0);layout.setSpacing(16)
         top=QHBoxLayout();top.setSpacing(12)
-        self.deck_choice=QComboBox();self.deck_choice.setAccessibleName('Mazzo');self.deck_choice.setMinimumWidth(190)
+        self.deck_choice=QComboBox();self.deck_choice.setAccessibleName(tr('Mazzo'));self.deck_choice.setMinimumWidth(190)
         top.addWidget(self.deck_choice,1);self.deck_space=QWidget();top.addWidget(self.deck_space,1)
-        button('Nuovo mazzo',self.new_deck,top,glyph='plus')
-        more=QMenu(self);more.addAction('Opzioni del mazzo…',self.deck_options)
-        more.addAction('Richiami e Anki…',self.study_settings);more.addSeparator();more.addAction('Archivia mazzo',self.archive)
-        archived_action=more.addAction('Mazzi archiviati…',self.archived)
+        button(tr('Nuovo mazzo'),self.new_deck,top,glyph='plus')
+        more=QMenu(self);more.addAction(tr('Opzioni del mazzo…'),self.deck_options)
+        more.addAction(tr('Richiami e Anki…'),self.study_settings);more.addSeparator();more.addAction(tr('Archivia mazzo'),self.archive)
+        archived_action=more.addAction(tr('Mazzi archiviati…'),self.archived)
         more.aboutToShow.connect(lambda:archived_action.setEnabled(bool(self.study.db.execute('SELECT 1 FROM sr_decks WHERE archived=1 LIMIT 1').fetchone())))
         menu_button('',more,top);layout.addLayout(top)
         self.hero,hero_layout=card(layout,hero=True)
         metrics=QHBoxLayout();metrics.setSpacing(28)
         self.metrics={}
-        for key,label in [('new','Nuove'),('reviews','Ripassi'),('learning','In apprendimento')]:
+        for key,label in [('new',tr('Nuove')),('reviews',tr('Ripassi')),('learning',tr('In apprendimento'))]:
             column=QVBoxLayout();number=plain_label('0','metric');number.setStyleSheet('font-size:36px;')
             column.addWidget(number);column.addWidget(plain_label(label,'muted'));metrics.addLayout(column);self.metrics[key]=number
         metrics.addStretch();hero_layout.addLayout(metrics)
         row=QHBoxLayout();row.setSpacing(12)
-        self.study_button=button('Studia',self.start,row,glyph='play',role='primary')
+        self.study_button=button(tr('Studia'),self.start,row,glyph='play',role='primary')
         self.today=plain_label('','muted');row.addWidget(self.today,1);hero_layout.addLayout(row)
         self.collection_area=QWidget();collection=QVBoxLayout(self.collection_area)
         collection.setContentsMargins(0,0,0,0);collection.setSpacing(16);layout.addWidget(self.collection_area,1)
         tools=QHBoxLayout();tools.setSpacing(12)
-        self.add_button=button('Aggiungi carta',self.add,tools,glyph='plus')
-        self.search=QLineEdit();self.search.setPlaceholderText('Cerca carte');self.search.setClearButtonEnabled(True);tools.addWidget(self.search,1)
-        self.ostinati=QCheckBox('Passaggi ostinati');self.ostinati.setToolTip('Carte che hanno raggiunto la soglia di errori del mazzo.')
+        self.add_button=button(tr('Aggiungi carta'),self.add,tools,glyph='plus')
+        self.search=QLineEdit();self.search.setPlaceholderText(tr('Cerca carte'));self.search.setClearButtonEnabled(True);tools.addWidget(self.search,1)
+        self.ostinati=QCheckBox(tr('Passaggi ostinati'));self.ostinati.setToolTip(tr('Carte che hanno raggiunto la soglia di errori del mazzo.'))
         tools.addWidget(self.ostinati);collection.addLayout(tools)
-        self.cards=QTreeWidget();self.cards.setRootIsDecorated(False);self.cards.setHeaderLabels(['Fronte','Carte','Stato'])
+        self.cards=QTreeWidget();self.cards.setRootIsDecorated(False);self.cards.setHeaderLabels([tr('Fronte'),tr('Carte'),tr('Stato')])
         self.cards.header().setSectionResizeMode(0,QHeaderView.ResizeMode.Stretch)
         for i in (1,2): self.cards.header().setSectionResizeMode(i,QHeaderView.ResizeMode.ResizeToContents)
         self.cards.itemDoubleClicked.connect(lambda *_:self.edit());collection.addWidget(self.cards,1)
         bottom=QHBoxLayout();bottom.setSpacing(12)
-        self.edit_button=button('Modifica',self.edit,bottom)
-        actions=QMenu(self);actions.addAction('Metti in pausa / Riattiva',self.toggle_suspend);actions.addAction('Elimina',self.delete)
+        self.edit_button=button(tr('Modifica'),self.edit,bottom)
+        actions=QMenu(self);actions.addAction(tr('Metti in pausa / Riattiva'),self.toggle_suspend);actions.addAction(tr('Elimina'),self.delete)
         menu_button('',actions,bottom);bottom.addStretch()
-        self.previous=icon_button('left','Pagina precedente',lambda:self.page(-1),bottom)
-        self.next=icon_button('right','Pagina successiva',lambda:self.page(1),bottom)
+        self.previous=icon_button('left',tr('Pagina precedente'),lambda:self.page(-1),bottom)
+        self.next=icon_button('right',tr('Pagina successiva'),lambda:self.page(1),bottom)
         collection.addLayout(bottom)
         self.summary=plain_label('','muted');collection.addWidget(self.summary)
-        self.empty=plain_label('Crea un mazzo per iniziare.','section')
+        self.empty=plain_label(tr('Crea un mazzo per iniziare.'),'section')
         self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter);layout.addWidget(self.empty,1)
         self.search_timer=QTimer(self);self.search_timer.setSingleShot(True);self.search_timer.setInterval(180)
         self.search_timer.timeout.connect(self.filter_changed)
@@ -260,17 +261,17 @@ class StudyPanel(QWidget):
         stats=self.study.counts(deck_id)
         for key,widget in self.metrics.items(): widget.setText(str(stats[key]))
         self.study_button.setEnabled(stats['total']>stats['suspended'])
-        self.today.setText(f"{stats['today']} risposte oggi" if stats['today'] else '')
+        self.today.setText(tr('{v0} risposte oggi', v0=stats['today']) if stats['today'] else '')
         rows=self.study.browse(deck_id,self.search.text(),self.ostinati.isChecked(),self.offset)
         for row in rows:
-            front=row['content']['front'].replace('\n',' ')[:130] or 'Immagine / audio'
-            state='In pausa' if row['suspended'] else ('Passaggio ostinato' if row['ostinato'] else '')
+            front=row['content']['front'].replace('\n',' ')[:130] or tr('Immagine / audio')
+            state=tr('In pausa') if row['suspended'] else (tr('Passaggio ostinato') if row['ostinato'] else '')
             item=QTreeWidgetItem([front,str(row['cards']),state]);item.setData(0,Qt.ItemDataRole.UserRole,row)
             self.cards.addTopLevelItem(item)
         self.previous.setEnabled(self.offset>0);self.next.setEnabled(len(rows)==100)
         text=f"{stats['total']} "+('carta' if stats['total']==1 else 'carte')
-        if stats['retention'] is not None:text+=f" · Ritenzione a 30 giorni {stats['retention']:.0%}"
-        self.summary.setText(text);self.summary.setToolTip('Ritenzione osservata: risposte ricordate nei ripassi distanziati di almeno un giorno. Non comprende i passi brevi.')
+        if stats['retention'] is not None:text+=tr(' · Ritenzione a 30 giorni {v0:.0%}', v0=stats['retention'])
+        self.summary.setText(text);self.summary.setToolTip(tr('Ritenzione osservata: risposte ricordate nei ripassi distanziati di almeno un giorno. Non comprende i passi brevi.'))
 
     def new_deck(self):
         dialog=DeckDialog(self.pet,parent=self.window())
@@ -299,14 +300,14 @@ class StudyPanel(QWidget):
         if row:self.study.suspend(row['id'],not row['suspended']);self.refresh_cards()
     def delete(self):
         row=self.selected()
-        if row and Messages.question(self,'Elimina carta','Eliminare questa carta e le sue lacune?')==QMessageBox.StandardButton.Yes:
+        if row and Messages.question(self,tr('Elimina carta'),tr('Eliminare questa carta e le sue lacune?'))==QMessageBox.StandardButton.Yes:
             self.study.delete_note(row['id']);self.refresh_cards()
     def archive(self):
         if self.deck_id() is None:return
-        if Messages.question(self,'Archivia mazzo','Rimuovere il mazzo dallo studio? I dati restano nel backup.')==QMessageBox.StandardButton.Yes:
+        if Messages.question(self,tr('Archivia mazzo'),tr('Rimuovere il mazzo dallo studio? I dati restano nel backup.'))==QMessageBox.StandardButton.Yes:
             self.study.archive_deck(self.deck_id());self.refresh()
     def archived(self):
-        dialog=QDialog(self.window());dialog.pet=self.pet;dialog.setWindowTitle('Mazzi archiviati');dialog.setStyleSheet(STYLE)
+        dialog=QDialog(self.window());dialog.pet=self.pet;dialog.setWindowTitle(tr('Mazzi archiviati'));dialog.setStyleSheet(STYLE)
         layout=QVBoxLayout(dialog);layout.setContentsMargins(22,22,22,18);layout.setSpacing(16)
         choices=QComboBox()
         for row in self.study.db.execute('SELECT id,name FROM sr_decks WHERE archived=1 ORDER BY name'):
@@ -317,7 +318,7 @@ class StudyPanel(QWidget):
                 self.study.restore_deck(choices.currentData());self.refresh(choices.currentData())
             dialog.accept()
         row=QHBoxLayout();row.setSpacing(12);row.addStretch()
-        button('Chiudi',dialog.reject,row);button('Ripristina',restore,row,role='primary');layout.addLayout(row)
+        button(tr('Chiudi'),dialog.reject,row);button(tr('Ripristina'),restore,row,role='primary');layout.addLayout(row)
         try:exec_dialog(dialog,self.pet)
         finally:dialog.deleteLater()
 
@@ -334,36 +335,36 @@ class StudyPanel(QWidget):
 
 class StudySettings(QDialog):
     def __init__(self,pet,parent=None):
-        super().__init__(parent);self.pet=pet;self.setWindowTitle('Richiami e Anki');self.setStyleSheet(STYLE);self.resize(570,360)
+        super().__init__(parent);self.pet=pet;self.setWindowTitle(tr('Richiami e Anki'));self.setStyleSheet(STYLE);self.resize(570,360)
         layout=QVBoxLayout(self);layout.setContentsMargins(24,22,24,20);layout.setSpacing(18)
-        self.enabled=QCheckBox('Richiami durante la giornata');self.enabled.setChecked(pet.study_tools.enabled)
-        self.enabled.setToolTip('Ogni 90–150 minuti, al massimo 3 volte al giorno. Solo carte difficili dei mazzi studiati oggi. Nessun richiamo durante il focus.')
+        self.enabled=QCheckBox(tr('Richiami durante la giornata'));self.enabled.setChecked(pet.study_tools.enabled)
+        self.enabled.setToolTip(tr('Ogni 90–150 minuti, al massimo 3 volte al giorno. Solo carte difficili dei mazzi studiati oggi. Nessun richiamo durante il focus.'))
         self.enabled.toggled.connect(pet.study_tools.set_enabled);layout.addWidget(self.enabled)
-        self.anki=QCheckBox('Includi le carte di Anki');self.anki.setChecked(pet.study_tools.anki_enabled)
-        self.anki.setToolTip('Passaggi ostinati e 10% delle carte più difficili dei mazzi studiati oggi. Nessuna risposta viene registrata in Anki.')
+        self.anki=QCheckBox(tr('Includi le carte di Anki'));self.anki.setChecked(pet.study_tools.anki_enabled)
+        self.anki.setToolTip(tr('Passaggi ostinati e 10% delle carte più difficili dei mazzi studiati oggi. Nessuna risposta viene registrata in Anki.'))
         self.anki.toggled.connect(self.set_anki);layout.addWidget(self.anki)
-        self.suspended=QCheckBox('Includi passaggi ostinati sospesi');self.suspended.setChecked(pet.study_tools.anki_include_suspended)
-        self.suspended.setToolTip('Solo per gli esercizi Anki. Le carte rimangono sospese nella collezione originale.')
+        self.suspended=QCheckBox(tr('Includi passaggi ostinati sospesi'));self.suspended.setChecked(pet.study_tools.anki_include_suspended)
+        self.suspended.setToolTip(tr('Solo per gli esercizi Anki. Le carte rimangono sospese nella collezione originale.'))
         self.suspended.toggled.connect(pet.study_tools.set_anki_suspended)
         suspended_row=QHBoxLayout();suspended_row.setContentsMargins(28,0,0,0);suspended_row.addWidget(self.suspended);layout.addLayout(suspended_row)
         row=QHBoxLayout();row.setSpacing(12)
-        self.profiles=QComboBox();self.profiles.setAccessibleName('Profilo Anki');self.profiles.setMinimumWidth(150)
+        self.profiles=QComboBox();self.profiles.setAccessibleName(tr('Profilo Anki'));self.profiles.setMinimumWidth(150)
         from yun_jin_anki import find_profiles
         current=pet.study_tools.anki_path
         paths=find_profiles()
         if current and Path(current) not in paths:paths.append(Path(current))
-        self.profiles.addItem('Scegli profilo','')
+        self.profiles.addItem(tr('Scegli profilo'),'')
         for path in paths:self.profiles.addItem(path.parent.name,str(path))
         selected=current or (str(paths[0]) if len(paths)==1 else '')
         self.profiles.setCurrentIndex(max(0,self.profiles.findData(selected)))
         self.profiles.currentIndexChanged.connect(self.select_profile);row.addWidget(self.profiles,1)
-        button('Sfoglia…',self.browse,row);layout.addLayout(row)
+        button(tr('Sfoglia…'),self.browse,row);layout.addLayout(row)
         self.status=plain_label('','muted');layout.addWidget(self.status);self.sync()
         pet.study_tools.anki_changed.connect(self.sync)
         controls=QHBoxLayout();controls.setSpacing(12)
-        self.practice_button=button('Ripasso Anki',self.practice,controls,glyph='play')
-        button('Aggiorna',lambda:pet.study_tools.refresh_anki(force=True),controls);controls.addStretch();layout.addLayout(controls)
-        layout.addStretch();button('Chiudi',self.accept,layout,role='primary')
+        self.practice_button=button(tr('Ripasso Anki'),self.practice,controls,glyph='play')
+        button(tr('Aggiorna'),lambda:pet.study_tools.refresh_anki(force=True),controls);controls.addStretch();layout.addLayout(controls)
+        layout.addStretch();button(tr('Chiudi'),self.accept,layout,role='primary')
         self.sync()
         if selected!=current:pet.study_tools.set_anki_path(selected)
         elif selected and pet.study_tools.anki_enabled and time.time()>=pet.study_tools.anki_valid_until:
@@ -383,7 +384,7 @@ class StudySettings(QDialog):
         from yun_jin_anki import profile_root
         current=self.profiles.currentData()
         directory=Path(current).parent if current else profile_root()
-        paths=choose_files(self,'Collezione Anki',filename='collection.anki2',
+        paths=choose_files(self,tr('Collezione Anki'),filename='collection.anki2',
             name_filter='Anki (collection.anki2)',directory=directory)
         if not paths:return
         path=paths[0];index=self.profiles.findData(path)

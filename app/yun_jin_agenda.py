@@ -6,6 +6,7 @@ Qt's existing timezone database, including on Windows, without another package.
 An occurrence is identified by its original local start, so the repeated autumn
 hour and backward clock changes never produce a second notification.
 """
+from yun_jin_i18n import tr
 import calendar
 import json
 import math
@@ -36,7 +37,7 @@ def _date(value):
             raise ValueError
         return result
     except (ValueError, TypeError, OverflowError):
-        raise ValueError('Data non valida.') from None
+        raise ValueError(tr('Data non valida.')) from None
 
 
 def _wall(value, all_day=False):
@@ -51,18 +52,18 @@ def _wall(value, all_day=False):
             raise ValueError
         return datetime.combine(result.date(), daytime()) if all_day else result.replace(microsecond=0, fold=0)
     except (ValueError, TypeError, OverflowError):
-        raise ValueError('Data o ora non valida.') from None
+        raise ValueError(tr('Data o ora non valida.')) from None
 
 
 def _zone(name=''):
     if not isinstance(name, str) or len(name) > 100:
-        raise ValueError('Fuso orario non valido.')
+        raise ValueError(tr('Fuso orario non valido.'))
     try:
         zone = QTimeZone(name.encode('ascii')) if name else QTimeZone.systemTimeZone()
     except UnicodeEncodeError:
-        raise ValueError('Fuso orario non valido.') from None
+        raise ValueError(tr('Fuso orario non valido.')) from None
     if not zone.isValid():
-        raise ValueError('Fuso orario non disponibile.')
+        raise ValueError(tr('Fuso orario non disponibile.'))
     return zone
 
 
@@ -73,7 +74,7 @@ def wall_timestamp(value, timezone=''):
                    QTime(value.hour, value.minute, value.second), _zone(timezone),
                    QDateTime.TransitionResolution.RelativeToBefore)
     if not qt.isValid():
-        raise ValueError('Data o ora non disponibile nel fuso scelto.')
+        raise ValueError(tr('Data o ora non disponibile nel fuso scelto.'))
     return float(qt.toSecsSinceEpoch())
 
 
@@ -86,7 +87,7 @@ def local_datetime(timestamp=None, timezone=''):
 
 def _timestamp(value):
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not -62135596800 <= value < 253402214400:
-        raise ValueError('Data non valida.')
+        raise ValueError(tr('Data non valida.'))
     return float(value)
 
 
@@ -98,26 +99,26 @@ def _integer(value, low, high, message):
 
 def _title(value, kind):
     if not isinstance(value, str):
-        raise ValueError('Scrivi un titolo.')
+        raise ValueError(tr('Scrivi un titolo.'))
     value = value.strip()
     if not value:
         if kind == 'alarm':
-            return 'Sveglia'
-        raise ValueError('Il titolo non può essere vuoto.')
+            return tr('Sveglia')
+        raise ValueError(tr('Il titolo non può essere vuoto.'))
     if len(value) > 200:
-        raise ValueError('Il titolo può contenere al massimo 200 caratteri.')
+        raise ValueError(tr('Il titolo può contenere al massimo 200 caratteri.'))
     return value
 
 
 def _details(value):
     if not isinstance(value, str) or len(value) > 4000:
-        raise ValueError('Le note possono contenere al massimo 4000 caratteri.')
+        raise ValueError(tr('Le note possono contenere al massimo 4000 caratteri.'))
     return value.strip()
 
 
 def _color(value):
     if not isinstance(value, str) or (value not in COLORS and not re.fullmatch(r'#[0-9a-fA-F]{6}', value)):
-        raise ValueError('Colore non valido.')
+        raise ValueError(tr('Colore non valido.'))
     return value
 
 
@@ -126,30 +127,30 @@ def normalize_recurrence(rule, start):
     if rule is None or rule == {}:
         return None
     if not isinstance(rule, dict) or set(rule) - {'frequency', 'interval', 'weekdays', 'until', 'count'}:
-        raise ValueError('Ripetizione non valida.')
+        raise ValueError(tr('Ripetizione non valida.'))
     frequency = rule.get('frequency')
     if frequency == 'once':
         return None
     if frequency not in ('daily', 'weekly', 'monthly', 'yearly'):
-        raise ValueError('Ripetizione non valida.')
+        raise ValueError(tr('Ripetizione non valida.'))
     result = {'frequency': frequency,
-              'interval': _integer(rule.get('interval', 1), 1, 100, 'Intervallo di ripetizione non valido.')}
+              'interval': _integer(rule.get('interval', 1), 1, 100, tr('Intervallo di ripetizione non valido.'))}
     if frequency == 'weekly':
         days = rule.get('weekdays', [start.weekday()])
         if not isinstance(days, (list, tuple, set)) or not days:
-            raise ValueError('Scegli almeno un giorno della settimana.')
-        result['weekdays'] = sorted({_integer(n, 0, 6, 'Giorno della settimana non valido.') for n in days})
+            raise ValueError(tr('Scegli almeno un giorno della settimana.'))
+        result['weekdays'] = sorted({_integer(n, 0, 6, tr('Giorno della settimana non valido.')) for n in days})
     elif rule.get('weekdays') not in (None, []):
-        raise ValueError('I giorni della settimana richiedono una ripetizione settimanale.')
+        raise ValueError(tr('I giorni della settimana richiedono una ripetizione settimanale.'))
     if rule.get('until') is not None and rule.get('count') is not None:
-        raise ValueError('Scegli una data finale oppure un numero di ripetizioni.')
+        raise ValueError(tr('Scegli una data finale oppure un numero di ripetizioni.'))
     if rule.get('until') is not None:
         until = _date(rule['until'])
         if until < start.date():
-            raise ValueError('La fine della ripetizione precede l’inizio.')
+            raise ValueError(tr('La fine della ripetizione precede l’inizio.'))
         result['until'] = until.isoformat()
     if rule.get('count') is not None:
-        result['count'] = _integer(rule['count'], 1, 10000, 'Numero di ripetizioni non valido.')
+        result['count'] = _integer(rule['count'], 1, 10000, tr('Numero di ripetizioni non valido.'))
     return result
 
 
@@ -298,11 +299,11 @@ class AgendaStore:
     def _save(self, item, item_id, now):
         previous = self.get(item_id) if item_id else None
         if item_id and not previous:
-            raise ValueError('Elemento non trovato.')
+            raise ValueError(tr('Elemento non trovato.'))
         if previous and previous['kind'] != item['kind']:
-            raise ValueError('Tipo di elemento non valido.')
+            raise ValueError(tr('Tipo di elemento non valido.'))
         if not previous and self.db.execute('SELECT count(*) FROM agenda_items').fetchone()[0] >= MAX_ITEMS:
-            raise ValueError('Hai raggiunto il limite di 2000 elementi. Elimina quelli non più necessari.')
+            raise ValueError(tr('Hai raggiunto il limite di 2000 elementi. Elimina quelli non più necessari.'))
         item_id = item_id or uuid.uuid4().hex
         schedule_fields = ('start_local', 'end_local', 'timezone', 'recurrence', 'all_day')
         changed = previous and any(previous[key] != item[key] for key in schedule_fields)
@@ -336,11 +337,11 @@ class AgendaStore:
                    alarm_id=None, now=None):
         now = time.time() if now is None else _timestamp(now)
         if not isinstance(clock, str) or not re.fullmatch(r'\d{2}:\d{2}', clock):
-            raise ValueError('Ora non valida.')
+            raise ValueError(tr('Ora non valida.'))
         try:
             chosen_time = daytime.fromisoformat(clock)
         except ValueError:
-            raise ValueError('Ora non valida.') from None
+            raise ValueError(tr('Ora non valida.')) from None
         current = local_datetime(now)
         day = _date(on_date) if on_date else current.date()
         start = datetime.combine(day, chosen_time)
@@ -350,7 +351,7 @@ class AgendaStore:
             if enabled and on_date and wall_timestamp(start) <= now:
                 previous = self.get(alarm_id) if alarm_id else None
                 if not previous or previous['start_local'] != start.isoformat():
-                    raise ValueError('Scegli una data e un’ora future.')
+                    raise ValueError(tr('Scegli una data e un’ora future.'))
             recurrence = None
         else:
             recurrence = normalize_recurrence({'frequency':'weekly','weekdays':weekdays}, start)
@@ -360,7 +361,7 @@ class AgendaStore:
         item = dict(kind='alarm',title=_title(title,'alarm'),start_local=start.isoformat(),
                     end_local=(start+timedelta(minutes=1)).isoformat(),all_day=False,
                     timezone='',recurrence=recurrence,reminder_minutes=0,voice=bool(voice),
-                    sound=bool(sound),enabled=bool(enabled),snooze_minutes=_integer(snooze_minutes,1,120,'Rinvio non valido.'),
+                    sound=bool(sound),enabled=bool(enabled),snooze_minutes=_integer(snooze_minutes,1,120,tr('Rinvio non valido.')),
                     details='',color='amber')
         return self._save(item,alarm_id,now)
 
@@ -371,12 +372,12 @@ class AgendaStore:
         start = _wall(start,all_day)
         end = _wall(end,all_day) if end is not None else start+timedelta(days=1) if all_day else start+timedelta(hours=1)
         if end <= start:
-            raise ValueError('La fine deve essere successiva all’inizio.')
+            raise ValueError(tr('La fine deve essere successiva all’inizio.'))
         if end-start > timedelta(days=366):
-            raise ValueError('Un impegno può durare al massimo un anno.')
+            raise ValueError(tr('Un impegno può durare al massimo un anno.'))
         _zone(timezone)
         if reminder_minutes is not None:
-            _integer(reminder_minutes,0,MAX_REMINDER,'Anticipo dell’avviso non valido.')
+            _integer(reminder_minutes,0,MAX_REMINDER,tr('Anticipo dell’avviso non valido.'))
         item = dict(kind='event',title=_title(title,'event'),start_local=start.isoformat(),end_local=end.isoformat(),
                     all_day=bool(all_day),timezone=timezone,recurrence=normalize_recurrence(recurrence,start),
                     reminder_minutes=reminder_minutes,voice=bool(voice),sound=True,enabled=bool(enabled),
@@ -398,7 +399,7 @@ class AgendaStore:
         now=time.time() if now is None else _timestamp(now)
         item = self.get(item_id)
         if not item:
-            raise ValueError('Elemento non trovato.')
+            raise ValueError(tr('Elemento non trovato.'))
         with self.db:
             if enabled and item['kind']=='alarm' and not item['recurrence'] and wall_timestamp(item['start_local'])<=now:
                 start=datetime.combine(local_datetime(now).date(),_wall(item['start_local']).time())
@@ -421,11 +422,11 @@ class AgendaStore:
     def _validate_occurrence(self, item_id, key):
         item = self.get(item_id)
         if not item:
-            raise ValueError('Elemento non trovato.')
+            raise ValueError(tr('Elemento non trovato.'))
         start = _wall(key)
         anchor = _wall(item['start_local'])
         if start.time() != anchor.time() or start.date() not in recurrence_dates(anchor.date(),item['recurrence'],start.date(),start.date()+timedelta(days=1)):
-            raise ValueError('Occorrenza non valida.')
+            raise ValueError(tr('Occorrenza non valida.'))
         return item,start.isoformat()
 
     def skip_occurrence(self, item_id, occurrence_key):
@@ -440,10 +441,10 @@ class AgendaStore:
         item,key = self._validate_occurrence(item_id,occurrence_key)
         self._exception_capacity(item_id,key)
         if item['kind'] != 'event':
-            raise ValueError('Per una sveglia modifica la ripetizione completa.')
+            raise ValueError(tr('Per una sveglia modifica la ripetizione completa.'))
         allowed = {'title','start_local','end_local','all_day','details','reminder_minutes','voice','color'}
         if set(overrides)-allowed:
-            raise ValueError('Modifica non valida.')
+            raise ValueError(tr('Modifica non valida.'))
         existing = self.db.execute('SELECT overrides FROM agenda_exceptions WHERE item_id=? AND occurrence_key=?',(item_id,key)).fetchone()
         previous_changes = json.loads(existing[0]) if existing else {}
         changes = dict(previous_changes)
@@ -452,13 +453,13 @@ class AgendaStore:
         if 'details' in changes:changes['details'] = _details(changes['details'])
         if 'color' in changes:changes['color'] = _color(changes['color'])
         if 'reminder_minutes' in changes and changes['reminder_minutes'] is not None:
-            _integer(changes['reminder_minutes'],0,MAX_REMINDER,'Anticipo dell’avviso non valido.')
+            _integer(changes['reminder_minutes'],0,MAX_REMINDER,tr('Anticipo dell’avviso non valido.'))
         all_day = bool(changes.get('all_day',item['all_day']))
         start = _wall(changes.get('start_local',key),all_day)
         duration = _wall(item['end_local'])-_wall(item['start_local'])
         end = _wall(changes.get('end_local',start+duration),all_day)
         if end <= start or end-start > timedelta(days=366):
-            raise ValueError('La fine deve essere successiva all’inizio, entro un anno.')
+            raise ValueError(tr('La fine deve essere successiva all’inizio, entro un anno.'))
         changes.update(start_local=start.isoformat(),end_local=end.isoformat(),all_day=all_day)
         previous_start=_wall(previous_changes.get('start_local',key),previous_changes.get('all_day',item['all_day']))
         previous_end=_wall(previous_changes.get('end_local',previous_start+duration),previous_changes.get('all_day',item['all_day']))
@@ -478,7 +479,7 @@ class AgendaStore:
     def _exception_capacity(self,item_id,key):
         if self.db.execute('SELECT 1 FROM agenda_exceptions WHERE item_id=? AND occurrence_key=?',(item_id,key)).fetchone():return
         if self.db.execute('SELECT count(*) FROM agenda_exceptions').fetchone()[0]>=MAX_EXCEPTIONS:
-            raise ValueError('Troppe modifiche alle ripetizioni. Elimina le serie non più necessarie.')
+            raise ValueError(tr('Troppe modifiche alle ripetizioni. Elimina le serie non più necessarie.'))
 
     def _load(self):
         if self._items is None:
@@ -531,14 +532,14 @@ class AgendaStore:
     def occurrences(self, start_date, end_date, include_alarms=False):
         first,last = _date(start_date),_date(end_date)
         if last <= first or (last-first).days > MAX_QUERY_DAYS:
-            raise ValueError('Scegli un intervallo di calendario non superiore a due anni.')
+            raise ValueError(tr('Scegli un intervallo di calendario non superiore a due anni.'))
         lower,upper = wall_timestamp(datetime.combine(first,daytime())),wall_timestamp(datetime.combine(last,daytime()))
         result = []
         for item in self._load():
             if item['kind']=='alarm' and not include_alarms:continue
             result.extend(self._between(item,lower,upper))
             if len(result)>MAX_OCCURRENCES:
-                raise ValueError('Troppi impegni nell’intervallo scelto. Seleziona un periodo più breve.')
+                raise ValueError(tr('Troppi impegni nell’intervallo scelto. Seleziona un periodo più breve.'))
         return sorted(result,key=lambda x:(x['start'],not x['all_day'],x['title'],x['item_id']))
 
     def next_occurrence(self, item_id, now=None):
@@ -651,7 +652,7 @@ class AgendaStore:
 
     def poll(self, now=None, limit=20):
         now=time.time() if now is None else _timestamp(now)
-        _integer(limit,1,200,'Numero di avvisi non valido.')
+        _integer(limit,1,200,tr('Numero di avvisi non valido.'))
         monotonic=time.monotonic()
         zone=bytes(QTimeZone.systemTimeZoneId())
         clock_jump=self._last_wall is not None and abs((now-self._last_wall)-(monotonic-self._last_monotonic))>3
@@ -678,7 +679,7 @@ class AgendaStore:
         return result
 
     def alerts(self, include_dismissed=False, limit=100):
-        _integer(limit,1,4000,'Numero di avvisi non valido.')
+        _integer(limit,1,4000,tr('Numero di avvisi non valido.'))
         clause='' if include_dismissed else "WHERE state!='dismissed'"
         return [self._alert(row) for row in self.db.execute('SELECT * FROM agenda_alerts '+clause+' ORDER BY scheduled_at DESC LIMIT ?',(limit,))]
 
@@ -686,7 +687,7 @@ class AgendaStore:
         return [self._alert(row) for row in self.db.execute("SELECT * FROM agenda_alerts WHERE state IN ('pending','snoozed') ORDER BY due_at LIMIT 2000")]
 
     def missed_alerts(self, limit=100):
-        _integer(limit,1,4000,'Numero di avvisi non valido.')
+        _integer(limit,1,4000,tr('Numero di avvisi non valido.'))
         return [self._alert(row) for row in self.db.execute("SELECT * FROM agenda_alerts WHERE state='missed' ORDER BY scheduled_at DESC LIMIT ?",(limit,))]
 
     def dismiss(self, alert_id):
@@ -700,9 +701,9 @@ class AgendaStore:
         now=time.time() if now is None else _timestamp(now)
         row=self.db.execute('SELECT * FROM agenda_alerts WHERE id=?',(alert_id,)).fetchone()
         if not row or row['state'] not in ('pending','snoozed'):
-            raise ValueError('Avviso non più attivo.')
+            raise ValueError(tr('Avviso non più attivo.'))
         alert=self._alert(row)
-        minutes=alert['snooze_minutes'] if minutes is None else _integer(minutes,1,120,'Rinvio non valido.')
+        minutes=alert['snooze_minutes'] if minutes is None else _integer(minutes,1,120,tr('Rinvio non valido.'))
         due=now+minutes*60
         grace=ALARM_GRACE if alert['kind']=='alarm' else EVENT_GRACE
         with self.db:

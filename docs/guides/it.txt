@@ -1,0 +1,99 @@
+# Per iniziare
+## Installazione
+Scarica lo ZIP dell’applicazione dalla release su GitHub ed estrai l’intera cartella. Su Windows 10/11 a 64 bit apri Windows.cmd. Su macOS 13 o successivo apri Mac.command e completa l’eventuale installazione di Python. L’app per Mac viene installata in /Applications. Su Linux installa una versione supportata di Python e python3-venv, poi esegui sh Linux.sh. L’installazione usa un ambiente separato e conserva i dati personali esistenti.
+## Lingua
+Al primo avvio scegli Italiano, English o 简体中文. Impostazioni → Lingua cambia l’interfaccia dal prossimo avvio. Guida apre il documento nella lingua scelta. La lingua nella sezione Voce è indipendente: controlla lettura, saluti e commenti sul meteo.
+## Comandi principali
+Fai doppio clic sul personaggio per aprire il pannello; il clic destro apre il menu. Trascinala per spostarla. Dal menu controlli passeggiate, inseguimento, animazioni, dimensione e opacità. Movimento spontaneo e inseguimento del puntatore si attivano separatamente. Le animazioni manuali partono subito.
+Nascondi Yun Jin nasconde il personaggio lasciando attivi strumenti, promemoria e sveglie. Su macOS puoi riaprire il pannello dall’icona nella barra dei menu. L’opzione per lo schermo intero controlla la presenza sopra le applicazioni a tutto schermo. Esci nel menu del personaggio chiude l’app; chiudere il pannello nasconde solo il pannello.
+## Scorciatoie
+Impostazioni → Scorciatoie permette di assegnare tasti, cancellare un’associazione o ripristinare i valori predefiniti. Su Windows e macOS sono disponibili scorciatoie globali; su Linux funzionano nelle finestre di Yun Jin. Le combinazioni in conflitto sono segnalate. Puoi controllare strumenti, visibilità, voce, impegni e sveglie.
+
+# Appunti e promemoria
+## Appunti
+Nuovo crea un appunto. Titolo e testo si salvano automaticamente. Importa accetta contenuti dagli appunti di sistema, file e cartelle; puoi anche trascinare file sul pannello o sul personaggio. Apri usa l’applicazione associata al file. I file collegati restano nella posizione originale: se li sposti, aggiorna anche il collegamento. Le immagini copiate dagli appunti vengono conservate nei dati dell’app.
+La ricerca trova titoli, testo e percorsi. Leggi legge l’appunto corrente. Il menu ⋯ offre Salva ed Elimina. Eliminare un appunto non elimina il file collegato.
+## ChatGPT
+Apri ChatGPT nell’appunto, scegli Spiega, Traduci, Rivedi o Domanda, quindi Copia e apri. Incolla la richiesta preparata in ChatGPT. Allega personalmente gli eventuali file: l’app non li carica e non invia automaticamente la richiesta.
+## Promemoria
+Nuovo promemoria accetta un ritardo oppure una data e un’ora. I pulsanti rapidi impostano intervalli comuni. Alla scadenza puoi scegliere Fatto o Tra 10 min. Nascondi chiude la notifica senza completare il promemoria. Promemoria elenca quelli in attesa; Completati mostra quelli conclusi. Puoi modificarli, rinviarli o eliminarli dai rispettivi comandi.
+Voce e suoni controllano i segnali audio. Anche con l’audio disattivato rimangono le notifiche testuali. L’app deve essere aperta: i promemoria non possono accendere un computer spento.
+
+# Calendario e sveglie
+## Impegni
+Seleziona un giorno e scegli Nuovo impegno. Inserisci titolo, inizio, fine e note facoltative. Tutto il giorno usa date inclusive nell’editor: da lunedì a martedì comprende entrambi i giorni. Promemoria imposta l’anticipo; Leggi l’avviso a voce abilita la lettura per quell’impegno.
+La ripetizione può essere giornaliera, settimanale, mensile o annuale, con intervallo e limite per data o numero di occorrenze. Modificando o eliminando una serie scegli Questa occorrenza o Tutta la serie. Il giorno 31 salta i mesi che non lo contengono; il 29 febbraio ricorre negli anni bisestili. I fusi orari ricevuti da Google sono conservati; gli impegni locali seguono il fuso del computer.
+## Navigazione e immagini
+Le frecce cambiano mese; Oggi torna alla data corrente. Il titolo del mese permette di scegliere mese e anno. Con la tastiera, le frecce selezionano un giorno, Invio crea un impegno, Pagina su/giù cambia mese e Home torna a oggi.
+Ogni mese ha immagini giornaliere in un ordine stabile che varia con l’anno. Apri l’illustrazione per vedere l’originale; quelli non ancora presenti vengono scaricati quando servono. L’etichetta Originale/Anteprima indica cosa stai vedendo. Chiudi con il mouse o Esc.
+## Sveglie
+Nuova sveglia accetta ora, nome facoltativo, ripetizione, suono, voce e intervallo di rinvio. Una sveglia singola si disattiva dopo aver suonato; riattivandola viene programmata la prossima occorrenza. Ferma la interrompe; il rinvio la riprogramma. Il suono termina dopo un minuto, ma la notifica rimane.
+Dopo sospensione o riavvio viene recuperata solo l’ultima occorrenza: entro 10 minuti per le sveglie, entro due ore e prima della fine dell’impegno per i promemoria del calendario. Gli avvisi più vecchi restano elencati senza suonare. Le sveglie funzionano anche con il personaggio nascosto e durante il focus, purché l’app sia aperta.
+
+# Google Calendar
+## Collegamento e calendari
+Il collegamento Google è attualmente riservato agli account aggiunti agli utenti di prova del progetto. In questa fase Google richiede di ricollegare l’account ogni 7 giorni; usa Ricollega account quando richiesto. Gli eventi e le modifiche in attesa vengono conservati.
+Nel Calendario scegli Collega Google Calendar. Si apre il browser: scegli il tuo account Google e autorizza Yun Jin. Lo stesso collegamento è disponibile anche nelle Impostazioni. Le credenziali vengono conservate nel portachiavi del sistema operativo; l’app non salva la password Google.
+Seleziona i calendari da sincronizzare. Nuovi impegni imposta la destinazione predefinita. Nell’editor scegli un calendario oppure Solo su questo dispositivo. Gli impegni locali esistenti restano locali finché non li assegni. Sveglie, appunti e flashcard non vengono caricati su Google Calendar.
+## Più dispositivi
+Collega lo stesso account su ogni computer e seleziona gli stessi calendari. Le modifiche appaiono anche in Google Calendar sul telefono. Sincronizza aggiorna su richiesta; la sincronizzazione automatica avviene dopo le modifiche locali e periodicamente quando l’account è collegato. Per ricevere aggiornamenti l’app deve essere aperta.
+Le modifiche offline restano salvate e vengono sincronizzate al ritorno della connessione. Non creare copie aggiuntive per ritentare un invio. Account → Scollega questo dispositivo interrompe la sincronizzazione su questo dispositivo e conserva gli eventi Google. Gli altri dispositivi rimangono collegati; ricollegare lo stesso account conserva le associazioni degli eventi.
+Account → Gestisci accesso Google permette di controllare o revocare l’autorizzazione dell’app da Google; la revoca può interessare tutti i dispositivi collegati.
+## Conflitti e sola lettura
+Le modifiche a campi diversi possono essere combinate. Se la stessa informazione cambia da entrambe le parti, Conflitti permette di scegliere Usa locale, Usa Google o Conserva entrambi. Quest’ultimo conserva la versione condivisa di Google e una copia locale separata, che non viene caricata.
+I calendari condivisi in sola lettura e i tipi di evento o le ricorrenze non supportati sono protetti dalle modifiche nell’app. Usa Apri in Google Calendar per gestirli. Campi esclusivi di Google, come invitati e luoghi, vengono conservati quando modifichi i campi supportati da Yun Jin.
+
+# Studio e flashcard
+## Creazione e ripasso
+Nuovo mazzo crea una raccolta. Aggiungi scheda offre Fronte / retro oppure Cloze. Scrivi domanda e risposta sui rispettivi lati. Seleziona del testo e scegli Cloze, oppure usa {{c1::testo}}; aggiungi un suggerimento con {{c1::testo::suggerimento}}. Numeri diversi creano schede diverse; lo stesso numero nasconde più passaggi insieme. Le cloze annidate non sono supportate.
+Ogni lato accetta testo e fino a 12 allegati immagine o audio, di massimo 32 MB ciascuno. Gli allegati vengono copiati nei dati dell’app. Anteprima mostra il risultato; Salva e aggiungi apre un’altra scheda. Modificare il testo conserva i progressi delle schede esistenti.
+## Durante una sessione
+Studia mostra la domanda. Mostra risposta o Spazio rivela la risposta. Valuta il ricordo con Ancora, Difficile, Bene o Facile, oppure con i tasti 1–4. Annulla ultima risposta ripristina lo stato precedente. Gli intervalli brevi di apprendimento possono richiedere un’attesa.
+Il riepilogo del mazzo mostra schede nuove, in apprendimento e in ripasso. Cerca schede trova e modifica le note; Sospendi / Riprendi controlla la programmazione. Elimina scheda rimuove la scheda e le cloze collegate. Archivia mazzo lo nasconde dallo studio attivo conservando i dati; Mazzi archiviati permette di ripristinarlo.
+## Programmazione
+FSRS usa le risposte per pianificare i ripassi e si adatta quando la cronologia è sufficiente. Il miglioramento dei parametri non sposta automaticamente le scadenze esistenti. Per usare intervalli convenzionali, disattiva FSRS nelle opzioni del mazzo.
+La ritenzione osservata a 30 giorni conta le risposte ricordate nei ripassi distanti almeno un giorno; esclude i passi brevi di apprendimento. Una ritenzione desiderata più alta richiede più ripassi.
+
+# Impostazioni di studio e Anki
+## Opzioni del mazzo
+La ritenzione desiderata parte dal 90%. I limiti giornalieri di schede nuove e ripassi sono inizialmente illimitati; zero blocca il nuovo lavoro di quel tipo, mentre i passi di apprendimento già iniziati in giornata continuano. Il giorno di studio si azzera alle 04:00 locali.
+I passi iniziali sono 10s 30s 1m 10m; quelli dopo una dimenticanza sono 10s 30s 1m. Separali con spazi: s = secondi, m = minuti, h = ore, d = giorni. Senza unità il valore è in minuti. Lascia vuoto per affidare gli intervalli a FSRS. Ancora torna al primo passo; Bene avanza; Difficile ripete un passo adattato; Facile passa ai ripassi.
+Per impostazione predefinita, dopo 16 dimenticanze nei ripassi una scheda viene classificata come leech e sospesa. Puoi cambiare la soglia o disattivare la sospensione automatica. Leech elenca queste schede.
+## Richiami di ripasso
+Richiami e Anki controlla gli inviti occasionali: ogni 90–150 minuti, fino a tre al giorno. Sono scelte schede difficili dei mazzi studiati oggi, dopo almeno 30 minuti dall’ultimo ripasso, evitando note già mostrate oggi o ieri. Focus e altre attività evitano interruzioni. Ripassa apre fino a tre schede; Non oggi sospende gli inviti.
+## Anki
+Attiva Includi schede Anki, quindi scegli un profilo o il file collection.anki2. Non occorre un componente aggiuntivo di Anki. La lettura si aggiorna ogni 15 minuti e funziona anche con Anki aperto; se la raccolta è occupata, riprova o chiudi Anki.
+La pratica seleziona leech e il 10% di schede più difficili dei mazzi studiati oggi. Risposte e programmazione di Anki non vengono mai modificate. Sono supportati modelli fronte/retro e cloze con contenuto statico leggibile, immagini e audio locali; gli script non vengono eseguiti. Includere leech sospese riguarda solo la pratica: gli originali restano sospesi.
+
+# Musica, tempo e focus
+## Metronomo
+Imposta un tempo da 20 a 400 BPM e premi Avvia. Tap tempo stima il tempo dai tocchi. Accento imposta quanti battiti separano gli accenti; il volume è indipendente da voce e suoni del personaggio.
+La rampa modifica gradualmente il tempo verso un obiettivo, con incremento e intervallo in battiti. Scegli se proseguire o fermarti dopo l’ultimo intervallo. Ferma conclude la riproduzione. Dopo la sospensione del computer o un errore audio, controlla l’uscita e premi di nuovo Avvia.
+## Cronometro
+Avvia / Pausa conserva il tempo trascorso. Giro registra durata del giro e tempo totale. Azzera cancella tempo e giri. Copia mette la tabella negli appunti; CSV la esporta. Il tempo registrato viene conservato anche dopo una normale chiusura e riapertura dell’app.
+## Focus
+Scegli la durata e premi Avvia. Al termine ricevi un promemoria. Ferma conclude la sessione. Il focus sopprime i richiami di studio facoltativi, ma non sveglie e impegni programmati. Metronomo e cronometro rimangono strumenti indipendenti.
+## Comportamento
+Passeggiate, inseguimento e sguardo verso il puntatore sono opzioni distinte. Il menu offre gesti e animazioni manuali, personalità, dimensione, opacità e scelta dello schermo. Riporta sullo schermo recupera un personaggio fuori dall’area visibile. Pausa tutto ferma le attività del personaggio; nasconderlo lascia disponibili gli strumenti.
+
+# Voce, suoni e meteo
+## Voce
+Voce attiva controlla la lettura. Disattivandola rimangono fumetti, notifiche e animazioni. Leggi usa il testo inserito o un appunto; Leggi testo copiato usa gli appunti di sistema. Ferma cancella lettura e fumetto. I testi lunghi sono mostrati in parti brevi; seleziona un passaggio di massimo 3.000 caratteri per la lettura.
+Microsoft Edge offre voce, velocità, tonalità e volume. Google Translate offre lingua, lettura lenta e volume; il servizio sceglie la voce. Non serve una chiave API. Il testo viene inviato al servizio online scelto, dalla cui disponibilità dipende la lettura. L’audio già generato viene conservato in una cache locale. Il menu ⋯ permette di svuotarla o ripristinare le impostazioni vocali.
+Voce, effetti sonori e metronomo hanno volumi separati. Silenzia per 1 ora sospende temporaneamente i suoni del personaggio. Una lettura manuale ferma il metronomo. La lettura automatica dei promemoria ha un interruttore proprio.
+## Orario e meteo
+Impostazioni → Orario e meteo attiva separatamente saluti all’avvio, animazioni legate all’ora e reazioni al meteo. Scegli manualmente una città; non serve l’accesso alla posizione del dispositivo. Meteo appare nella navigazione dopo la scelta della città.
+La pagina mostra stime attuali, previsioni giornaliere e dettaglio orario. Seleziona un giorno o un’ora per esaminare temperatura, precipitazioni e vento. Aggiorna richiede nuovi dati; quelli salvati rimangono disponibili offline. Gli orari seguono il fuso della località. I dati meteo provengono da Open-Meteo; la ricerca delle città usa GeoNames.
+
+# Dati, aggiornamenti e assistenza
+## Backup e ripristino
+Impostazioni → Backup esporta database, immagini acquisite, allegati delle flashcard e preferenze. I file esterni collegati non vengono copiati: conservali separatamente. Cartella dati apre la posizione di archiviazione.
+Per ripristinare, chiudi Yun Jin, conserva una copia della cartella dati corrente ed estrai dal backup companion.sqlite3, attachments e study-media in quella cartella. Sostituisci il database solo ad app chiusa. Il calendario ripristinato è locale: credenziali Google e associazioni di sincronizzazione non vengono ripristinate. Controlla gli impegni recuperati prima di ricollegare gli account.
+## Aggiornamenti e rimozione
+Gli aggiornamenti automatici vengono cercati circa ogni due ore. Leggi le note di rilascio e scegli Più tardi, Salta questa versione oppure Aggiorna e riavvia. Se servono nuove dipendenze, usa l’installer della release. Un riavvio non riuscito ripristina il programma precedente. I dati personali vengono conservati; i vecchi pacchetti di aggiornamenti riusciti vengono rimossi automaticamente.
+Per rimuovere l’app, chiudila ed elimina i collegamenti; su macOS elimina anche l’app da /Applications. La cartella dati contiene programma e ambiente di esecuzione. Prima di eliminarla conserva companion.sqlite3, attachments e study-media, oppure esporta un backup.
+## Risoluzione dei problemi
+Se una finestra sembra scomparsa, usa l’icona nell’area di notifica o nella barra dei menu, oppure una scorciatoia del pannello. Per l’audio controlla volume, silenziamento e dispositivo di uscita. Per la voce riprova o cambia servizio. Se Anki è occupato, chiudilo e riprova. Ricollega Google dopo una revoca o se viene richiesta una nuova autorizzazione. Le modifiche in attesa rimangono salvate.
+Ripeti l’installazione per riparare l’ambiente. Se il problema persiste, consulta yun-jin.log in Cartella dati; non includere appunti personali, database o credenziali in una segnalazione. Sveglie e promemoria non funzionano ad app chiusa o computer spento.
+## Crediti e privacy
+Progetto fan non ufficiale. Yun Jin e Genshin Impact appartengono ai rispettivi titolari. Il codice è GPL-3.0-or-later; le dipendenze conservano le proprie licenze. I dati Open-Meteo sono CC BY 4.0; le città provengono da GeoNames. I servizi vocali ricevono il testo da leggere; le richieste meteo includono le coordinate scelte e l’IP della connessione. Google riceve gli eventi dei calendari selezionati. Nessuna affiliazione con HoYoverse, Microsoft, Google o OpenAI.

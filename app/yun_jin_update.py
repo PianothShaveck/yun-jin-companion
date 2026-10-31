@@ -4,6 +4,7 @@
 This module intentionally has no Qt imports. A private copy runs after the GUI
 has saved its data and exited. It never executes code from an unverified ZIP.
 """
+from yun_jin_i18n import tr
 import hashlib
 import json
 import os
@@ -35,7 +36,7 @@ PROTOCOL = 1
 def version_tuple(value):
     match = re.fullmatch(r'v?(\d+)\.(\d+)\.(\d+)', str(value))
     if not match:
-        raise ValueError('Versione stabile non riconosciuta: ' + str(value))
+        raise ValueError(tr('Versione stabile non riconosciuta: ') + str(value))
     return tuple(map(int, match.groups()))
 
 
@@ -53,7 +54,7 @@ def github_url(url, download=False):
 class SafeRedirect(HTTPRedirectHandler):
     def redirect_request(self, request, fp, code, msg, headers, newurl):
         if not github_url(newurl, download=True):
-            raise ValueError('Destinazione del download non autorizzata.')
+            raise ValueError(tr('Destinazione del download non autorizzata.'))
         return super().redirect_request(request, fp, code, msg, headers, newurl)
 
 
@@ -80,9 +81,9 @@ def release_from_json(data, current):
     assets = [a for a in data.get('assets', []) if a.get('name') == name and a.get('state') == 'uploaded']
     page = data.get('html_url', '')
     if not github_url(page):
-        raise ValueError('Indirizzo della release non valido.')
-    result = dict(version=number, notes=str(data.get('body') or 'Nessuna nota di rilascio pubblicata.'),
-                  url=page, name=name, automatic=False, reason='Il pacchetto ZIP non è ancora disponibile.')
+        raise ValueError(tr('Indirizzo della release non valido.'))
+    result = dict(version=number, notes=str(data.get('body') or tr('Nessuna nota di rilascio pubblicata.')),
+                  url=page, name=name, automatic=False, reason=tr('Il pacchetto ZIP non è ancora disponibile.'))
     if len(assets) != 1:
         return result
     asset = assets[0]
@@ -90,10 +91,10 @@ def release_from_json(data, current):
     url = asset.get('browser_download_url', '')
     size = asset.get('size', 0)
     if not github_url(url) or not 0 < size <= MAX_ZIP:
-        raise ValueError('Pacchetto di aggiornamento non valido.')
+        raise ValueError(tr('Pacchetto di aggiornamento non valido.'))
     result.update(download=url, size=size)
     if not re.fullmatch(r'sha256:[0-9a-fA-F]{64}', digest):
-        result['reason'] = 'GitHub non ha ancora fornito la verifica SHA-256 del pacchetto. Riprova più tardi.'
+        result['reason'] = tr('GitHub non ha ancora fornito la verifica SHA-256 del pacchetto. Riprova più tardi.')
         return result
     result.update(automatic=True, digest=digest[7:].lower(), reason='')
     return result
@@ -107,10 +108,10 @@ def check_release(current):
         if exc.code == 404:
             return None
         if exc.code in (403, 429):
-            raise RuntimeError('GitHub ha limitato le richieste. Riprova più tardi.') from exc
+            raise RuntimeError(tr('GitHub ha limitato le richieste. Riprova più tardi.')) from exc
         raise
     if len(raw) > 2 * 1024 * 1024:
-        raise ValueError('Risposta di GitHub troppo grande.')
+        raise ValueError(tr('Risposta di GitHub troppo grande.'))
     return release_from_json(json.loads(raw), current)
 
 
@@ -118,7 +119,7 @@ def safe_relative(name):
     p = PurePosixPath(name)
     if (not name or '\\' in name or ':' in name or '\x00' in name or p.is_absolute()
             or any(part in ('', '.', '..') for part in name.split('/'))):
-        raise ValueError('Percorso non sicuro nel pacchetto: ' + repr(name))
+        raise ValueError(tr('Percorso non sicuro nel pacchetto: ') + repr(name))
     return p
 
 
@@ -133,31 +134,33 @@ def sha256(path):
 def read_manifest(root, manifest_path=None):
     doc = json.loads((Path(manifest_path) if manifest_path else Path(root) / 'app' / MANIFEST).read_text(encoding='utf-8'))
     if doc.get('protocol') != PROTOCOL or not isinstance(doc.get('files'), dict):
-        raise ValueError('Formato di aggiornamento non supportato. Usa l’installer della nuova release.')
+        raise ValueError(tr('Formato di aggiornamento non supportato. Usa l’installer della nuova release.'))
     version_tuple(doc['version'])
     if not doc['files'] or len(doc['files']) > 3000:
-        raise ValueError('Elenco dei file non valido.')
+        raise ValueError(tr('Elenco dei file non valido.'))
     for name, digest in doc['files'].items():
         safe_relative(name)
         if not re.fullmatch(r'[0-9a-f]{64}', digest):
-            raise ValueError('Hash dei file non valido.')
-        if not (name.startswith(('app/', 'installer/')) or name in ('Guida.pdf', 'Mac.command', 'Linux.sh', 'Windows.cmd')):
-            raise ValueError('File estraneo al programma: ' + name)
+            raise ValueError(tr('Hash dei file non valido.'))
+        if not (name.startswith(('app/', 'installer/')) or name in ('Guida.pdf', 'Guide.pdf', 'Guide.zh-CN.pdf', 'Mac.command', 'Linux.sh', 'Windows.cmd')):
+            raise ValueError(tr('File estraneo al programma: ') + name)
     required = {'app/yun_jin_pet.py', 'app/yun_jin_app.py', 'app/yun_jin_platform.py',
                 'app/assets/animations.json', 'app/spritesheet-yun-jin-v2.png', 'Guida.pdf'}
+    if version_tuple(doc['version']) >= (1, 6, 0):
+        required.update(('Guide.pdf', 'Guide.zh-CN.pdf', 'app/locales/en.json', 'app/locales/zh-CN.json'))
     if not required <= doc['files'].keys():
-        raise ValueError('Il pacchetto non contiene tutti i file essenziali.')
+        raise ValueError(tr('Il pacchetto non contiene tutti i file essenziali.'))
     return doc
 
 
 def verify_program(root, expected_version=None):
     doc = read_manifest(root)
     if expected_version and doc['version'] != expected_version:
-        raise ValueError('La versione nello ZIP non corrisponde alla release.')
+        raise ValueError(tr('La versione nello ZIP non corrisponde alla release.'))
     for name, digest in doc['files'].items():
         path = Path(root) / name
         if path.is_symlink() or not path.is_file() or sha256(path) != digest:
-            raise ValueError('File mancante o danneggiato: ' + name)
+            raise ValueError(tr('File mancante o danneggiato: ') + name)
     return doc
 
 
@@ -166,20 +169,20 @@ def unpack_verified(archive, destination, expected_version):
     with zipfile.ZipFile(archive) as z:
         infos = z.infolist()
         if not infos or len(infos) > 4000 or sum(i.file_size for i in infos) > MAX_EXPANDED:
-            raise ValueError('Dimensioni del pacchetto non valide.')
+            raise ValueError(tr('Dimensioni del pacchetto non valide.'))
         roots, seen = set(), set()
         for info in infos:
             name = info.filename.rstrip('/')
             path = safe_relative(name)
             mode = info.external_attr >> 16
             if stat.S_ISLNK(mode) or (stat.S_IFMT(mode) not in (0, stat.S_IFREG, stat.S_IFDIR)):
-                raise ValueError('Collegamenti o file speciali non ammessi nello ZIP.')
+                raise ValueError(tr('Collegamenti o file speciali non ammessi nello ZIP.'))
             key = name.casefold()
             if key in seen:
-                raise ValueError('Percorso duplicato nel pacchetto.')
+                raise ValueError(tr('Percorso duplicato nel pacchetto.'))
             seen.add(key); roots.add(path.parts[0])
         if len(roots) != 1:
-            raise ValueError('Struttura ZIP non riconosciuta.')
+            raise ValueError(tr('Struttura ZIP non riconosciuta.'))
         for info in infos:
             path = destination / info.filename
             if info.is_dir():
@@ -199,26 +202,26 @@ def check_compatibility(manifest):
     minimum = tuple(manifest.get('python_min', [3, 10]))
     maximum = tuple(manifest.get('python_max_exclusive', [3, 15]))
     if not minimum <= sys.version_info[:2] < maximum:
-        raise RuntimeError('Questa release richiede un’altra versione di Python. Apri la release e usa il suo installer.')
+        raise RuntimeError(tr('Questa release richiede un’altra versione di Python. Apri la release e usa il suo installer.'))
     security_minimum = manifest.get('python_security_min', {}).get(
         '.'.join(map(str, sys.version_info[:2])))
     if security_minimum and sys.version_info[:3] < tuple(security_minimum):
-        raise RuntimeError('Aggiorna Python usando l’installer della release.')
+        raise RuntimeError(tr('Aggiorna Python usando l’installer della release.'))
     requirements = manifest.get('requirements')
     if not isinstance(requirements, dict) or not requirements:
-        raise ValueError('Requisiti del pacchetto mancanti.')
+        raise ValueError(tr('Requisiti del pacchetto mancanti.'))
     for package, wanted in requirements.items():
         try:
             actual = version(package)
         except PackageNotFoundError:
             actual = None
         if actual != wanted:
-            raise RuntimeError('Questa release aggiorna anche le dipendenze. Apri la release e usa il suo installer.')
+            raise RuntimeError(tr('Questa release aggiorna anche le dipendenze. Apri la release e usa il suo installer.'))
 
 
 def prepare_update(release, cache, progress=lambda value: None):
     if not release.get('automatic'):
-        raise ValueError(release.get('reason', 'Pacchetto non verificabile.'))
+        raise ValueError(release.get('reason', tr('Pacchetto non verificabile.')))
     cache = Path(cache); cache.mkdir(parents=True, exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix='update-', dir=cache))
     try:
@@ -231,11 +234,11 @@ def prepare_update(release, cache, progress=lambda value: None):
                     break
                 total += len(chunk)
                 if total > MAX_ZIP or total > release['size']:
-                    raise ValueError('Dimensione del download inattesa.')
+                    raise ValueError(tr('Dimensione del download inattesa.'))
                 digest.update(chunk); dst.write(chunk)
                 progress(min(95, int(95 * total / release['size'])))
         if total != release['size'] or digest.hexdigest() != release['digest']:
-            raise ValueError('Verifica SHA-256 fallita. Nessun file è stato modificato.')
+            raise ValueError(tr('Verifica SHA-256 fallita. Nessun file è stato modificato.'))
         source = unpack_verified(archive, work / 'unpacked', release['version'])
         check_compatibility(read_manifest(source))
         progress(100)
@@ -258,9 +261,9 @@ def assert_regular_destination(path, root):
         if candidate == root.parent:
             break
         if candidate.is_symlink():
-            raise ValueError('Il percorso contiene un collegamento simbolico: ' + str(candidate))
+            raise ValueError(tr('Il percorso contiene un collegamento simbolico: ') + str(candidate))
     if path.exists() and not path.is_file():
-        raise ValueError('Il percorso di destinazione non è un file: ' + str(path))
+        raise ValueError(tr('Il percorso di destinazione non è un file: ') + str(path))
 
 
 def atomic_copy(source, destination):
@@ -284,7 +287,7 @@ def transaction(source, app_dir, backup, journal_path):
     new = verify_program(source)
     portable = (app_dir.parent / 'installer/install.py').is_file()
     def managed(name):
-        return name.startswith('app/') or name == 'Guida.pdf' or portable
+        return name.startswith('app/') or name in ('Guida.pdf','Guide.pdf','Guide.zh-CN.pdf') or portable
     names = {name for name in new['files'] if managed(name)} | {'app/' + MANIFEST}
     old_path = app_dir / MANIFEST
     if old_path.is_file():
@@ -437,7 +440,7 @@ def cleanup_completed_updates(data_root, app_dir):
             for item in entries:
                 name = str(safe_relative(item['name']))
                 if not (name.startswith(('app/', 'installer/')) or name in
-                        ('Guida.pdf', 'Mac.command', 'Linux.sh', 'Windows.cmd')):
+                        ('Guida.pdf', 'Guide.pdf', 'Guide.zh-CN.pdf', 'Mac.command', 'Linux.sh', 'Windows.cmd')):
                     raise ValueError('Foreign journal entry')
                 if item['existed'] is True:
                     backup_names.add(name)
@@ -488,11 +491,11 @@ def recover_pending(app_dir, data_root):
     try:
         journal = json.loads(journal_path.read_text(encoding='utf-8'))
         if Path(journal['app_dir']).resolve() != app_dir:
-            raise ValueError('Destinazione di recupero non corrispondente.')
+            raise ValueError(tr('Destinazione di recupero non corrispondente.'))
         Path(journal['backup']).resolve().relative_to(work)
         if journal['status'] == 'applying':
             rollback(journal_path)
-            write_json(work / 'result.json', dict(ok=False, message='Aggiornamento interrotto: ripristinata la versione precedente.'))
+            write_json(work / 'result.json', dict(ok=False, message=tr('Aggiornamento interrotto: ripristinata la versione precedente.')))
             os.environ['YUN_JIN_UPDATE_RESULT'] = str(work / 'result.json')
             clear_pending(work)
             return 'restart'
@@ -569,13 +572,13 @@ def worker(plan_path):
             child.wait(timeout=10)
         except subprocess.TimeoutExpired:
             # Don't restore underneath a process that is still alive.
-            write_json(result, dict(ok=False, message='Riavvio non completato. Chiudi Yun Jin e riprova.'))
+            write_json(result, dict(ok=False, message=tr('Riavvio non completato. Chiudi Yun Jin e riprova.')))
             return 3
     if not lock.tryLock(5000):
         return 3
     try:
         rollback(work / 'journal.json')
-        write_json(result, dict(ok=False, message='La nuova versione non si è avviata. Ripristinata la versione precedente.'))
+        write_json(result, dict(ok=False, message=tr('La nuova versione non si è avviata. Ripristinata la versione precedente.')))
     finally:
         lock.unlock()
     launch(plan['executable'], plan['app_dir'], result)

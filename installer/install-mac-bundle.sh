@@ -11,7 +11,12 @@ cleanup() {
     trap - EXIT HUP INT TERM
     if [ "$restore_previous" = 1 ] && [ ! -e "$target_bundle" ]; then
         if ! mv "$staging_dir/previous.app" "$target_bundle"; then
-            printf 'Ripristino non riuscito. App precedente conservata in: %s\n' "$staging_dir" >&2
+            case ${YUNJIN_LANGUAGE:-en} in
+                en) message='Restore failed. Previous app kept in: %s\n' ;;
+                zh-CN) message='恢复失败。旧应用保存在：%s\n' ;;
+                *) message='Ripristino non riuscito. App precedente conservata in: %s\n' ;;
+            esac
+            printf "$message" "$staging_dir" >&2
             exit 1
         fi
     fi

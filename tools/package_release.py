@@ -8,13 +8,13 @@ import json
 import os
 import tempfile
 ROOT=Path(__file__).resolve().parents[1]
-OUTPUT=ROOT/'dist/Yun-Jin-Companion-1.5.7.zip'
+OUTPUT=ROOT/'dist/Yun-Jin-Companion-1.6.0.zip'
 MAX_RUNTIME_ZIP = 2 * 1024 ** 3
 
 # Only maintained sources belong in the repository archive. Working artwork,
 # reviews, release history and publishing notes are not distribution sources.
 SOURCE_FILES = (
-    'README.md', '.gitignore', 'docs/build_guide.py',
+    'README.md', 'AGENTS.md', '.gitignore', '.gitattributes', 'docs/build_guide.py',
     'tools/package_release.py', 'tools/prune_sprite_cache.py',
     'tools/build_sprite_cache.py', 'tools/render_guide_assets.py', 'tools/build_calendar_previews.py',
 )
@@ -43,10 +43,10 @@ def write_animation_index():
 
 def runtime_files():
     sources=animation_sources()
-    paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf')]
+    paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf','Guide.pdf','Guide.zh-CN.pdf')]
     for folder in ('app','installer'):
         paths.extend(p for p in (ROOT/folder).rglob('*') if p.is_file()
-                     and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo','.log','.zip')
+                     and not any(part.startswith('.') for part in p.relative_to(ROOT).parts if part!='.github') and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo','.log','.zip')
                      and p.name!='release-manifest.json' and p not in sources
                      and ROOT/'app/assets/calendar' not in p.parents)
     return paths
@@ -56,7 +56,7 @@ def write_manifest():
     for line in (ROOT/'installer/requirements.txt').read_text().splitlines():
         if line.strip() and not line.startswith('#'):
             name,version=line.strip().split('==');requirements[name]=version
-    document=dict(protocol=1,version='1.5.7',python_min=[3,11],python_max_exclusive=[3,15],
+    document=dict(protocol=1,version='1.6.0',python_min=[3,11],python_max_exclusive=[3,15],
                   python_security_min={'3.11':[3,11,17],'3.12':[3,12,15],
                                        '3.13':[3,13,17],'3.14':[3,14,9]},
                   requirements=requirements,files={str(p.relative_to(ROOT)).replace('\\','/'):
@@ -66,16 +66,19 @@ def write_manifest():
 def build(source=False):
     write_animation_index()
     write_manifest()
-    output=OUTPUT.with_name('Yun-Jin-Companion-1.5.7-Sorgenti.zip') if source else OUTPUT
+    output=OUTPUT.with_name('Yun-Jin-Companion-1.6.0-Sources.zip') if source else OUTPUT
     output.parent.mkdir(exist_ok=True)
-    paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf')]
+    paths=[ROOT/name for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf','Guide.pdf','Guide.zh-CN.pdf')]
     if source:
         paths.extend(ROOT/name for name in SOURCE_FILES)
+        paths.extend(p for p in (ROOT/'tools').glob('*.py') if p not in paths)
         paths.extend(ROOT/'docs/art'/name for name in GUIDE_IMAGES)
-    folders=('app','installer','tests','.github') if source else ('app','installer')
+        paths.extend(p for folder in ('docs/guides', 'docs/fonts') for p in (ROOT/folder).rglob('*') if p.is_file())
+        paths.append(ROOT/'docs/RELEASE-NOTES-1.6.md')
+    folders=('app','installer','tests','.github','docs/preparazione-1.6') if source else ('app','installer')
     for folder in folders:
         paths.extend(p for p in (ROOT/folder).rglob('*') if p.is_file()
-                     and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo','.log','.zip'))
+                     and not any(part.startswith('.') for part in p.relative_to(ROOT).parts if part!='.github') and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo','.log','.zip'))
     if not source:
         sources=animation_sources();paths=[p for p in paths if p not in sources
                                           and ROOT/'app/assets/calendar' not in p.parents]
@@ -84,7 +87,7 @@ def build(source=False):
     try:
         with zipfile.ZipFile(temporary,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as archive:
             for path in sorted(paths):
-                archive.write(path,Path('Yun-Jin-Companion-1.5.7')/path.relative_to(ROOT))
+                archive.write(path,Path('Yun-Jin-Companion-1.6.0')/path.relative_to(ROOT))
         with zipfile.ZipFile(temporary) as archive:
             if archive.testzip() is not None:
                 raise ValueError('Archive CRC validation failed')

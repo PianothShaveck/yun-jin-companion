@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Calendar with native controls, bounded illustrations and no background polling."""
+from yun_jin_i18n import tr
 from collections import OrderedDict
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
@@ -7,7 +8,7 @@ import logging
 import sqlite3
 
 from PyQt6 import sip
-from PyQt6.QtCore import Qt, QDate, QTime, QSize, QRectF, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QDate, QTime, QSize, QRectF, QTimer, QUrl, pyqtSignal
 from PyQt6.QtGui import QColor, QPainter, QPainterPath, QPen, QFont, QLinearGradient, QImageReader, QPixmap
 from PyQt6.QtWidgets import (QWidget, QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,
     QBoxLayout, QFormLayout, QLabel, QPushButton, QComboBox, QSpinBox, QCheckBox,
@@ -37,7 +38,7 @@ def agenda_store(pet):
     return service
 
 
-def notify_changed(pet):
+def notify_changed(pet, google_item=None):
     """Also refresh the scheduler after a save, without adding a page timer."""
     signal = getattr(pet, 'agenda_changed', None)
     if signal is not None and hasattr(signal, 'emit'):
@@ -45,6 +46,9 @@ def notify_changed(pet):
     callback = getattr(pet, 'refresh_agenda', None)
     if callable(callback):
         callback()
+    sync = getattr(pet, 'google_sync', None)
+    if sync is not None and google_item is not None and pet.store.google.link(google_item):
+        sync.local_changed()
 
 
 def exec_editor(dialog,pet):
@@ -73,7 +77,10 @@ def qdate(value):
 
 
 def local_day_label(day, year=False):
-    return f'{WEEKDAYS[day.weekday()]} {day.day} {MONTHS[day.month-1].lower()}' + (f' {day.year}' if year else '')
+    from yun_jin_i18n import language
+    if language()=='zh-CN':
+        return (str(day.year)+'年' if year else '')+str(day.month)+'月'+str(day.day)+'日 '+tr(WEEKDAYS[day.weekday()])
+    return f'{tr(WEEKDAYS[day.weekday()])} {day.day} {tr(MONTHS[day.month-1]).lower()}' + (f' {day.year}' if year else '')
 
 
 def recurrence_label(recurrence):
@@ -84,16 +91,16 @@ def recurrence_label(recurrence):
     if freq == 'weekly':
         days = recurrence.get('weekdays') or []
         if every == 1 and days == list(range(7)):
-            return 'Ogni giorno'
+            return tr('Ogni giorno')
         if every == 1 and days == list(range(5)):
-            return 'Lun–Ven'
-        names = ', '.join(SHORT_DAYS[d] for d in days)
-        return (names if every == 1 and names else ('Ogni settimana' if every == 1 else f'Ogni {every} settimane'))
+            return tr('Lun–Ven')
+        names = ', '.join(tr(SHORT_DAYS[d]) for d in days)
+        return (names if every == 1 and names else (tr('Ogni settimana') if every == 1 else tr('Ogni {v0} settimane', v0=every)))
     if freq == 'daily':
-        return 'Ogni giorno' if every == 1 else f'Ogni {every} giorni'
+        return tr('Ogni giorno') if every == 1 else tr('Ogni {v0} giorni', v0=every)
     if freq == 'monthly':
-        return 'Ogni mese' if every == 1 else f'Ogni {every} mesi'
-    return 'Ogni anno' if every == 1 else f'Ogni {every} anni'
+        return tr('Ogni mese') if every == 1 else tr('Ogni {v0} mesi', v0=every)
+    return tr('Ogni anno') if every == 1 else tr('Ogni {v0} anni', v0=every)
 
 
 class WeekdayPicker(QWidget):
@@ -103,8 +110,8 @@ class WeekdayPicker(QWidget):
         row = QHBoxLayout(self); row.setContentsMargins(0,0,0,0); row.setSpacing(5)
         self.buttons = []
         for i, label in enumerate(SHORT_DAYS):
-            b = QPushButton(label); b.setCheckable(True); b.setChecked(i in selected)
-            b.setAutoDefault(False); b.setAccessibleName(WEEKDAYS[i]); b.setMinimumWidth(34)
+            b = QPushButton(tr(label)); b.setCheckable(True); b.setChecked(i in selected)
+            b.setAutoDefault(False); b.setAccessibleName(tr(WEEKDAYS[i])); b.setMinimumWidth(34)
             b.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             b.setStyleSheet('QPushButton {padding:6px 2px;} QPushButton:checked {background:#695477;border-color:#ba9cca;color:white;}')
             b.toggled.connect(self.changed); row.addWidget(b); self.buttons.append(b)
@@ -121,24 +128,24 @@ class RecurrenceEditor(QWidget):
         recurrence = recurrence or {}
         layout = QVBoxLayout(self); layout.setContentsMargins(0,0,0,0); layout.setSpacing(10)
         row = QHBoxLayout(); row.setSpacing(10)
-        self.frequency = QComboBox(); self.frequency.setAccessibleName('Ripetizione')
-        for label,key in [('Non ripetere',None),('Ogni giorno','daily'),('Ogni settimana','weekly'),('Ogni mese','monthly'),('Ogni anno','yearly')]:
+        self.frequency = QComboBox(); self.frequency.setAccessibleName(tr('Ripetizione'))
+        for label,key in [(tr('Non ripetere'),None),(tr('Ogni giorno'),'daily'),(tr('Ogni settimana'),'weekly'),(tr('Ogni mese'),'monthly'),(tr('Ogni anno'),'yearly')]:
             self.frequency.addItem(label,key)
         self.frequency.setCurrentIndex(max(0,self.frequency.findData(recurrence.get('frequency'))))
         row.addWidget(self.frequency,1)
-        self.interval = QSpinBox(); self.interval.setRange(1,999); self.interval.setPrefix('Ogni ')
-        self.interval.setValue(recurrence.get('interval',1)); self.interval.setAccessibleName('Intervallo di ripetizione')
+        self.interval = QSpinBox(); self.interval.setRange(1,999); self.interval.setPrefix(tr('Ogni '))
+        self.interval.setValue(recurrence.get('interval',1)); self.interval.setAccessibleName(tr('Intervallo di ripetizione'))
         row.addWidget(self.interval); layout.addLayout(row)
         self.days = WeekdayPicker(recurrence.get('weekdays',[start.weekday()]))
         layout.addWidget(self.days)
         self.ending = QWidget(); endrow = QHBoxLayout(self.ending); endrow.setContentsMargins(0,0,0,0); endrow.setSpacing(10)
-        endrow.addWidget(plain_label('Termina'))
-        self.end_mode = QComboBox(); self.end_mode.setAccessibleName('Fine ripetizione')
-        self.end_mode.addItems(['Mai','Il giorno','Dopo']); endrow.addWidget(self.end_mode,1)
+        endrow.addWidget(plain_label(tr('Termina')))
+        self.end_mode = QComboBox(); self.end_mode.setAccessibleName(tr('Fine ripetizione'))
+        self.end_mode.addItems([tr('Mai'),tr('Il giorno'),tr('Dopo')]); endrow.addWidget(self.end_mode,1)
         self.until = QDateEdit(qdate(recurrence.get('until') or start + timedelta(days=365)))
-        self.until.setCalendarPopup(True); self.until.setDisplayFormat('dd/MM/yyyy'); self.until.setAccessibleName('Ultimo giorno della serie')
-        self.count = QSpinBox(); self.count.setRange(1,10000); self.count.setSuffix(' volte'); self.count.setValue(recurrence.get('count',10))
-        self.count.setAccessibleName('Numero di ripetizioni')
+        self.until.setCalendarPopup(True); self.until.setDisplayFormat('dd/MM/yyyy'); self.until.setAccessibleName(tr('Ultimo giorno della serie'))
+        self.count = QSpinBox(); self.count.setRange(1,10000); self.count.setSuffix(tr(' volte')); self.count.setValue(recurrence.get('count',10))
+        self.count.setAccessibleName(tr('Numero di ripetizioni'))
         endrow.addWidget(self.until); endrow.addWidget(self.count); layout.addWidget(self.ending)
         if recurrence.get('until'): self.end_mode.setCurrentIndex(1)
         elif recurrence.get('count'): self.end_mode.setCurrentIndex(2)
@@ -150,14 +157,14 @@ class RecurrenceEditor(QWidget):
         self.days.setVisible(freq == 'weekly')
         self.until.setVisible(self.end_mode.currentIndex() == 1)
         self.count.setVisible(self.end_mode.currentIndex() == 2)
-        self.interval.setSuffix({'daily':' giorni','weekly':' settimane','monthly':' mesi','yearly':' anni'}.get(freq,''))
+        self.interval.setSuffix({'daily':tr(' giorni'),'weekly':tr(' settimane'),'monthly':tr(' mesi'),'yearly':tr(' anni')}.get(freq,''))
     def value(self):
         freq = self.frequency.currentData()
         if freq is None: return None
         result = dict(frequency=freq,interval=self.interval.value())
         if freq == 'weekly':
             result['weekdays'] = self.days.selected()
-            if not result['weekdays']: raise ValueError('Scegli almeno un giorno della settimana.')
+            if not result['weekdays']: raise ValueError(tr('Scegli almeno un giorno della settimana.'))
         if self.end_mode.currentIndex() == 1: result['until'] = self.until.date().toString('yyyy-MM-dd')
         elif self.end_mode.currentIndex() == 2: result['count'] = self.count.value()
         return result
@@ -167,7 +174,7 @@ class EventDialog(QDialog):
     def __init__(self, pet, parent=None, day=None, event=None, occurrence=None, scope='series'):
         super().__init__(owner_window(parent))
         self.pet=pet; self.event=event; self.occurrence=occurrence; self.scope=scope; self.saved_id=None
-        self.setWindowTitle('Modifica impegno' if event else 'Nuovo impegno'); self.setWindowIcon(pet.windowIcon())
+        self.setWindowTitle(tr('Modifica impegno') if event else tr('Nuovo impegno')); self.setWindowIcon(pet.windowIcon())
         self.setStyleSheet(STYLE); self.resize(540,570)
         now=datetime.now(); day=day or now.date()
         source = occurrence if occurrence is not None and scope == 'occurrence' else event
@@ -179,36 +186,39 @@ class EventDialog(QDialog):
         if is_all_day: end-=timedelta(days=1)
         outer=QVBoxLayout(self); outer.setContentsMargins(20,18,20,18); outer.setSpacing(12)
         content=QWidget(); layout=QVBoxLayout(content); layout.setContentsMargins(0,0,4,0); layout.setSpacing(12)
-        self.title=QLineEdit(source.get('title','')); self.title.setPlaceholderText('Titolo'); self.title.setMaxLength(200)
-        self.title.setAccessibleName('Titolo impegno'); layout.addWidget(self.title)
-        self.all_day=QCheckBox('Tutto il giorno'); self.all_day.setChecked(is_all_day); layout.addWidget(self.all_day)
+        from yun_jin_google_ui import destination_picker
+        self.destination=destination_picker(pet,layout,event)
+        self.google_readonly=bool(event and pet.store.google.readonly(event['id']))
+        self.title=QLineEdit(source.get('title','')); self.title.setPlaceholderText(tr('Titolo')); self.title.setMaxLength(200)
+        self.title.setAccessibleName(tr('Titolo impegno')); layout.addWidget(self.title)
+        self.all_day=QCheckBox(tr('Tutto il giorno')); self.all_day.setChecked(is_all_day); layout.addWidget(self.all_day)
         form=QFormLayout(); form.setHorizontalSpacing(15); form.setVerticalSpacing(10)
-        self.start_date=QDateEdit(qdate(start)); self.start_date.setAccessibleName('Data inizio')
-        self.end_date=QDateEdit(qdate(end)); self.end_date.setAccessibleName('Data fine')
-        self.start_time=QTimeEdit(QTime(start.hour,start.minute)); self.start_time.setAccessibleName('Ora inizio')
-        self.end_time=QTimeEdit(QTime(end.hour,end.minute)); self.end_time.setAccessibleName('Ora fine')
+        self.start_date=QDateEdit(qdate(start)); self.start_date.setAccessibleName(tr('Data inizio'))
+        self.end_date=QDateEdit(qdate(end)); self.end_date.setAccessibleName(tr('Data fine'))
+        self.start_time=QTimeEdit(QTime(start.hour,start.minute)); self.start_time.setAccessibleName(tr('Ora inizio'))
+        self.end_time=QTimeEdit(QTime(end.hour,end.minute)); self.end_time.setAccessibleName(tr('Ora fine'))
         for edit in (self.start_date,self.end_date):edit.setCalendarPopup(True);edit.setDisplayFormat('dd/MM/yyyy')
         for edit in (self.start_time,self.end_time):edit.setDisplayFormat('HH:mm')
-        for label,d,t in [('Inizio',self.start_date,self.start_time),('Fine',self.end_date,self.end_time)]:
+        for label,d,t in [(tr('Inizio'),self.start_date,self.start_time),(tr('Fine'),self.end_date,self.end_time)]:
             row=QHBoxLayout();row.setSpacing(10);row.addWidget(d,1);row.addWidget(t);form.addRow(label,row)
         layout.addLayout(form)
         self.recurrence=RecurrenceEditor(start.date(),source.get('recurrence'));layout.addWidget(self.recurrence)
         self.recurrence.setVisible(scope!='occurrence')
-        alert=QHBoxLayout();alert.setSpacing(12);alert.addWidget(plain_label('Avviso'))
-        self.reminder=QComboBox();self.reminder.setAccessibleName('Anticipo avviso')
-        for label,minutes in [('Nessuno',None),('All’inizio',0),('5 minuti prima',5),('10 minuti prima',10),('15 minuti prima',15),('30 minuti prima',30),('1 ora prima',60),('1 giorno prima',1440)]:
+        alert=QHBoxLayout();alert.setSpacing(12);alert.addWidget(plain_label(tr('Avviso')))
+        self.reminder=QComboBox();self.reminder.setAccessibleName(tr('Anticipo avviso'))
+        for label,minutes in [(tr('Nessuno'),None),(tr('All’inizio'),0),(tr('5 minuti prima'),5),(tr('10 minuti prima'),10),(tr('15 minuti prima'),15),(tr('30 minuti prima'),30),(tr('1 ora prima'),60),(tr('1 giorno prima'),1440)]:
             self.reminder.addItem(label,minutes)
         minutes=source.get('reminder_minutes',10)
-        if minutes is not None and self.reminder.findData(minutes)<0:self.reminder.addItem(f'{minutes} minuti prima',minutes)
+        if minutes is not None and self.reminder.findData(minutes)<0:self.reminder.addItem(tr('{v0} minuti prima', v0=minutes),minutes)
         self.reminder.setCurrentIndex(max(0,self.reminder.findData(minutes)))
         self._previous_all_day=is_all_day;self._reminder_touched=False;self._timed_reminder=minutes
         self.reminder.activated.connect(lambda *_:setattr(self,'_reminder_touched',True))
         alert.addWidget(self.reminder,1);layout.addLayout(alert)
-        self.voice=QCheckBox('Leggi l’avviso');self.voice.setChecked(source.get('voice',True));layout.addWidget(self.voice)
+        self.voice=QCheckBox(tr('Leggi l’avviso'));self.voice.setChecked(source.get('voice',True));layout.addWidget(self.voice)
         self.reminder.currentIndexChanged.connect(lambda *_:self.voice.setEnabled(self.reminder.currentData() is not None))
         self.voice.setEnabled(self.reminder.currentData() is not None)
         self.details=QTextEdit();self.details.setAcceptRichText(False);self.details.setPlainText(source.get('details',''))
-        self.details.setPlaceholderText('Note');self.details.setAccessibleName('Note impegno');self.details.setMaximumHeight(94);layout.addWidget(self.details)
+        self.details.setPlaceholderText(tr('Note'));self.details.setAccessibleName(tr('Note impegno'));self.details.setMaximumHeight(94);layout.addWidget(self.details)
         self.timezone=source.get('timezone','') or (event or {}).get('timezone','')
         self.color=source.get('color',(event or {}).get('color','rose'))
         if self.timezone:layout.addWidget(plain_label(self.timezone,'muted'))
@@ -216,8 +226,15 @@ class EventDialog(QDialog):
         outer.addWidget(scroll_page(content),1)
         self.error=plain_label('','alert');self.error.hide();outer.addWidget(self.error)
         buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Save|QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Save).setText('Salva');buttons.button(QDialogButtonBox.StandardButton.Save).setProperty('role','primary')
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Annulla')
+        buttons.button(QDialogButtonBox.StandardButton.Save).setText(tr('Salva'));buttons.button(QDialogButtonBox.StandardButton.Save).setProperty('role','primary')
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(tr('Annulla'))
+        if self.google_readonly:
+            content.setEnabled(False)
+            buttons.button(QDialogButtonBox.StandardButton.Save).hide()
+            link=pet.store.google.link(event['id'])
+            if link and link['url'].startswith('https://www.google.com/calendar/'):
+                button(tr('Apri in Google Calendar'),lambda:pet.open_external(QUrl(link['url'])),outer)
+            else:outer.addWidget(plain_label(tr('Sola lettura'),'muted'))
         buttons.accepted.connect(self.save);buttons.rejected.connect(self.reject);outer.addWidget(buttons)
         self.all_day.toggled.connect(self.update_times);self.update_times();self.title.setFocus()
         self._start_anchor=datetime.combine(self.start_date.date().toPyDate(),self.start_time.time().toPyTime())
@@ -229,7 +246,7 @@ class EventDialog(QDialog):
             if all_day:
                 self._timed_reminder=self.reminder.currentData();self.reminder.setCurrentIndex(self.reminder.findData(None))
             else:self.reminder.setCurrentIndex(max(0,self.reminder.findData(self._timed_reminder)))
-        self.reminder.setItemText(self.reminder.findData(0),'A mezzanotte' if all_day else 'All’inizio')
+        self.reminder.setItemText(self.reminder.findData(0),tr('A mezzanotte') if all_day else tr('All’inizio'))
         self._previous_all_day=all_day
     def shift_end(self,*_):
         start=datetime.combine(self.start_date.date().toPyDate(),self.start_time.time().toPyTime())
@@ -241,58 +258,61 @@ class EventDialog(QDialog):
 
     def payload(self):
         title=self.title.text().strip()
-        if len(self.details.toPlainText())>4000:raise ValueError('Le note possono contenere al massimo 4000 caratteri.')
-        if not title:raise ValueError('Il titolo non può essere vuoto.')
+        if len(self.details.toPlainText())>4000:raise ValueError(tr('Le note possono contenere al massimo 4000 caratteri.'))
+        if not title:raise ValueError(tr('Il titolo non può essere vuoto.'))
         start=self.start_date.date().toPyDate();end=self.end_date.date().toPyDate()
         if self.all_day.isChecked():
-            if end<start:raise ValueError('La fine deve essere dopo l’inizio.')
+            if end<start:raise ValueError(tr('La fine deve essere dopo l’inizio.'))
             start_local=start.isoformat();end_local=(end+timedelta(days=1)).isoformat()
         else:
             start=datetime.combine(start,self.start_time.time().toPyTime());end=datetime.combine(end,self.end_time.time().toPyTime())
-            if end<=start:raise ValueError('La fine deve essere dopo l’inizio.')
+            if end<=start:raise ValueError(tr('La fine deve essere dopo l’inizio.'))
             start_local=start.isoformat(timespec='seconds');end_local=end.isoformat(timespec='seconds')
         recurrence=self.recurrence.value() if self.scope!='occurrence' else None
         if recurrence and recurrence.get('until','9999-12-31')<start_local[:10]:
-            raise ValueError('La serie non può terminare prima dell’inizio.')
+            raise ValueError(tr('La serie non può terminare prima dell’inizio.'))
         return dict(title=title,start=start_local,end=end_local,all_day=self.all_day.isChecked(),
                     recurrence=recurrence,reminder_minutes=self.reminder.currentData(),voice=self.voice.isChecked(),
                     details=self.details.toPlainText().strip(),timezone=self.timezone,color=self.color,enabled=(self.event or {}).get('enabled',True))
     def save(self):
+        if self.google_readonly:return
         try:
             data=self.payload();store=agenda_store(self.pet)
             if self.scope=='occurrence' and self.event and self.occurrence:
                 data.pop('recurrence');data.pop('timezone');data.pop('enabled');data['start_local']=data.pop('start');data['end_local']=data.pop('end')
                 store.save_exception(self.event['id'],self.occurrence['occurrence_key'],**data);self.saved_id=self.event['id']
             else:self.saved_id=store.save_event(**data,event_id=self.event['id'] if self.event else None)
+            if self.destination is not None and self.destination.currentData() is not None:
+                self.pet.store.google.assign(self.saved_id,*self.destination.currentData())
         except (ValueError,TypeError) as exc:
             self.error.setText(str(exc));self.error.show();return
         except (sqlite3.Error,OSError):
-            logging.exception('Save calendar event');self.error.setText('Salvataggio non riuscito. Riprova.');self.error.show();return
-        notify_changed(self.pet);self.accept()
+            logging.exception('Save calendar event');self.error.setText(tr('Salvataggio non riuscito. Riprova.'));self.error.show();return
+        notify_changed(self.pet, self.saved_id);self.accept()
 
 
 class ScopeDialog(QDialog):
     def __init__(self,pet,parent,deleting=False):
         super().__init__(owner_window(parent));self.pet=pet;self.scope=None;self.setStyleSheet(STYLE)
-        self.setWindowTitle('Elimina impegno' if deleting else 'Modifica impegno');self.setWindowIcon(pet.windowIcon())
+        self.setWindowTitle(tr('Elimina impegno') if deleting else tr('Modifica impegno'));self.setWindowIcon(pet.windowIcon())
         layout=QVBoxLayout(self);layout.setContentsMargins(20,20,20,20);layout.setSpacing(12)
-        layout.addWidget(plain_label('Quali impegni vuoi eliminare?' if deleting else 'Quali impegni vuoi modificare?'))
+        layout.addWidget(plain_label(tr('Quali impegni vuoi eliminare?') if deleting else tr('Quali impegni vuoi modificare?')))
         row=QHBoxLayout();row.setSpacing(10);layout.addLayout(row)
-        button('Solo questo',lambda:self.choose('occurrence'),row,role='primary')
-        button('Tutta la serie',lambda:self.choose('series'),row)
-        button('Annulla',self.reject,row)
+        button(tr('Solo questo'),lambda:self.choose('occurrence'),row,role='primary')
+        button(tr('Tutta la serie'),lambda:self.choose('series'),row)
+        button(tr('Annulla'),self.reject,row)
     def choose(self,scope):self.scope=scope;self.accept()
 
 
 class MonthJumpDialog(QDialog):
     def __init__(self,pet,parent,day):
-        super().__init__(owner_window(parent));self.pet=pet;self.setStyleSheet(STYLE);self.setWindowTitle('Vai al mese')
+        super().__init__(owner_window(parent));self.pet=pet;self.setStyleSheet(STYLE);self.setWindowTitle(tr('Vai al mese'))
         self.setWindowIcon(pet.windowIcon());layout=QVBoxLayout(self);layout.setContentsMargins(20,20,20,20)
-        row=QHBoxLayout();self.month=QComboBox();self.month.addItems(MONTHS);self.month.setCurrentIndex(day.month-1)
-        self.month.setAccessibleName('Mese');self.year=QSpinBox();self.year.setRange(1900,9998);self.year.setValue(day.year)
-        self.year.setAccessibleName('Anno');row.addWidget(self.month);row.addWidget(self.year);layout.addLayout(row)
+        row=QHBoxLayout();self.month=QComboBox();self.month.addItems([tr(name) for name in MONTHS]);self.month.setCurrentIndex(day.month-1)
+        self.month.setAccessibleName(tr('Mese'));self.year=QSpinBox();self.year.setRange(1900,9998);self.year.setValue(day.year)
+        self.year.setAccessibleName(tr('Anno'));row.addWidget(self.month);row.addWidget(self.year);layout.addLayout(row)
         buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Ok|QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText('Vai');buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Annulla')
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setText(tr('Vai'));buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(tr('Annulla'))
         buttons.accepted.connect(self.accept);buttons.rejected.connect(self.reject);layout.addWidget(buttons)
     def value(self):return date(self.year.value(),self.month.currentIndex()+1,1)
 
@@ -300,15 +320,15 @@ class MonthJumpDialog(QDialog):
 class IllustrationCanvas(QWidget):
     def __init__(self,path):
         super().__init__();self.set_image(path);self.setMinimumSize(180,120)
-        self.setAccessibleName('Illustrazione del calendario')
+        self.setAccessibleName(tr('Illustrazione del calendario'))
     def set_image(self,path):
-        reader=QImageReader(str(path));reader.setAutoTransform(True)
-        size=reader.size()
-        if size.isValid() and size.width()*size.height()>16_000_000:
-            reader.setScaledSize(size.scaled(QSize(4096,4096),Qt.AspectRatioMode.KeepAspectRatio))
-        pixmap=QPixmap.fromImage(reader.read())
+        from yun_jin_calendar_decode import read_image
+        return self.set_decoded_image(read_image(path))
+    def set_decoded_image(self,image):
+        pixmap=QPixmap.fromImage(image)
         if not pixmap.isNull():self.pixmap=pixmap;self.update()
         elif not hasattr(self,'pixmap'):self.pixmap=QPixmap()
+        return not pixmap.isNull()
     def image_rect(self):
         if self.pixmap.isNull():return QRectF()
         size=self.pixmap.size();scale=min(self.width()/size.width(),self.height()/size.height())
@@ -323,37 +343,59 @@ class IllustrationCanvas(QWidget):
 class IllustrationDialog(QDialog):
     def __init__(self,pet,parent,path,day):
         super().__init__(owner_window(parent));self.pet=pet;self.setWindowIcon(pet.windowIcon());self.setStyleSheet(STYLE)
-        self.setWindowTitle(f'{day.day} {MONTHS[day.month-1].lower()} {day.year} · Yun Jin')
+        self.setWindowTitle(tr('{v0} {v1} {v2} · Yun Jin', v0=day.day, v1=tr(MONTHS[day.month - 1]).lower(), v2=day.year))
         layout=QVBoxLayout(self);layout.setContentsMargins(10,10,10,10)
         controls=QHBoxLayout()
-        self.download_status=plain_label('');controls.addWidget(self.download_status)
-        self.retry=button('Riprova',self.load_original,controls,role='quiet');self.retry.hide()
+        self.download_status=plain_label('');self.download_status.setWordWrap(True);controls.addWidget(self.download_status,1)
+        self.retry=button(tr('Riprova'),self.load_original,controls,role='quiet');self.retry.hide()
         controls.addStretch()
-        self.close_button=icon_button('close','Chiudi',self.reject,controls)
+        self.close_button=icon_button('close',tr('Chiudi'),self.reject,controls)
         layout.addLayout(controls)
         self.canvas=IllustrationCanvas(path);layout.addWidget(self.canvas)
-        self.path=path;self.loader=None;self.closed=False
+        self.path=path;self.loader=None;self.decoder=None;self.closed=False;self.original_source=None
+        self.fallback_status=tr('Anteprima') if Path(path).parent.name=='calendar-preview' else tr('Immagine locale')
+        self.download_status.setText(self.fallback_status if not self.canvas.pixmap.isNull() else tr('Immagine non disponibile.'))
         # Keep arbitrary/local illustrations usable without a catalog/network.
-        if Path(path).parent.name=='calendar-preview':
+        if Path(path).parent.name in ('calendar-preview','calendar'):
             QTimer.singleShot(0,self.load_original)
         available=self.screen().availableGeometry()
         self.resize(min(1100,max(240,available.width()-80)),min(760,max(180,available.height()-100)))
     def load_original(self):
         if self.closed:return
         from yun_jin_calendar_download import OriginalLoader
+        if self.decoder is not None:self.decoder.cancel()
         if self.loader is None:
             self.loader=OriginalLoader(self.pet.store.root,self)
             self.loader.ready.connect(self.original_ready);self.loader.failed.connect(self.original_failed)
-        self.retry.hide();self.download_status.setText('Caricamento…');self.loader.start(self.path)
+        self.retry.hide();self.download_status.setToolTip('')
+        self.download_status.setText(tr('{v0} · Caricamento originale…', v0=self.fallback_status));self.loader.start(self.path)
     def original_ready(self,path):
-        if not self.closed:self.canvas.set_image(path);self.download_status.clear();self.retry.hide()
+        if self.closed:return
+        from yun_jin_calendar_decode import OriginalDecoder
+        if self.decoder is None:
+            self.decoder=OriginalDecoder(self)
+            self.decoder.ready.connect(self.original_decoded);self.decoder.failed.connect(self.original_failed)
+        self.original_source=self.loader.source
+        self.decoder.start(path)
+    def original_decoded(self,image):
+        if self.closed:return
+        if not self.canvas.set_decoded_image(image):
+            self.original_failed();return
+        source={'local':tr('File locale'),'cache':tr('Cache'),'download':tr('Scaricato')}.get(self.original_source)
+        self.download_status.setText(tr('Originale')+(f' · {source}' if source else ''))
+        size=self.canvas.pixmap.size()
+        self.download_status.setToolTip(f'{size.width()} × {size.height()}')
+        self.retry.hide()
     def original_failed(self):
-        if not self.closed:self.download_status.setText('Originale non disponibile.');self.retry.show()
+        if not self.closed:
+            fallback=self.fallback_status if not self.canvas.pixmap.isNull() else tr('Immagine non disponibile')
+            self.download_status.setText(tr('{v0} · Originale non disponibile.', v0=fallback));self.download_status.setToolTip('');self.retry.show()
     def done(self,result):
         # Release the full-size pixels as soon as it closes, even before Qt's
         # deferred deletion gets its next event-loop turn.
         self.closed=True
         if self.loader is not None:self.loader.cancel()
+        if self.decoder is not None:self.decoder.cancel()
         self.canvas.pixmap=QPixmap();super().done(result)
 
 
@@ -363,16 +405,16 @@ class CalendarHero(QWidget):
     def __init__(self):
         super().__init__();self.day=date.today();self.cache=OrderedDict();self.path=None;self.pixmap=None
         self.setMinimumHeight(160);self.setMaximumHeight(190);self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Fixed)
-        self.setAccessibleName('Illustrazione del calendario')
+        self.setAccessibleName(tr('Illustrazione del calendario'))
         layout=QVBoxLayout(self);layout.setContentsMargins(22,15,12,15);layout.setSpacing(8)
-        self.month_button=button('',None,role='quiet');self.month_button.setAccessibleName('Scegli mese e anno')
+        self.month_button=button('',None,role='quiet');self.month_button.setAccessibleName(tr('Scegli mese e anno'))
         self.month_button.setStyleSheet('QPushButton {font-size:27px;font-weight:600;text-align:left;padding:2px 0;border:none;background:transparent;} QPushButton:hover {color:#ffffff;}')
         self.month_button.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
         layout.addWidget(self.month_button);layout.addStretch()
         self.tools=QHBoxLayout();self.tools.setSpacing(3)
         layout.addLayout(self.tools)
         self.open_art=QPushButton('',self);self.open_art.setAutoDefault(False)
-        self.open_art.setAccessibleName('Apri illustrazione');self.open_art.setToolTip('Apri illustrazione')
+        self.open_art.setAccessibleName(tr('Apri illustrazione'));self.open_art.setToolTip(tr('Apri illustrazione'))
         self.open_art.setCursor(Qt.CursorShape.PointingHandCursor)
         self.open_art.setStyleSheet('QPushButton {background:transparent;border:0;padding:0;min-height:0;} QPushButton:focus {border:1px solid #d7c2df;border-radius:7px;}')
         self.open_art.clicked.connect(lambda:self.illustration_requested.emit(self.path) if self.path else None)
@@ -392,7 +434,7 @@ class CalendarHero(QWidget):
 
     def set_month(self,day):
         self.day=day;self.path=None;self.pixmap=None
-        self.month_button.setText(f'{MONTHS[day.month-1]}\n{day.year}')
+        self.month_button.setText(f'{tr(MONTHS[day.month-1])}\n{day.year}')
         try:
             from yun_jin_calendar_art import illustration_for
             path=illustration_for(day.year,day.month,day.day)
@@ -431,7 +473,7 @@ class DayButton(QPushButton):
         self.setCursor(Qt.CursorShape.PointingHandCursor);self.setStyleSheet('QPushButton {padding:0;border:0;background:transparent;min-height:39px;}')
     def update_day(self,day,current_month,chosen,events):
         self.day=day;self.current_month=current_month;self.is_today=day==date.today();self.chosen=chosen;self.events=events
-        text=local_day_label(day,True);self.setAccessibleName(text+(f', {len(events)} impegni' if events else ''))
+        text=local_day_label(day,True);self.setAccessibleName(text+(tr(', {v0} impegni', v0=len(events)) if events else ''))
         self.setToolTip('\n'.join([text]+[row['title'] for row in events[:5]]));self.setFocusPolicy(Qt.FocusPolicy.StrongFocus if chosen else Qt.FocusPolicy.NoFocus);self.update()
     def keyPressEvent(self,event):
         step={Qt.Key.Key_Left:-1,Qt.Key.Key_Right:1,Qt.Key.Key_Up:-7,Qt.Key.Key_Down:7}.get(event.key())
@@ -497,7 +539,7 @@ class AlertHistory(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Preferred,QSizePolicy.Policy.Maximum)
     def refresh(self):
         self.rows=[row for row in agenda_store(self.pet).alerts(limit=100) if row['kind']==self.kind]
-        self.setVisible(bool(self.rows));self.toggle.setText(f'Avvisi recenti ({len(self.rows)})')
+        self.setVisible(bool(self.rows));self.toggle.setText(tr('Avvisi recenti ({v0})', v0=len(self.rows)))
         if self.toggle.isChecked():self.populate()
     def expand(self,*_):
         self.list.setVisible(self.toggle.isChecked())
@@ -511,10 +553,10 @@ class AlertHistory(QWidget):
             info=QVBoxLayout();info.setSpacing(3);layout.addLayout(info,1)
             title=plain_label(row['title']);title.setSizePolicy(QSizePolicy.Policy.Ignored,QSizePolicy.Policy.Preferred);info.addWidget(title)
             when=datetime.fromtimestamp(row['due_at'] if row['state']=='snoozed' else row['scheduled_at'])
-            state={'missed':'Non visto','pending':'Da gestire','snoozed':'Rimandato'}[row['state']]
+            state={'missed':tr('Non visto'),'pending':tr('Da gestire'),'snoozed':tr('Rimandato')}[row['state']]
             label=plain_label(f'{when:%d/%m · %H:%M} · {state}','muted');label.setStyleSheet('font-size:11px;');info.addWidget(label)
-            if self.open_item:icon_button('calendar' if self.kind=='event' else 'alarm','Apri impegno' if self.kind=='event' else 'Apri sveglia',lambda checked=False,r=row:self.open_item(r),layout)
-            icon_button('check','Chiudi avviso',lambda checked=False,ident=row['id']:self.dismiss(ident),layout)
+            if self.open_item:icon_button('calendar' if self.kind=='event' else 'alarm',tr('Apri impegno') if self.kind=='event' else tr('Apri sveglia'),lambda checked=False,r=row:self.open_item(r),layout)
+            icon_button('check',tr('Chiudi avviso'),lambda checked=False,ident=row['id']:self.dismiss(ident),layout)
             self.list_layout.addWidget(tile)
         self.list_layout.addStretch()
         self.list.setMinimumHeight(min(200,max(70,len(self.rows)*70)))
@@ -533,17 +575,24 @@ class CalendarPanel(QWidget):
         body=QWidget();self.body_layout=QVBoxLayout(body);self.body_layout.setContentsMargins(0,0,4,0);self.body_layout.setSpacing(14)
         self.hero=CalendarHero();self.hero.illustration_requested.connect(self.preview_illustration);self.body_layout.addWidget(self.hero)
         self.history=AlertHistory(pet,'event',self.open_alert);self.body_layout.addWidget(self.history)
+        actions=QHBoxLayout();actions.addStretch()
+        self.google_button=button('',self.google_settings,actions,glyph='calendar')
+        self.google_button.setToolTip(tr('Sincronizza i tuoi impegni su telefono e computer.'))
+        self.body_layout.addLayout(actions)
+        if getattr(pet,'google_sync',None) is not None:
+            pet.google_sync.changed.connect(self.refresh_google_button)
+        self.refresh_google_button()
         self.middle=QWidget();self.middle_layout=QBoxLayout(QBoxLayout.Direction.LeftToRight,self.middle)
         self.middle_layout.setContentsMargins(0,0,0,0);self.middle_layout.setSpacing(18)
         self.month_box=CalendarBackdrop(self.hero);month_layout=QVBoxLayout(self.month_box);month_layout.setContentsMargins(12,12,12,12);month_layout.setSpacing(8)
         self.month_button=self.hero.month_button;self.month_button.clicked.connect(self.jump_month)
         tools=self.hero.tools
-        self.today_button=button('Oggi',self.today,tools,role='quiet')
-        icon_button('left','Mese precedente',lambda:self.change_month(-1),tools);icon_button('right','Mese successivo',lambda:self.change_month(1),tools)
+        self.today_button=button(tr('Oggi'),self.today,tools,role='quiet')
+        icon_button('left',tr('Mese precedente'),lambda:self.change_month(-1),tools);icon_button('right',tr('Mese successivo'),lambda:self.change_month(1),tools)
         tools.addStretch()
         self.grid=QGridLayout();self.grid.setContentsMargins(0,0,0,0);self.grid.setSpacing(3)
         for col,label in enumerate(SHORT_DAYS):
-            lab=plain_label(label,'muted');lab.setAlignment(Qt.AlignmentFlag.AlignCenter);lab.setStyleSheet('font-size:11px;color:#d0c8dc;');self.grid.addWidget(lab,0,col)
+            lab=plain_label(tr(label),'muted');lab.setAlignment(Qt.AlignmentFlag.AlignCenter);lab.setStyleSheet('font-size:11px;color:#d0c8dc;');self.grid.addWidget(lab,0,col)
         for row in range(1,7):self.grid.setRowMinimumHeight(row,39)
         self.days=[]
         for i in range(42):
@@ -554,13 +603,19 @@ class CalendarPanel(QWidget):
         month_layout.addLayout(self.grid);self.middle_layout.addWidget(self.month_box,3)
         self.agenda_box=QWidget();self.agenda_box.setMinimumWidth(180);agenda=QVBoxLayout(self.agenda_box);agenda.setContentsMargins(0,5,0,0);agenda.setSpacing(10)
         heading=QHBoxLayout();heading.setSpacing(4);self.day_title=plain_label('','section');heading.addWidget(self.day_title,1)
-        self.new_button=icon_button('plus','Nuovo impegno',lambda:self.new_event(),heading);agenda.addLayout(heading)
+        self.new_button=icon_button('plus',tr('Nuovo impegno'),lambda:self.new_event(),heading);agenda.addLayout(heading)
         self.events_widget=QWidget();self.events_layout=QVBoxLayout(self.events_widget);self.events_layout.setContentsMargins(0,0,0,0);self.events_layout.setSpacing(8)
         agenda.addWidget(self.events_widget);agenda.addStretch();self.middle_layout.addWidget(self.agenda_box,2)
         self.body_layout.addWidget(self.middle);self.body_layout.addStretch();root.addWidget(scroll_page(body))
         signal=getattr(pet,'agenda_changed',None)
         if signal is not None and hasattr(signal,'connect'):signal.connect(self.refresh_if_visible)
         self.refresh()
+    def google_settings(self):
+        from yun_jin_google_ui import open_settings
+        open_settings(self.pet,self)
+    def refresh_google_button(self):
+        sync=getattr(self.pet,'google_sync',None)
+        self.google_button.setText(tr('Ricollega Google Calendar') if sync and sync.needs_reconnect else 'Google Calendar' if sync and sync.connected() else tr('Collega Google Calendar'))
     def showEvent(self,event):super().showEvent(event);self.refresh()
     def resizeEvent(self,event):
         super().resizeEvent(event)
@@ -588,38 +643,38 @@ class CalendarPanel(QWidget):
             cur=max(first,start);last=min(end-timedelta(days=1),last)
             while cur<=last:self.day_rows.setdefault(cur,[]).append(row);cur+=timedelta(days=1)
         for day,rows in self.day_rows.items():rows.sort(key=lambda r:(not r.get('all_day'),r['start_local'],r['title']))
-        self.month_button.setText(f'{MONTHS[self.month.month-1]}\n{self.month.year}')
+        self.month_button.setText(f'{tr(MONTHS[self.month.month-1])}\n{self.month.year}')
         for i,b in enumerate(self.days):
             day=first+timedelta(days=i);b.update_day(day,day.month==self.month.month,day==self.selected,self.day_rows.get(day,[]))
         self.refresh_day()
     def refresh_day(self):
         if self.rendered_art_day!=self.selected:
             self.hero.set_month(self.selected);self.month_box.update();self.rendered_art_day=self.selected
-        self.day_title.setText(('Oggi · ' if self.selected==date.today() else '')+local_day_label(self.selected))
+        self.day_title.setText((tr('Oggi · ') if self.selected==date.today() else '')+local_day_label(self.selected))
         while self.events_layout.count():
             item=self.events_layout.takeAt(0)
             if item.widget():item.widget().hide();item.widget().deleteLater()
         rows=self.day_rows.get(self.selected,[])
         if not rows:
-            empty=plain_label('Nessun impegno','muted');empty.setContentsMargins(0,12,0,8);self.events_layout.addWidget(empty)
-            self.events_layout.addWidget(button('Aggiungi',lambda:self.new_event(),glyph='plus',role='quiet'))
+            empty=plain_label(tr('Nessun impegno'),'muted');empty.setContentsMargins(0,12,0,8);self.events_layout.addWidget(empty)
+            self.events_layout.addWidget(button(tr('Aggiungi'),lambda:self.new_event(),glyph='plus',role='quiet'))
         for row in rows[:self.visible_event_limit]:
             tile=QFrame();tile.setObjectName('card');tile.setSizePolicy(QSizePolicy.Policy.Preferred,QSizePolicy.Policy.Fixed);layout=QVBoxLayout(tile);layout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize);layout.setContentsMargins(12,10,12,10);layout.setSpacing(5)
             start=parse_local(row['start_local']);end=parse_local(row.get('end_local') or row['start_local'])
-            stamp='Tutto il giorno' if row.get('all_day') else (f'{start:%H:%M}–{end:%H:%M}' if start.date()==end.date() else f'{start:%d/%m %H:%M} – {end:%d/%m %H:%M}')
+            stamp=tr('Tutto il giorno') if row.get('all_day') else (f'{start:%H:%M}–{end:%H:%M}' if start.date()==end.date() else f'{start:%d/%m %H:%M} – {end:%d/%m %H:%M}')
             label=plain_label(stamp,'muted');label.setStyleSheet('font-size:11px;');layout.addWidget(label)
             title=button(row['title'].replace('&','&&'),lambda checked=False,r=row:self.edit_event(r),role='quiet')
             title.setSizePolicy(QSizePolicy.Policy.Ignored,QSizePolicy.Policy.Fixed);title.setMinimumWidth(0)
-            title.setStyleSheet('QPushButton {text-align:left;padding:2px 0;border:none;font-weight:600;}');title.setToolTip(row['title']);title.setAccessibleName('Modifica '+row['title']);layout.addWidget(title)
+            title.setStyleSheet('QPushButton {text-align:left;padding:2px 0;border:none;font-weight:600;}');title.setToolTip(row['title']);title.setAccessibleName(tr('Modifica ')+row['title']);layout.addWidget(title)
             if row.get('details'):
                 details=plain_label(row['details'],'muted');details.setMaximumHeight(42);details.setToolTip(row['details']);layout.addWidget(details)
             lower=QHBoxLayout();lower.setSpacing(4)
             if row.get('recurrence'):lower.addWidget(plain_label(recurrence_label(row['recurrence']),'muted'),1)
             else:lower.addStretch()
-            trash=icon_button('trash','Elimina impegno',lambda checked=False,r=row:self.delete_event(r),lower);trash.setFixedSize(26,26)
+            trash=icon_button('trash',tr('Elimina impegno'),lambda checked=False,r=row:self.delete_event(r),lower);trash.setFixedSize(26,26);trash.setVisible(not self.pet.store.google.readonly(row['item_id']))
             layout.addLayout(lower);self.events_layout.addWidget(tile)
         if len(rows)>self.visible_event_limit:
-            self.events_layout.addWidget(button(f'Mostra altri ({len(rows)-self.visible_event_limit})',self.more_events,role='quiet'))
+            self.events_layout.addWidget(button(tr('Mostra altri ({v0})', v0=len(rows) - self.visible_event_limit),self.more_events,role='quiet'))
     def more_events(self):
         self.visible_event_limit+=30;self.refresh_day()
     def select_day(self,day,focus=False):
@@ -668,8 +723,9 @@ class CalendarPanel(QWidget):
         dialog=EventDialog(self.pet,self,event=event,occurrence=row,scope=scope)
         if exec_editor(dialog,self.pet)==QDialog.DialogCode.Accepted:self.refresh()
     def delete_event(self,row):
+        if self.pet.store.google.readonly(row['item_id']):return
         event=self.store.get(row['item_id'])
         if event.get('recurrence'):scope=self.scope(True)
-        else:scope='series' if Messages.question(self,'Elimina impegno',f'Eliminare «{row["title"]}»?')==QMessageBox.StandardButton.Yes else None
+        else:scope='series' if Messages.question(self,tr('Elimina impegno'),tr('Eliminare «{v0}»?', v0=row['title']))==QMessageBox.StandardButton.Yes else None
         if scope is None:return
-        self.store.delete(row['item_id'],row['occurrence_key'] if scope=='occurrence' else None);notify_changed(self.pet);self.refresh()
+        self.store.delete(row['item_id'],row['occurrence_key'] if scope=='occurrence' else None);notify_changed(self.pet,row['item_id']);self.refresh()

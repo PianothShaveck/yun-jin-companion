@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Windows process, taskbar icons and shortcut identity via public Shell APIs."""
+from yun_jin_i18n import tr
 import ctypes as C
 import sys
 import uuid
@@ -207,7 +208,7 @@ def install_shortcut_identity():
         if hr < 0:
             raise OSError('Cannot locate shortcut folder')
         stamp_shortcut(Path(buffer.value) / 'Yun Jin Companion.lnk')
-    print('Identita Windows dei collegamenti verificata.')
+    print(tr('Identita Windows dei collegamenti verificata.'))
 
 
 if __name__ == '__main__':

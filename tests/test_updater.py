@@ -80,7 +80,7 @@ class UpdateTests(unittest.TestCase):
   package=importlib.util.module_from_spec(spec);spec.loader.exec_module(package)
   self.assertEqual(package.MAX_RUNTIME_ZIP,u.MAX_ZIP)
   root=self.root/'package';root.mkdir();(root/'dist').mkdir()
-  for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf'):(root/name).write_text('fixture')
+  for name in ('Windows.cmd','Mac.command','Linux.sh','Guida.pdf','Guide.pdf','Guide.zh-CN.pdf'):(root/name).write_text('fixture')
   output=root/'dist/release.zip';output.write_bytes(b'previous valid release')
   with patch.object(package,'ROOT',root),patch.object(package,'OUTPUT',output),patch.object(package,'write_animation_index'),patch.object(package,'write_manifest'),patch.object(package,'animation_sources',return_value=set()),patch.object(package,'MAX_RUNTIME_ZIP',1):
    with self.assertRaisesRegex(ValueError,'2 GiB'):package.build()

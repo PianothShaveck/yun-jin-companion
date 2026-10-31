@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Optional ambient reactions; bounded state, slow clocks and no network on the GUI thread."""
+from yun_jin_i18n import tr
 import json
 import random
 import sys
@@ -179,7 +180,7 @@ class Context(QObject):
 
     def set_weather_location(self, location):
         choice=selected_location(location)
-        if location is not None and choice is None:raise ValueError('Città non valida.')
+        if location is not None and choice is None:raise ValueError(tr('Città non valida.'))
         if choice==self.weather_location:return
         self.cancel_request()
         self.weather_location=choice

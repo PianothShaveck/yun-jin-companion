@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Sparse study prompts and bounded background jobs. No idle decoding or polling keyboard."""
+from yun_jin_i18n import tr
 import json
 import logging
 import random
@@ -22,12 +23,12 @@ class StudyPrompt(QDialog):
         self.setStyleSheet(STYLE);self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setFixedWidth(340)
         layout=QVBoxLayout(self);layout.setContentsMargins(18,14,18,16);layout.setSpacing(10)
-        header=QHBoxLayout();header.setSpacing(12);header.addWidget(plain_label('Un piccolo ripasso?','section'),1)
-        icon_button('close','Ignora',self.hide,header);layout.addLayout(header)
+        header=QHBoxLayout();header.setSpacing(12);header.addWidget(plain_label(tr('Un piccolo ripasso?'),'section'),1)
+        icon_button('close',tr('Ignora'),self.hide,header);layout.addLayout(header)
         self.preview=plain_label();self.preview.setStyleSheet('font-size:18px;');layout.addWidget(self.preview)
         row=QHBoxLayout();row.setSpacing(12)
-        self.open_button=button('Ripassa',self.open,row,role='primary');row.addStretch()
-        button('Non oggi',self.silence_today,row,role='quiet');layout.addLayout(row)
+        self.open_button=button(tr('Ripassa'),self.open,row,role='primary');row.addStretch()
+        button(tr('Non oggi'),self.silence_today,row,role='quiet');layout.addLayout(row)
         self.timeout=QTimer(self);self.timeout.setSingleShot(True);self.timeout.setInterval(18000);self.timeout.timeout.connect(self.hide)
 
     def present(self,candidates,external=False):
@@ -39,8 +40,8 @@ class StudyPrompt(QDialog):
             from yun_jin_srs import CLOZE
             ordinal=candidates[0]['ordinal']
             text=CLOZE.sub(lambda m: '['+(m[3] or '…')+']' if int(m[1])==ordinal else m[2],text)
-        self.preview.setText(text[:90] or 'Immagine / audio')
-        self.open_button.setText('Ripassa'+(f' · {len(candidates)} carte' if len(candidates)>1 else ' · 1 carta'))
+        self.preview.setText(text[:90] or tr('Immagine / audio'))
+        self.open_button.setText(tr('Ripassa')+(tr(' · {v0} carte', v0=len(candidates)) if len(candidates)>1 else tr(' · 1 carta')))
         self.adjustSize();self.move(*self.pet.notification_position(self))
         show_dialog(self,self.pet,quiet=True);self.timeout.start()
 
@@ -64,7 +65,7 @@ class StudyTools(QObject):
         self.anki_include_suspended=pet.store.preference('study_anki_suspended',False)
         self.anki_seen=[];self.anki_day=None
         self.anki_more=False;self.anki_total=0
-        self.anki_path=pet.store.preference('study_anki_path','');self.anki_cards=[];self.anki_valid_until=0;self.anki_requested=False;self.anki_status='Anki non collegato'
+        self.anki_path=pet.store.preference('study_anki_path','');self.anki_cards=[];self.anki_valid_until=0;self.anki_requested=False;self.anki_status=tr('Anki non collegato')
         self.anki_detail=''
         self._practice=None
         self.anki_process=None;self.fit_process=None;self.fit_queue=[];self.last_anki=0
@@ -155,7 +156,7 @@ class StudyTools(QObject):
         if any(importlib.util.find_spec(name) is None for name in ('fsrs','fsrs_rs_python')):
             from yun_jin_dialogs import Messages
             launcher='Mac.command' if sys.platform=='darwin' else 'Windows.cmd' if sys.platform=='win32' else 'Linux.sh'
-            Messages.warning(self.pet,'Completa l’aggiornamento','Chiudi Yun Jin e riesegui '+launcher+' dal nuovo pacchetto per installare Studio.')
+            Messages.warning(self.pet,'Completa l’aggiornamento',tr('Chiudi Yun Jin e riesegui ')+launcher+tr(' dal nuovo pacchetto per installare Studio.'))
             return
         from yun_jin_study_ui import ReviewDialog
         self.show_review(ReviewDialog(self.pet,deck_id,quick_cards))
@@ -182,7 +183,7 @@ class StudyTools(QObject):
         self.anki_more=False;self.anki_total=0
         self.pet.store.set_preference('study_anki_path',path)
         if path and self.anki_enabled:self.refresh_anki(force=True)
-        else:self.anki_status='Anki non collegato';self.anki_changed.emit()
+        else:self.anki_status=tr('Anki non collegato');self.anki_changed.emit()
 
     def set_anki_suspended(self,value):
         self.anki_include_suspended=bool(value);self.pet.store.set_preference('study_anki_suspended',bool(value))
@@ -195,7 +196,7 @@ class StudyTools(QObject):
 
     def clear_anki(self):
         if self.active_dialog and self.active_dialog.external:self.active_dialog.close()
-        self.cancel_anki();self.anki_cards=[];self.anki_valid_until=0;self.anki_requested=False;self.anki_detail='';self.anki_status='Anki disattivato'
+        self.cancel_anki();self.anki_cards=[];self.anki_valid_until=0;self.anki_requested=False;self.anki_detail='';self.anki_status=tr('Anki disattivato')
         self.anki_more=False;self.anki_total=0
         self.anki_changed.emit()
         if self.prompt and self.prompt.external:self.prompt.hide()
@@ -209,7 +210,7 @@ class StudyTools(QObject):
         process.setProgram(self.worker_python());process.setArguments(['-X','utf8',str(Path(__file__).with_name('yun_jin_anki.py'))])
         process.finished.connect(lambda code,status:self.anki_finished(process,code))
         process.errorOccurred.connect(lambda _:self.anki_failed(process))
-        self.anki_status='Lettura Anki…';self.anki_detail='';self.anki_changed.emit()
+        self.anki_status=tr('Lettura Anki…');self.anki_detail='';self.anki_changed.emit()
         self.anki_timeout.start();process.start()
         if process is self.anki_process:
             process.write(json.dumps({'collection':self.anki_path,'scratch':process.scratch.name,
@@ -234,14 +235,14 @@ class StudyTools(QObject):
                 self.anki_total=count=result.get('total',len(self.anki_cards));self.anki_more=bool(result.get('more',False))
                 if self.anki_day!=result['study_start'] or result.get('restarted'):self.anki_seen=[]
                 self.anki_day=result['study_start'];self.anki_seen.extend(result.get('skipped',[]))
-                self.anki_status=('1 carta selezionata' if count==1 else f'{count} carte selezionate') if count else 'Nessuna carta difficile disponibile oggi'
+                self.anki_status=(tr('1 carta selezionata') if count==1 else tr('{v0} carte selezionate', v0=count)) if count else tr('Nessuna carta difficile disponibile oggi')
                 if result.get('unsupported'):
-                    self.anki_status=('Nessuna carta leggibile: modello non supportato' if not self.anki_cards else self.anki_status+' · alcuni modelli esclusi')
+                    self.anki_status=(tr('Nessuna carta leggibile: modello non supportato') if not self.anki_cards else self.anki_status+tr(' · alcuni modelli esclusi'))
                 self.anki_detail='\n'.join(result.get('issues',[]))
         except Exception as exc:
             self.anki_cards=[];self.anki_valid_until=0;self.anki_requested=False
             self.anki_more=False;self.anki_total=0
-            self.anki_status='Lettura Anki non riuscita. Riprova.';self.anki_detail=str(exc)[:300]
+            self.anki_status=tr('Lettura Anki non riuscita. Riprova.');self.anki_detail=str(exc)[:300]
             logging.warning('Anki worker: %s; %s',exc,bytes(process.readAllStandardError()).decode(errors='replace')[-500:])
         process.scratch.cleanup();process.deleteLater();self.anki_changed.emit()
         if self.anki_requested:
@@ -251,14 +252,14 @@ class StudyTools(QObject):
     def anki_failed(self,process):
         if process is not self.anki_process:return
         self.anki_detail=process.errorString();self.cancel_anki();self.anki_requested=False
-        self.anki_cards=[];self.anki_valid_until=0;self.anki_status='Lettura Anki non riuscita. Riprova.'
+        self.anki_cards=[];self.anki_valid_until=0;self.anki_status=tr('Lettura Anki non riuscita. Riprova.')
         self.anki_more=False;self.anki_total=0
         self.anki_changed.emit()
 
     def anki_timed_out(self):
         self.cancel_anki();self.anki_requested=False;self.anki_cards=[];self.anki_valid_until=0
         self.anki_more=False;self.anki_total=0
-        self.anki_status='Anki occupato. Riprova tra poco.';self.anki_changed.emit()
+        self.anki_status=tr('Anki occupato. Riprova tra poco.');self.anki_changed.emit()
 
     def cancel_anki(self):
         self.anki_timeout.stop()
@@ -295,7 +296,7 @@ class StudyTools(QObject):
             else:candidates=list(cards)[:3]
         if not candidates:
             from yun_jin_dialogs import Messages
-            Messages.information(self.pet,'Ripasso Anki',self.anki_status+'\nSolo mazzi studiati oggi, dopo almeno 30 minuti dall’ultimo ripasso della carta.');return
+            Messages.information(self.pet,tr('Ripasso Anki'),self.anki_status+tr('\nSolo mazzi studiati oggi, dopo almeno 30 minuti dall’ultimo ripasso della carta.'));return
         self.anki_seen.extend(c.get('note_id',c['id']) for c in candidates)
         from yun_jin_study_ui import ReviewDialog
         self.show_review(ReviewDialog(self.pet,external=candidates))

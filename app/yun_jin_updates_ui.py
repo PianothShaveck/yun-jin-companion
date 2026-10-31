@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Nonblocking update checks, readable release notes, and an explicit restart."""
+from yun_jin_i18n import tr
 import json
 import logging
 import os
@@ -32,7 +33,7 @@ class UpdateDialog(QDialog):
     def __init__(self, manager):
         super().__init__(owner_window(manager.pet), Qt.WindowType.Tool)
         self.manager = manager
-        self.setWindowTitle('Yun Jin · Aggiornamento')
+        self.setWindowTitle(tr('Yun Jin · Aggiornamento'))
         self.setStyleSheet(STYLE)
         self.setWindowIcon(manager.pet.windowIcon())
         self.resize(610, 560)
@@ -48,13 +49,13 @@ class UpdateDialog(QDialog):
         self.progress = QProgressBar(); self.progress.hide(); layout.addWidget(self.progress)
         self.status = QLabel(); self.status.setTextFormat(Qt.TextFormat.PlainText)
         self.status.setWordWrap(True); layout.addWidget(self.status)
-        row = QHBoxLayout(); self.web = QPushButton('Apri release su GitHub')
+        row = QHBoxLayout(); self.web = QPushButton(tr('Apri release su GitHub'))
         self.web.clicked.connect(lambda:self.open_link(QUrl(self.manager.release['url'])))
         row.addWidget(self.web); row.addStretch()
-        self.later = QPushButton('Più tardi'); self.later.clicked.connect(self.close); row.addWidget(self.later)
-        self.skip = QPushButton('Salta questa versione'); self.skip.clicked.connect(manager.skip_version)
+        self.later = QPushButton(tr('Più tardi')); self.later.clicked.connect(self.close); row.addWidget(self.later)
+        self.skip = QPushButton(tr('Salta questa versione')); self.skip.clicked.connect(manager.skip_version)
         layout.addWidget(self.skip, alignment=Qt.AlignmentFlag.AlignRight)
-        self.install = QPushButton('Aggiorna e riavvia'); self.install.setProperty('role', 'primary')
+        self.install = QPushButton(tr('Aggiorna e riavvia')); self.install.setProperty('role', 'primary')
         self.install.clicked.connect(manager.install); row.addWidget(self.install); layout.addLayout(row)
 
     def open_link(self, url):
@@ -63,8 +64,8 @@ class UpdateDialog(QDialog):
 
     def refresh(self):
         release = self.manager.release
-        self.title.setText('È disponibile Yun Jin ' + release['version'])
-        self.summary.setText('Versione attuale: ' + VERSION)
+        self.title.setText(tr('È disponibile Yun Jin ') + release['version'])
+        self.summary.setText(tr('Versione attuale: ') + VERSION)
         self.notes.document().setMarkdown(release['notes'], QTextDocument.MarkdownFeature.MarkdownNoHTML)
         self.status.setText(release.get('reason', ''))
         self.install.setEnabled(release['automatic'] and not self.manager.busy)
@@ -92,7 +93,7 @@ class Updates(QObject):
         self.enabled = bool(pet.store.preference('updates_enabled', True))
         self.busy = False; self.installing = False
         self.release = None; self.dialog = None
-        self.status = 'Versione ' + VERSION
+        self.status = tr('Versione ') + VERSION
         self.snooze_until = 0
         self.last_prompt = ''
         self.staged = None
@@ -138,14 +139,14 @@ class Updates(QObject):
             self.timer.start(); self.initial.start(1000)
         else:
             self.timer.stop(); self.initial.stop(); self.offer.stop()
-        self.set_status('Controllo automatico attivo ogni 2 ore.' if self.enabled else
-                        'Controllo automatico disattivato. Puoi verificare quando vuoi.')
+        self.set_status(tr('Controllo automatico attivo ogni 2 ore.') if self.enabled else
+                        tr('Controllo automatico disattivato. Puoi verificare quando vuoi.'))
 
     def check(self, manual=False):
         if self.busy or self.pet.closing or (not manual and not self.enabled):
             return
         self.busy = True
-        self.set_status('Controllo aggiornamenti…')
+        self.set_status(tr('Controllo aggiornamenti…'))
         self.available_changed.emit()
         def run():
             try:
@@ -160,16 +161,16 @@ class Updates(QObject):
             return
         if error:
             logging.warning('Update check: %s', error)
-            self.set_status('Controllo non riuscito. Riprova quando la connessione è disponibile.')
+            self.set_status(tr('Controllo non riuscito. Riprova quando la connessione è disponibile.'))
             if manual:
-                self.message(QMessageBox.Icon.Information, 'Aggiornamenti', self.status + '\n\n' + error)
+                self.message(QMessageBox.Icon.Information, tr('Aggiornamenti'), self.status + '\n\n' + error)
         elif release is None:
-            self.set_status('Yun Jin ' + VERSION + ' è aggiornata. Ultimo controllo: ' + time.strftime('%H:%M'))
+            self.set_status('Yun Jin ' + VERSION + tr(' è aggiornata. Ultimo controllo: ') + time.strftime('%H:%M'))
             if manual:
-                self.message(QMessageBox.Icon.Information, 'Aggiornamenti', self.status)
+                self.message(QMessageBox.Icon.Information, tr('Aggiornamenti'), self.status)
         else:
             self.release = release
-            self.set_status('Disponibile la versione ' + release['version'] + '. Leggi le novità prima di aggiornare.')
+            self.set_status(tr('Disponibile la versione ') + release['version'] + tr('. Leggi le novità prima di aggiornare.'))
             if manual:
                 self.show_notes()
             elif self.enabled and release['version'] != self.pet.store.preference('updates_skip_version', ''):
@@ -185,7 +186,7 @@ class Updates(QObject):
         if self.release and not self.installing:
             self.pet.store.set_preference('updates_skip_version', self.release['version'])
             self.offer.stop()
-            self.set_status('Versione ' + self.release['version'] + ' saltata. Cercherò le successive.')
+            self.set_status(tr('Versione ') + self.release['version'] + tr(' saltata. Cercherò le successive.'))
             if self.dialog:
                 self.dialog.hide()
 
@@ -215,8 +216,8 @@ class Updates(QObject):
         if self.busy or not self.release or not self.release['automatic']:
             return
         if self.activities_running():
-            answer = self.message(QMessageBox.Icon.Question, 'Attività in corso',
-                'L’aggiornamento chiuderà Yun Jin e interromperà l’attività in corso. Aggiornare adesso?',
+            answer = self.message(QMessageBox.Icon.Question, tr('Attività in corso'),
+                tr('L’aggiornamento chiuderà Yun Jin e interromperà l’attività in corso. Aggiornare adesso?'),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 QMessageBox.StandardButton.No, parent=self.dialog)
             if answer != QMessageBox.StandardButton.Yes:
@@ -231,10 +232,10 @@ class Updates(QObject):
             probe = BASE.parent / ('.update-write-' + uuid.uuid4().hex)
             probe.write_text('', encoding='utf-8'); probe.unlink()
         except Exception as exc:
-            self.message(QMessageBox.Icon.Warning, 'Aggiornamento non avviato', str(exc), parent=self.dialog); return
+            self.message(QMessageBox.Icon.Warning, tr('Aggiornamento non avviato'), str(exc), parent=self.dialog); return
         self.busy = self.installing = True
-        self.dialog.refresh(); self.dialog.status.setText('Download e verifica del pacchetto…')
-        self.set_status('Download dell’aggiornamento…'); self.available_changed.emit()
+        self.dialog.refresh(); self.dialog.status.setText(tr('Download e verifica del pacchetto…'))
+        self.set_status(tr('Download dell’aggiornamento…')); self.available_changed.emit()
         release = dict(self.release)
         def run():
             try:
@@ -275,7 +276,7 @@ class Updates(QObject):
             self.worker_process = subprocess.Popen([str(executable), str(helper), '--worker', str(work / 'plan.json')], **kwargs)
             self.worker_deadline = time.monotonic() + 15
             self.worker_timer.start()
-            self.dialog.status.setText('Preparazione del riavvio…')
+            self.dialog.status.setText(tr('Preparazione del riavvio…'))
         except Exception as exc:
             self.install_failed(str(exc))
 
@@ -286,15 +287,15 @@ class Updates(QObject):
             # downloading are included. It may refuse closure if saving fails.
             if not self.pet.close():
                 (self.staged / 'cancel').touch()
-                self.install_failed('Non è stato possibile salvare e chiudere Yun Jin. Riprova dopo aver salvato gli appunti.')
+                self.install_failed(tr('Non è stato possibile salvare e chiudere Yun Jin. Riprova dopo aver salvato gli appunti.'))
         elif self.worker_process.poll() is not None or time.monotonic() > self.worker_deadline:
             self.worker_timer.stop()
             (self.staged / 'cancel').touch()
-            self.install_failed('Il programma di aggiornamento non è partito. Nessun file modificato.')
+            self.install_failed(tr('Il programma di aggiornamento non è partito. Nessun file modificato.'))
 
     def install_failed(self, text):
         self.busy = self.installing = False
-        self.set_status('Aggiornamento non installato.')
+        self.set_status(tr('Aggiornamento non installato.'))
         if self.dialog:
             self.dialog.refresh(); self.dialog.status.setText(text)
         self.available_changed.emit()
@@ -307,10 +308,10 @@ class Updates(QObject):
         try:
             result = json.loads(Path(path).read_text(encoding='utf-8'))
             if result.get('ok'):
-                self.set_status('Aggiornamento a ' + VERSION + ' completato.')
+                self.set_status(tr('Aggiornamento a ') + VERSION + tr(' completato.'))
             else:
-                text = result.get('message', 'Aggiornamento non completato.')
-                QTimer.singleShot(1000, lambda: self.message(QMessageBox.Icon.Warning, 'Aggiornamento', text))
+                text = result.get('message', tr('Aggiornamento non completato.'))
+                QTimer.singleShot(1000, lambda: self.message(QMessageBox.Icon.Warning, tr('Aggiornamento'), text))
         except (OSError, ValueError):
             logging.exception('Reading update result')
 

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """A retained native menu-bar item, independent of the avatar and the Dock."""
+from yun_jin_i18n import tr
 import ctypes as C
 import logging
 import platform
@@ -42,7 +43,7 @@ class NativeStatusItem(AppKit):
             self.send(self.menu,'setDelegate:',None,(C.c_void_p,),(self.target,))
             self.image=self.send(self.send(self.cls('NSImage'),'alloc'),'initWithContentsOfFile:',
                                  types=(C.c_void_p,),args=(self.string(str(Path(__file__).parent/'favicon.png')),))
-            if not self.image:raise RuntimeError('Icona di Yun Jin non disponibile.')
+            if not self.image:raise RuntimeError(tr('Icona di Yun Jin non disponibile.'))
             self.send(self.image,'setSize:',None,(Size,),(Size(18,18),))
             self.send(self.image,'setTemplate:',None,(C.c_bool,),(False,))
             self.create_item()
@@ -63,7 +64,7 @@ class NativeStatusItem(AppKit):
         self.objc.objc_registerClassPair.argtypes=[C.c_void_p]
         self.objc.objc_registerClassPair.restype=None
         cls=self.objc.objc_allocateClassPair(self.cls('NSObject'),name,0)
-        if not cls:raise RuntimeError('Impossibile creare il menu di Yun Jin.')
+        if not cls:raise RuntimeError(tr('Impossibile creare il menu di Yun Jin.'))
         def invoke(receiver,selector,argument):
             native=_targets.get(receiver)
             if native is None:return
@@ -76,7 +77,7 @@ class NativeStatusItem(AppKit):
         _callbacks.append(callback)  # Keep the Python IMP alive until process exit.
         for selector in (b'menuWillOpen:',b'menuDidClose:',b'yunJinAction:'):
             if not self.objc.class_addMethod(cls,self.objc.sel_registerName(selector),C.cast(callback,C.c_void_p),b'v@:@'):
-                raise RuntimeError('Impossibile collegare il menu di Yun Jin.')
+                raise RuntimeError(tr('Impossibile collegare il menu di Yun Jin.'))
         def notification_clicked(receiver,selector,center,notification):
             native=_targets.get(receiver)
             if native:
@@ -101,7 +102,7 @@ class NativeStatusItem(AppKit):
         self.remove_item()
         # Keep a fixed hit area around the favicon; AppKit owns placement.
         self.item=self.send(self.bar,'statusItemWithLength:',types=(C.c_double,),args=(32.0,))
-        if not self.item:raise RuntimeError('Barra menu macOS non disponibile.')
+        if not self.item:raise RuntimeError(tr('Barra menu macOS non disponibile.'))
         self.send(self.item,'retain')
         button=self.send(self.item,'button')
         self.send(button,'setImage:',None,(C.c_void_p,),(self.image,))

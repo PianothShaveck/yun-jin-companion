@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Local persistent storage. All timestamps are UTC Unix seconds."""
+from yun_jin_i18n import tr
 import json
 import os
 import sqlite3
@@ -38,6 +39,7 @@ class Store:
         self.db.execute('PRAGMA foreign_keys=ON')
         self._study = None
         self._agenda = None
+        self._google = None
         self.db.executescript('''
             CREATE TABLE IF NOT EXISTS notes (
                 id TEXT PRIMARY KEY, title TEXT NOT NULL, body TEXT NOT NULL,
@@ -58,6 +60,13 @@ class Store:
         return self._agenda
 
     @property
+    def google(self):
+        if self._google is None:
+            from yun_jin_google_calendar import GoogleStore
+            self._google = GoogleStore(self)
+        return self._google
+
+    @property
     def study(self):
         if self._study is None:
             from yun_jin_srs import StudyStore
@@ -74,13 +83,13 @@ class Store:
 
     def save_note(self, title, body, path='', note_id=None):
         now = time.time()
-        title = title.strip() or (body.strip().splitlines() or ['Appunto'])[0][:90]
+        title = title.strip() or (body.strip().splitlines() or [tr('Appunto')])[0][:90]
         if note_id:
             with self.db:
                 cur = self.db.execute('UPDATE notes SET title=?,body=?,path=?,updated=? WHERE id=?',
                                      (title, body, path, now, note_id))
                 if cur.rowcount != 1:
-                    raise ValueError('Appunto non trovato; il testo resta nell’editor.')
+                    raise ValueError(tr('Appunto non trovato; il testo resta nell’editor.'))
         else:
             note_id = uuid.uuid4().hex
             with self.db:
@@ -105,15 +114,15 @@ class Store:
 
     def add_reminder(self, title, due, reminder_id=None):
         if not title.strip():
-            raise ValueError('Scrivi cosa vuoi ricordare.')
+            raise ValueError(tr('Scrivi cosa vuoi ricordare.'))
         if not isinstance(due, (int, float)) or not 0 < due < 32503680000:
-            raise ValueError('Data non valida.')
+            raise ValueError(tr('Data non valida.'))
         with self.db:
             if reminder_id:
                 cur = self.db.execute("UPDATE reminders SET title=?,due=?,status='pending',completed=NULL WHERE id=?",
                                      (title.strip(), due, reminder_id))
                 if cur.rowcount != 1:
-                    raise ValueError('Promemoria non trovato.')
+                    raise ValueError(tr('Promemoria non trovato.'))
             else:
                 reminder_id = uuid.uuid4().hex
                 self.db.execute('INSERT INTO reminders VALUES (?,?,?,?,?,NULL)',
@@ -156,6 +165,12 @@ class Store:
             # A connection's own context manager ends a transaction, not its lifetime.
             with closing(sqlite3.connect(str(tmp))) as target:
                 self.db.backup(target)
+                # Restoring a backup must never resume writes to a remote account.
+                for (name,) in target.execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'google_%'").fetchall():
+                    if name in ('google_accounts','google_calendars','google_links','google_remote','google_conflicts'):
+                        target.execute('DROP TABLE '+name)
+                target.execute("DELETE FROM preferences WHERE key IN ('google_profile','google_default')")
+                target.commit()
             with zipfile.ZipFile(stage, 'w', zipfile.ZIP_DEFLATED) as z:
                 z.write(tmp, 'companion.sqlite3')
                 z.writestr('notes.json', json.dumps(self.notes(), ensure_ascii=False, indent=2))

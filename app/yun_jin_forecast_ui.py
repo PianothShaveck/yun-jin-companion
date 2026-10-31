@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Native, lazy weather page. Small tables and at most three decoded illustrations."""
+from yun_jin_i18n import tr
 from collections import OrderedDict
 from functools import lru_cache
 import math
@@ -56,7 +57,7 @@ def weather_icon(key):
 class TemperatureChart(QWidget):
     def __init__(self):
         super().__init__();self.rows=[];self.labels=[];self.setMinimumHeight(132)
-        self.setAccessibleName('Andamento orario della temperatura')
+        self.setAccessibleName(tr('Andamento orario della temperatura'))
 
     def set_rows(self,rows,labels):self.rows=rows;self.labels=labels;self.update()
 
@@ -122,7 +123,7 @@ class WeatherPanel(QWidget):
         self.city=button('',self.choose_city,head,role='quiet');self.city.setSizePolicy(QSizePolicy.Policy.Ignored,QSizePolicy.Policy.Fixed)
         head.setStretch(0,1)
         self.updated=plain_label('','muted');head.addWidget(self.updated)
-        self.refresh_button=icon_button('reset','Aggiorna previsioni',lambda:self.service.request(True),head)
+        self.refresh_button=icon_button('reset',tr('Aggiorna previsioni'),lambda:self.service.request(True),head)
         root.addLayout(head)
         body=QWidget();body.setSizePolicy(QSizePolicy.Policy.Ignored,QSizePolicy.Policy.Preferred)
         main=QVBoxLayout(body);main.setContentsMargins(0,0,4,0);main.setSpacing(14)
@@ -143,22 +144,22 @@ class WeatherPanel(QWidget):
             b.setStyleSheet('QToolButton {padding:6px 2px;} QToolButton:checked {background:#655277;border-color:#c1a3c8;}')
             b.clicked.connect(lambda checked=False,index=i:self.select_day(index));self.day_box.add(b);self.days.append(b)
         main.addWidget(self.day_box)
-        self.hour_title=plain_label('Ora per ora','section');main.addWidget(self.hour_title)
+        self.hour_title=plain_label(tr('Ora per ora'),'section');main.addWidget(self.hour_title)
         self.chart=TemperatureChart();main.addWidget(self.chart)
         self.hours=QTreeWidget();self.hours.setRootIsDecorated(False);self.hours.setAlternatingRowColors(False)
-        self.hours.setColumnCount(6);self.hours.setHeaderLabels(['Ora','Meteo','°C','Precip.','mm','Vento'])
-        self.hours.setAccessibleName('Previsioni orarie');self.hours.setUniformRowHeights(True)
+        self.hours.setColumnCount(6);self.hours.setHeaderLabels([tr('Ora'),tr('Meteo'),'°C',tr('Precip.'),'mm',tr('Vento')])
+        self.hours.setAccessibleName(tr('Previsioni orarie'));self.hours.setUniformRowHeights(True)
         self.hours.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection);self.hours.setIconSize(QSize(26,26))
         self.hours.setMinimumHeight(240);self.hours.setMaximumHeight(310)
         self.hours.header().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.hours.header().setSectionResizeMode(1,QHeaderView.ResizeMode.Stretch)
-        self.hours.headerItem().setToolTip(3,'Probabilità di precipitazioni nell’ora.')
-        self.hours.headerItem().setToolTip(4,'Precipitazioni totali nell’ora, in millimetri.')
+        self.hours.headerItem().setToolTip(3,tr('Probabilità di precipitazioni nell’ora.'))
+        self.hours.headerItem().setToolTip(4,tr('Precipitazioni totali nell’ora, in millimetri.'))
         self.hours.currentItemChanged.connect(self.select_hour);main.addWidget(self.hours)
         self.sun_times=plain_label('','muted');main.addWidget(self.sun_times)
         main.addStretch();root.addWidget(scroll_page(body),1)
         credit=QLabel('<a href="https://open-meteo.com/" style="color:#b8b2c8">Open-Meteo · Best Match</a>')
-        credit.setOpenExternalLinks(False);credit.setToolTip('Modelli selezionati da Open-Meteo in base alla località. Condizioni attuali stimate dal modello.')
+        credit.setOpenExternalLinks(False);credit.setToolTip(tr('Modelli selezionati da Open-Meteo in base alla località. Condizioni attuali stimate dal modello.'))
         credit.linkActivated.connect(lambda url:pet.open_external(QUrl(url),self));root.addWidget(credit)
         self.service.changed.connect(self.changed)
         self.timer=QTimer(self);self.timer.setInterval(60000);self.timer.setTimerType(Qt.TimerType.VeryCoarseTimer)
@@ -188,20 +189,20 @@ class WeatherPanel(QWidget):
     def changed(self):
         if not self.isVisible():self.signature=None;return
         data=self.service.data;location=self.service.location
-        self.city.setText((location['city'] if location else 'Città')+'…')
+        self.city.setText((location['city'] if location else tr('Città'))+'…')
         self.city.setToolTip(location_label(location) if location else '')
         valid=cache_valid(data,location)
         for widget in (self.hero,self.day_box,self.hour_title,self.chart,self.hours,self.sun_times):widget.setVisible(valid)
         self.refresh_button.setEnabled(self.service.process is None)
         if not valid:
-            self.notice.setText('Caricamento…' if self.service.process is not None else 'Previsioni non disponibili.')
+            self.notice.setText(tr('Caricamento…') if self.service.process is not None else tr('Previsioni non disponibili.'))
             self.notice.show();self.updated.clear();self.signature=None;return
         self.notice.hide();self.zone=QTimeZone(data['timezone'].encode())
         if not self.zone.isValid():self.zone=QTimeZone(data.get('utc_offset_seconds',0))
-        age=time.time()-data['checked'];prefix='Dati salvati · ' if age>=FORECAST_TTL or self.service.failed else 'Aggiornato '
+        age=time.time()-data['checked'];prefix=tr('Dati salvati · ') if age>=FORECAST_TTL or self.service.failed else tr('Aggiornato ')
         stamp=self.local(data['checked'])
         self.updated.setText(prefix+stamp.toString('HH:mm' if self.day_key(data['checked'])==self.day_key(time.time()) else 'dd/MM HH:mm'))
-        self.updated.setToolTip('Orari di '+location['city'])
+        self.updated.setToolTip(tr('Orari di ')+location['city'])
         signature=(data['checked'],int(time.time()//3600))
         if signature==self.signature:return
         self.signature=signature
@@ -209,10 +210,10 @@ class WeatherPanel(QWidget):
             b.setVisible(i<len(data['daily']))
             if i>=len(data['daily']):continue
             row=data['daily'][i];day=self.local(row['time']);key=self.day_key(row['time'])
-            label='Oggi' if key==self.day_key(time.time()) else self.locale.toString(day.date(),'ddd d')
+            label=tr('Oggi') if key==self.day_key(time.time()) else self.locale.toString(day.date(),'ddd d')
             text,art=condition(row,1);b.setIcon(weather_icon(art))
             b.setText(label+'\n'+value(row.get('temperature_2m_min'),'°')+' / '+value(row.get('temperature_2m_max'),'°'))
-            b.setToolTip(text+' · Min / Max');b.setAccessibleName(label+': '+text)
+            b.setToolTip(text+tr(' · Min / Max'));b.setAccessibleName(label+': '+text)
         self.day_box.reflow()
         matches=[i for i,r in enumerate(data['daily']) if self.day_key(r['time'])==self.date]
         if not matches:matches=[i for i,r in enumerate(data['daily']) if self.day_key(r['time'])==self.day_key(time.time())]
@@ -237,9 +238,9 @@ class WeatherPanel(QWidget):
             self.hours.addTopLevelItem(item)
         self.hours.blockSignals(False)
         self.chart.set_rows(rows,[self.local(r['time']).toString('HH') for r in rows])
-        self.hour_title.setText('Ora per ora · '+self.locale.toString(self.local(row['time']).date(),'dddd d'))
+        self.hour_title.setText(tr('Ora per ora · ')+self.locale.toString(self.local(row['time']).date(),'dddd d'))
         sun=lambda key:self.local(row[key]).toString('HH:mm') if row.get(key) is not None else '—'
-        self.sun_times.setText('Alba '+sun('sunrise')+'   ·   Tramonto '+sun('sunset')+'   ·   UV '+value(row.get('uv_index_max'),decimals=1))
+        self.sun_times.setText(tr('Alba ')+sun('sunrise')+tr('   ·   Tramonto ')+sun('sunset')+'   ·   UV '+value(row.get('uv_index_max'),decimals=1))
         if self.date==self.day_key(data['current']['time']):self.show_conditions(data['current'])
         else:self.show_conditions(row,daily=True)
 
@@ -252,13 +253,13 @@ class WeatherPanel(QWidget):
         self.temperature.setText(value(row.get('temperature_2m_max' if daily else 'temperature_2m'),'°'))
         self.description.setText(description)
         if daily:
-            details='Min '+value(row.get('temperature_2m_min'),'°')+' · Max '+value(row.get('temperature_2m_max'),'°')
-            details+='\nPrecip. '+value(row.get('precipitation_probability_max'),'%')+' · '+value(row.get('precipitation_sum'),' mm',1)
-            details+='\nVento '+value(row.get('wind_speed_10m_max'),' km/h')+' · Raffiche '+value(row.get('wind_gusts_10m_max'),' km/h')
+            details=tr('Min ')+value(row.get('temperature_2m_min'),'°')+tr(' · Max ')+value(row.get('temperature_2m_max'),'°')
+            details+=tr('\nPrecip. ')+value(row.get('precipitation_probability_max'),'%')+' · '+value(row.get('precipitation_sum'),' mm',1)
+            details+=tr('\nVento ')+value(row.get('wind_speed_10m_max'),' km/h')+tr(' · Raffiche ')+value(row.get('wind_gusts_10m_max'),' km/h')
         else:
-            details='Percepita '+value(row.get('apparent_temperature'),'°')+' · Umidità '+value(row.get('relative_humidity_2m'),'%')
-            details+='\nVento '+value(row.get('wind_speed_10m'),' km/h')+' · Raffiche '+value(row.get('wind_gusts_10m'),' km/h')
-            details+='\nPrecip. '+value(row.get('precipitation'),' mm',1)
+            details=tr('Percepita ')+value(row.get('apparent_temperature'),'°')+tr(' · Umidità ')+value(row.get('relative_humidity_2m'),'%')
+            details+=tr('\nVento ')+value(row.get('wind_speed_10m'),' km/h')+tr(' · Raffiche ')+value(row.get('wind_gusts_10m'),' km/h')
+            details+=tr('\nPrecip. ')+value(row.get('precipitation'),' mm',1)
         self.details.setText(details)
         self.picture.clear();self.picture.setToolTip(description)
         if key:

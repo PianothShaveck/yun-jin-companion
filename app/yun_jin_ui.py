@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Shared visual language for the companion's windows and menus."""
+from yun_jin_i18n import tr
 from pathlib import Path
 from PyQt6.QtCore import Qt, QSize, QRectF, QPointF, QTimer
 from PyQt6.QtGui import QColor, QIcon, QPainter, QPainterPath, QPen, QPixmap, QPolygonF
@@ -47,12 +48,13 @@ QLineEdit:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled, QComboBox:disabl
 QSpinBox#tempo { background: transparent; border: none; font-size: 42px; font-weight: 300; }
 QComboBox { padding-right: 24px; }
 QComboBox::drop-down { width: 24px; border: none; }
-QComboBox::down-arrow, QDateTimeEdit::down-arrow { image: url("ASSET_DIR/chevron-down.svg"); width: 14px; height: 14px; }
-QSpinBox::up-button, QDoubleSpinBox::up-button, QDateTimeEdit::up-button { subcontrol-origin: border; subcontrol-position: top right; width: 19px; border: none; }
-QSpinBox::down-button, QDoubleSpinBox::down-button { subcontrol-origin: border; subcontrol-position: bottom right; width: 19px; border: none; }
+QComboBox::down-arrow { image: url("ASSET_DIR/chevron-down.svg"); width: 14px; height: 14px; }
+QSpinBox::up-button, QDoubleSpinBox::up-button, QDateTimeEdit::up-button { subcontrol-origin: border; subcontrol-position: top right; width: 19px; border: none; background: transparent; }
+QSpinBox::down-button, QDoubleSpinBox::down-button, QDateTimeEdit::down-button { subcontrol-origin: border; subcontrol-position: bottom right; width: 19px; border: none; background: transparent; }
 QSpinBox::up-arrow, QDoubleSpinBox::up-arrow, QDateTimeEdit::up-arrow { image: url("ASSET_DIR/chevron-up.svg"); width: 11px; height: 11px; }
-QSpinBox::down-arrow, QDoubleSpinBox::down-arrow { image: url("ASSET_DIR/chevron-down.svg"); width: 11px; height: 11px; }
-QDateTimeEdit::drop-down { width: 26px; border: none; }
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QDateTimeEdit::down-arrow { image: url("ASSET_DIR/chevron-down.svg"); width: 11px; height: 11px; }
+QDateTimeEdit[calendarPopup="true"]::drop-down { width: 26px; border: none; }
+QDateTimeEdit[calendarPopup="true"]::down-arrow { image: url("ASSET_DIR/chevron-down.svg"); width: 14px; height: 14px; }
 QToolButton::menu-indicator { image: url("ASSET_DIR/chevron-down.svg"); width: 11px; height: 11px;
     subcontrol-origin: padding; subcontrol-position: center right; right: 5px; }
 QToolButton[compact="true"]::menu-indicator { image: none; }
@@ -224,7 +226,7 @@ class FeedbackLabel(QLabel):
     def setText(self,text):
         super().setText(text);self.setVisible(bool(text))
         self.hide_timer.stop()
-        if text and not any(word in text.lower() for word in ('errore','non riuscito','non salvato')):
+        if text and not any(word in text.lower() for word in ('errore',tr('non riuscito'),tr('non salvato'))):
             self.hide_timer.start(5000)
 
 
@@ -247,7 +249,7 @@ def stepper(spin):
     spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
     container=QWidget();row=QHBoxLayout(container)
     row.setContentsMargins(0,0,0,0);row.setSpacing(6);row.addWidget(spin,1)
-    for text,delta,name in [('−',-1,'Diminuisci'),('+',1,'Aumenta')]:
+    for text,delta,name in [('−',-1,tr('Diminuisci')),('+',1,tr('Aumenta'))]:
         control=button(text,lambda checked=False,d=delta:spin.stepBy(d),row)
         control.setAccessibleName(name);control.setToolTip(name)
         control.setFixedWidth(34);control.setStyleSheet('padding: 7px 0;')
@@ -258,7 +260,7 @@ def stepper(spin):
 class BeatIndicator(QWidget):
     def __init__(self):
         super().__init__();self.position=-1;self.group=4
-        self.setMinimumHeight(24);self.setAccessibleName('Battiti')
+        self.setMinimumHeight(24);self.setAccessibleName(tr('Battiti'))
     def set_beat(self,position,group):
         self.position=position;self.group=group;self.update()
     def paintEvent(self,event):

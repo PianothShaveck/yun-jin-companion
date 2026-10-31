@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Sample-clock metronome and persistent stopwatch. No external audio package."""
+from yun_jin_i18n import tr
 from array import array
 from collections import deque
 from dataclasses import dataclass, asdict
@@ -22,11 +23,11 @@ class MetroConfig:
 
     def validate(self):
         if not 20 <= self.bpm <= 400 or not 20 <= self.target <= 400:
-            raise ValueError('I BPM devono essere tra 20 e 400.')
+            raise ValueError(tr('I BPM devono essere tra 20 e 400.'))
         if not 0 <= self.accent <= 32 or not 1 <= self.step <= 100 or not 1 <= self.every <= 3600:
-            raise ValueError('Accento, incremento o intervallo non valido.')
+            raise ValueError(tr('Accento, incremento o intervallo non valido.'))
         if self.unit not in ('beats','seconds') or self.finish not in ('hold','stop'):
-            raise ValueError('Modalità di scalata non valida.')
+            raise ValueError(tr('Modalità di scalata non valida.'))
         return self
 
 class BeatPlan:
@@ -108,7 +109,7 @@ class Metronome(QObject):
     def __init__(self,pet):
         super().__init__(pet);self.pet=pet;self.running=False
         self.sink=None;self.feed=None;self.stream=None
-        self.status='Pronto.';self.index=0;self.bpm=80;self.accented=False
+        self.status=tr('Pronto.');self.index=0;self.bpm=80;self.accented=False
         self.last_onset=0;self.position=0
         self.volume=int(pet.store.preference('metro_volume',55))
         self.timer=QTimer(self);self.timer.setInterval(16);self.timer.timeout.connect(self.poll)
@@ -122,7 +123,7 @@ class Metronome(QObject):
         self.stop(announce=False)
         config.validate();device=QMediaDevices.defaultAudioOutput()
         if device.isNull():
-            self.status='Nessuna uscita audio disponibile. Collega cuffie o altoparlanti.';self.changed.emit();return False
+            self.status=tr('Nessuna uscita audio disponibile. Collega cuffie o altoparlanti.');self.changed.emit();return False
         fmt=None
         for rate in dict.fromkeys([device.preferredFormat().sampleRate(),48000,44100]):
             if rate<=0:continue
@@ -132,7 +133,7 @@ class Metronome(QObject):
                 if device.isFormatSupported(candidate):fmt=candidate;break
             if fmt is not None:break
         if fmt is None:
-            self.status='L’uscita selezionata non supporta il formato PCM del metronomo.';self.changed.emit();return False
+            self.status=tr('L’uscita selezionata non supporta il formato PCM del metronomo.');self.changed.emit();return False
         self.pet.store.set_preference('metronome',asdict(config))
         self.stream=ClickStream(config,fmt.sampleRate(),fmt.channelCount())
         self.feed=AudioFeed(self.stream,self)
@@ -144,18 +145,18 @@ class Metronome(QObject):
         self.running=True;self.wall_poll=time.time();self.idle_since=None
         self.sink.start(self.feed)
         if not self.running:return False
-        self.status='In esecuzione';self.timer.start();self.active_changed.emit(True);self.changed.emit()
+        self.status=tr('In esecuzione');self.timer.start();self.active_changed.emit(True);self.changed.emit()
         return True
     def audio_state(self,state):
         from PyQt6.QtMultimedia import QAudio
         if not self.running or self.sink is None:return
         if self.sink.error()!=QAudio.Error.NoError:
-            self.stop(announce=False);self.status='Audio interrotto: controlla l’uscita e premi Avvia.';self.changed.emit()
+            self.stop(announce=False);self.status=tr('Audio interrotto: controlla l’uscita e premi Avvia.');self.changed.emit()
     def poll(self):
         if not self.running or self.sink is None:return
         now=time.time()
         if now-self.wall_poll>3:
-            self.stop(announce=False);self.status='Metronomo fermato dopo una sospensione: premi Avvia.';self.changed.emit();return
+            self.stop(announce=False);self.status=tr('Metronomo fermato dopo una sospensione: premi Avvia.');self.changed.emit();return
         self.wall_poll=now
         self.position=round(self.sink.processedUSecs()*self.stream.rate/1_000_000)
         latest=None
@@ -165,7 +166,7 @@ class Metronome(QObject):
             self.last_onset,self.index,self.bpm,self.accented=latest
             self.beat.emit(self.index,self.bpm,self.accented)
         if self.stream.stop_at is not None and self.position>=self.stream.stop_at:
-            self.stop(announce=False);self.status='Scalata completata.';self.changed.emit()
+            self.stop(announce=False);self.status=tr('Scalata completata.');self.changed.emit()
     def phase(self):
         if not self.running or not self.stream:return 0.
         return max(0.,min(.999,(self.position-self.last_onset)/self.stream.rate/(60/self.bpm)))
@@ -178,7 +179,7 @@ class Metronome(QObject):
         if sink:sink.reset();sink.deleteLater()
         if self.feed:self.feed.close();self.feed.deleteLater();self.feed=None
         if was:self.active_changed.emit(False)
-        if announce:self.status='Fermo.';self.changed.emit()
+        if announce:self.status=tr('Fermo.');self.changed.emit()
 
 class Stopwatch(QObject):
     changed=pyqtSignal()

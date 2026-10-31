@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Yun Jin Companion 1.5.6: desktop companion and practice tools."""
+"""Yun Jin Companion: desktop companion and practice tools."""
+from yun_jin_i18n import tr
 import ctypes
 import logging
 import os
@@ -44,10 +45,10 @@ class Sounds(QObject):
         try:
             from PyQt6.QtMultimedia import QSoundEffect, QMediaDevices
             if not QMediaDevices.audioOutputs():
-                self.status = 'Nessuna uscita audio.'
+                self.status = tr('Nessuna uscita audio.')
             self.effect_type = QSoundEffect
         except Exception as exc:
-            self.status = 'Suoni non disponibili: '+str(exc)
+            self.status = tr('Suoni non disponibili: ')+str(exc)
             logging.exception('Audio initialization')
 
     def play(self, name, preview=False):
@@ -74,7 +75,7 @@ class Sounds(QObject):
                 effect.setLoopCount(1)
                 self.effects[name]=effect
             except Exception as exc:
-                self.status='Suoni non disponibili: '+str(exc)
+                self.status=tr('Suoni non disponibili: ')+str(exc)
                 logging.exception('Audio initialization');return
         for other in self.effects.values():
             other.stop()
@@ -95,20 +96,20 @@ class ReminderCard(QDialog):
         self.setFixedWidth(380)
         layout=QVBoxLayout(self); layout.setContentsMargins(18,14,18,16); layout.setSpacing(12)
         head=QHBoxLayout(); head.setSpacing(12)
-        self.heading=plain_label('Promemoria'); self.heading.setObjectName('section'); head.addWidget(self.heading,1)
-        icon_button('note','Elenco promemoria',lambda:pet.open_panel(tab=1),head)
-        icon_button('close','Nascondi',self.hide,head); layout.addLayout(head)
+        self.heading=plain_label(tr('Promemoria')); self.heading.setObjectName('section'); head.addWidget(self.heading,1)
+        icon_button('note',tr('Elenco promemoria'),lambda:pet.open_panel(tab=1),head)
+        icon_button('close',tr('Nascondi'),self.hide,head); layout.addLayout(head)
         self.title=plain_label(); self.title.setStyleSheet('font-size: 17px;'); layout.addWidget(self.title)
         row=QHBoxLayout(); row.setSpacing(12)
-        button('Fatto',self.complete,row,glyph='check',role='primary')
-        button('Tra 10 min',self.snooze,row,glyph='clock'); row.addStretch(); layout.addLayout(row)
+        button(tr('Fatto'),self.complete,row,glyph='check',role='primary')
+        button(tr('Tra 10 min'),self.snooze,row,glyph='clock'); row.addStretch(); layout.addLayout(row)
 
     def present(self, rows):
         if not rows:
             self.hide()
             return
         self.rid=rows[0]['id']
-        self.heading.setText('Promemoria'+(f' · {len(rows)}' if len(rows)>1 else ''))
+        self.heading.setText(tr('Promemoria')+(f' · {len(rows)}' if len(rows)>1 else ''))
         self.title.setText(rows[0]['title'][:400])
         self.adjustSize()
         rect=self.pet.current_screen().availableGeometry()
@@ -216,6 +217,8 @@ class Companion(YunJinPet):
         self.study_tools=StudyTools(self)
         from yun_jin_agenda_service import AgendaService
         self.agenda_service=AgendaService(self)
+        from yun_jin_google_ui import GoogleSync
+        self.google_sync=GoogleSync(self)
         if self.character_hidden:
             self.apply_character_visibility()
 
@@ -319,7 +322,7 @@ class Companion(YunJinPet):
         if previous and previous['status']=='pending':
             self.store.delete_reminder(previous['id'])
         self.focus_reminder=self.store.add_reminder(
-            f'Sessione di {minutes} minuti terminata: è il momento di una pausa!',
+            tr('Sessione di {v0} minuti terminata: è il momento di una pausa!', v0=minutes),
             time.time()+minutes*60)
         self.store.set_preference('focus_reminder',self.focus_reminder)
         if not self.locked and self.state not in ('voice','voice_wait','conducting'):
@@ -362,7 +365,7 @@ class Companion(YunJinPet):
         except (ImportError,OSError,RuntimeError,ValueError):
             logging.exception('Metronome start')
             self.metronome.stop(announce=False)
-            self.metronome.status='Audio non disponibile. Controlla l’uscita audio.'
+            self.metronome.status=tr('Audio non disponibile. Controlla l’uscita audio.')
             self.metronome.changed.emit()
         self.open_panel(tab=5,subtab=0)
         return False
@@ -416,7 +419,9 @@ class Companion(YunJinPet):
             self.play(self.event_animation('conducting','work'))
 
     def open_guide(self):
-        self.open_external(QUrl.fromLocalFile(str(BASE.parent/'Guida.pdf')))
+        from yun_jin_i18n import language
+        name={'it':'Guida.pdf','en':'Guide.pdf','zh-CN':'Guide.zh-CN.pdf'}[language()]
+        self.open_external(QUrl.fromLocalFile(str(BASE.parent/name)))
 
     def open_external(self,url,owner=None):
         """Save the editor, then yield the foreground to the requested app."""
@@ -446,20 +451,20 @@ class Companion(YunJinPet):
         if self.closing or (self.panel and self.panel.isVisible() and not self.panel.isMinimized()):return
         if action=='stopwatch_toggle':
             if self.stopwatch.running:
-                text='Cronometro ripreso' if self.stopwatch.accumulated else 'Cronometro avviato'
-            else:text='Cronometro in pausa · '+format_elapsed(self.stopwatch.elapsed())
+                text=tr('Cronometro ripreso') if self.stopwatch.accumulated else tr('Cronometro avviato')
+            else:text=tr('Cronometro in pausa · ')+format_elapsed(self.stopwatch.elapsed())
         elif action=='stopwatch_lap':
-            text=(f'Parziale {len(self.stopwatch.laps)} · '+format_elapsed(self.stopwatch.laps[-1]['split'])
-                  if self.stopwatch.running and self.stopwatch.laps else 'Avvia il cronometro per registrare un parziale.')
-        elif action=='stopwatch_reset':text='Cronometro azzerato'
-        elif action=='metronome_toggle':text='Metronomo avviato' if self.metronome.running else 'Metronomo fermato'
+            text=(tr('Parziale {v0} · ', v0=len(self.stopwatch.laps))+format_elapsed(self.stopwatch.laps[-1]['split'])
+                  if self.stopwatch.running and self.stopwatch.laps else tr('Avvia il cronometro per registrare un parziale.'))
+        elif action=='stopwatch_reset':text=tr('Cronometro azzerato')
+        elif action=='metronome_toggle':text=tr('Metronomo avviato') if self.metronome.running else tr('Metronomo fermato')
         elif action=='focus_toggle':
-            text=f'Focus · {self.store.preference("focus_minutes",25)} min' if self.focus_active() else 'Focus interrotto'
-        elif action=='pet_pause':text='Yun Jin in pausa' if self.paused else 'Yun Jin riprende'
-        elif action=='pet_visibility':text='Yun Jin nascosta' if self.character_hidden else 'Yun Jin visibile'
-        elif action=='quiet':text='Silenzio per un’ora' if time.time()<self.sound.quiet_until else 'Silenzio disattivato'
-        elif action=='stop':text='Voce interrotta'
-        elif action=='voice_toggle':text='Voce attiva' if self.speech.enabled else 'Voce disattivata'
+            text=tr('Focus · {v0} min', v0=self.store.preference('focus_minutes', 25)) if self.focus_active() else tr('Focus interrotto')
+        elif action=='pet_pause':text=tr('Yun Jin in pausa') if self.paused else tr('Yun Jin riprende')
+        elif action=='pet_visibility':text=tr('Yun Jin nascosta') if self.character_hidden else tr('Yun Jin visibile')
+        elif action=='quiet':text=tr('Silenzio per un’ora') if time.time()<self.sound.quiet_until else tr('Silenzio disattivato')
+        elif action=='stop':text=tr('Voce interrotta')
+        elif action=='voice_toggle':text=tr('Voce attiva') if self.speech.enabled else tr('Voce disattivata')
         else:return
         self.shortcut_timer.start()
         self.bubble.present(text)
@@ -502,7 +507,7 @@ class Companion(YunJinPet):
         from yun_jin_core import ANIMATIONS
         if name not in ANIMATIONS:
             self.open_panel(tab=3)
-            self.panel.voice_status.setText('Animazione non trovata: controlla la cartella assets.')
+            self.panel.voice_status.setText(tr('Animazione non trovata: controlla la cartella assets.'))
             return
         self.speech.stop(announce=False)
         self.metronome.stop()
@@ -691,16 +696,16 @@ class Companion(YunJinPet):
                 self.sound.play('reminder')
                 message=new[0]['title']
                 if len(new)>1:
-                    message+=f'. Hai anche altri {len(new)-1} promemoria.'
+                    message+=tr('. Hai anche altri {v0} promemoria.', v0=len(new) - 1)
                 self.speech.speak(message,category='reminder',tag=new[0]['id'])
                 if focus_due:
                     self.queue_feedback('break','wave')
                 elif not self.paused and not self.manual_action and not self.menu_open and self.drag_anchor is None and not self.locked and not self.following and not self.is_sleeping() and self.state not in ('voice','voice_wait','conducting','follow_pending'):
                     self.sequence([(self.event_animation('reminder','wave'),2),('wait',1)])
                 if self.mac_access or self.tray.isVisible():
-                    message=new[0]['title'][:200]+(f' (+{len(new)-1} altri)' if len(new)>1 else '')
-                    if self.mac_access:self.mac_access.native.show_message('Yun Jin · Promemoria',message)
-                    else:self.tray.showMessage('Yun Jin · Promemoria',message,QSystemTrayIcon.MessageIcon.Information,10000)
+                    message=new[0]['title'][:200]+(tr(' (+{v0} altri)', v0=len(new) - 1) if len(new)>1 else '')
+                    if self.mac_access:self.mac_access.native.show_message(tr('Yun Jin · Promemoria'),message)
+                    else:self.tray.showMessage(tr('Yun Jin · Promemoria'),message,QSystemTrayIcon.MessageIcon.Information,10000)
             if self.panel and self.panel.isVisible():
                 self.panel.refresh_reminders()
                 self.panel.refresh_focus()
@@ -712,7 +717,7 @@ class Companion(YunJinPet):
         except Exception:
             logging.exception('Reminder poll failed')
             self.reminder_timer.stop()
-            Messages.critical(self,'Promemoria non disponibili','Non riesco a leggere o salvare i promemoria. Riavvia il pet dopo aver controllato il log nella cartella dati.')
+            Messages.critical(self,tr('Promemoria non disponibili'),tr('Non riesco a leggere o salvare i promemoria. Riavvia il pet dopo aver controllato il log nella cartella dati.'))
 
     def refresh_reminders(self):
         rows=self.store.mark_due()
@@ -774,7 +779,7 @@ class Companion(YunJinPet):
         mime=QApplication.clipboard().mimeData()
         if mime is None or not self.accepts_mime(mime):
             self.open_panel()
-            self.panel.status.setText('Nessun contenuto negli appunti.')
+            self.panel.status.setText(tr('Nessun contenuto negli appunti.'))
             return
         self.capture_mime(mime)
 
@@ -794,10 +799,10 @@ class Companion(YunJinPet):
                 name=uuid.uuid4().hex+'.png'
                 path=self.store.root/'attachments'/name
                 if not image.save(str(path),'PNG'):
-                    raise IOError('Impossibile salvare l’immagine.')
+                    raise IOError(tr('Impossibile salvare l’immagine.'))
                 self.open_panel()
                 self.panel.save_note()
-                rid=self.store.save_note('Immagine · '+time.strftime('%d/%m %H:%M'),'','attachment:'+name)
+                rid=self.store.save_note(tr('Immagine · ')+time.strftime('%d/%m %H:%M'),'','attachment:'+name)
                 self.panel.load_note(rid)
                 self.saved_feedback()
                 return
@@ -829,7 +834,7 @@ class Companion(YunJinPet):
         self.speech.stop(announce=False)
         self.sound.quiet_until=time.time()+3600
         if self.panel:
-            self.panel.status.setText('Suoni sospesi per un’ora.')
+            self.panel.status.setText(tr('Suoni sospesi per un’ora.'))
 
     def toggle_quiet(self):
         if time.time()<self.sound.quiet_until:
@@ -838,41 +843,41 @@ class Companion(YunJinPet):
         else:self.quiet_hour()
 
     def add_companion_menu(self,menu):
-        menu.addAction(self.hotkeys.label('Pannello…','panel'),self.open_panel)
-        tools=menu.addMenu('Strumenti')
-        tools.addAction('Appunti…',self.open_panel)
-        tools.addAction(self.hotkeys.label('Importa appunti copiati','capture'),self.capture_clipboard)
+        menu.addAction(self.hotkeys.label(tr('Pannello…'),'panel'),self.open_panel)
+        tools=menu.addMenu(tr('Strumenti'))
+        tools.addAction(tr('Appunti…'),self.open_panel)
+        tools.addAction(self.hotkeys.label(tr('Importa appunti copiati'),'capture'),self.capture_clipboard)
         tools.addSeparator()
-        tools.addAction(self.hotkeys.label('Nuovo promemoria…','reminder'),self.new_reminder)
-        tools.addAction('Promemoria…',lambda:self.open_panel(tab=1))
-        tools.addAction(self.hotkeys.label('Calendario…','calendar_open'),lambda:self.open_panel(tab=8))
-        tools.addAction(self.hotkeys.label('Sveglie…','alarms_open'),lambda:self.open_panel(tab=9))
+        tools.addAction(self.hotkeys.label(tr('Nuovo promemoria…'),'reminder'),self.new_reminder)
+        tools.addAction(tr('Promemoria…'),lambda:self.open_panel(tab=1))
+        tools.addAction(self.hotkeys.label(tr('Calendario…'),'calendar_open'),lambda:self.open_panel(tab=8))
+        tools.addAction(self.hotkeys.label(tr('Sveglie…'),'alarms_open'),lambda:self.open_panel(tab=9))
         tools.addSeparator()
-        tools.addAction(self.hotkeys.label('Studio…','study'),lambda:self.open_panel(tab=6))
-        tools.addAction(self.hotkeys.label('Focus…','focus_open'),lambda:self.open_panel(tab=4))
-        tools.addAction(self.hotkeys.label('Metronomo…','metronome_open'),lambda:self.open_panel(tab=5,subtab=0))
-        tools.addAction(self.hotkeys.label('Cronometro…','stopwatch_open'),lambda:self.open_panel(tab=5,subtab=1))
-        voice=menu.addMenu('Voce')
-        enabled=voice.addAction(self.hotkeys.label('Voce attiva','voice_toggle'))
+        tools.addAction(self.hotkeys.label(tr('Studio…'),'study'),lambda:self.open_panel(tab=6))
+        tools.addAction(self.hotkeys.label(tr('Focus…'),'focus_open'),lambda:self.open_panel(tab=4))
+        tools.addAction(self.hotkeys.label(tr('Metronomo…'),'metronome_open'),lambda:self.open_panel(tab=5,subtab=0))
+        tools.addAction(self.hotkeys.label(tr('Cronometro…'),'stopwatch_open'),lambda:self.open_panel(tab=5,subtab=1))
+        voice=menu.addMenu(tr('Voce'))
+        enabled=voice.addAction(self.hotkeys.label(tr('Voce attiva'),'voice_toggle'))
         enabled.setCheckable(True); enabled.setChecked(self.speech.enabled)
         enabled.triggered.connect(self.speech.set_enabled)
         voice.addSeparator()
-        voice.addAction(self.hotkeys.label('Leggi testo copiato','read'),self.read_clipboard)
-        voice.addAction(self.hotkeys.label('Interrompi','stop'),self.stop_speech)
+        voice.addAction(self.hotkeys.label(tr('Leggi testo copiato'),'read'),self.read_clipboard)
+        voice.addAction(self.hotkeys.label(tr('Interrompi'),'stop'),self.stop_speech)
         voice.addSeparator()
-        voice.addAction('Impostazioni voce…',lambda:self.open_panel(tab=3))
+        voice.addAction(tr('Impostazioni voce…'),lambda:self.open_panel(tab=3))
         if self.sound and time.time()<self.sound.quiet_until:
-            voice.addAction('Riattiva suoni',lambda:setattr(self.sound,'quiet_until',0.))
+            voice.addAction(tr('Riattiva suoni'),lambda:setattr(self.sound,'quiet_until',0.))
         else:
-            voice.addAction('Silenzio per 1 ora',self.quiet_hour)
+            voice.addAction(tr('Silenzio per 1 ora'),self.quiet_hour)
 
     def add_companion_footer(self,menu):
         menu.addSeparator()
-        action=menu.addAction(self.hotkeys.label('Mostra Yun Jin' if self.character_hidden else 'Nascondi Yun Jin',
+        action=menu.addAction(self.hotkeys.label(tr('Mostra Yun Jin') if self.character_hidden else tr('Nascondi Yun Jin'),
                                                'pet_visibility'),self.toggle_character_visibility)
         action.setObjectName('character_visibility')
-        menu.addAction('Impostazioni…',lambda:self.open_panel(tab=2))
-        menu.addAction('Guida',self.open_guide)
+        menu.addAction(tr('Impostazioni…'),lambda:self.open_panel(tab=2))
+        menu.addAction(tr('Guida'),self.open_guide)
 
     def closeEvent(self,event):
         if self.panel:
@@ -883,6 +888,7 @@ class Companion(YunJinPet):
                 event.ignore()
                 return
         self.closing=True
+        if getattr(self,'google_sync',None):self.google_sync.shutdown()
         if self.agenda_service:self.agenda_service.shutdown()
         if self.mac_access:self.mac_access.close()
         self.shortcut_timer.stop()
@@ -927,15 +933,18 @@ def main():
     lock=QLockFile(str(root/'companion.lock'))
     lock.setStaleLockTime(0)
     if not lock.tryLock(50):
-        Messages.information(None,'Yun Jin è già aperta',shortcut_help())
+        Messages.information(None,tr('Yun Jin è già aperta'),shortcut_help())
         return 0
     store=None; pet=None
     def exception_hook(kind,value,tb):
         logging.error('Unhandled exception',exc_info=(kind,value,tb))
-        Messages.critical(pet,'Yun Jin · errore',str(value)+'\n\nI dettagli sono in '+str(root/'yun-jin.log'))
+        Messages.critical(pet,tr('Yun Jin · errore'),str(value)+tr('\n\nI dettagli sono in ')+str(root/'yun-jin.log'))
     sys.excepthook=exception_hook
     try:
         store=Store(root)
+        from yun_jin_i18n import choose_language
+        if not choose_language(store):
+            return 0
         pet=Companion(store)
         if sys.platform=='darwin' and app.platformName()=='cocoa':
             from yun_jin_macos import MacOverlay, PREFERENCE
@@ -974,7 +983,7 @@ def main():
         return app.exec()
     except Exception as exc:
         logging.exception('Startup failed')
-        Messages.critical(pet,'Yun Jin · avvio non riuscito',str(exc)+'\n\nCartella dati: '+str(root))
+        Messages.critical(pet,tr('Yun Jin · avvio non riuscito'),str(exc)+tr('\n\nCartella dati: ')+str(root))
         return 1
     finally:
         if pet is not None and pet.windows_overlay is not None:

@@ -18,17 +18,18 @@ VARIANTS_BY_MONTH = (
     tuple('abcdefg') + tuple(f'YJ-{number:03d}' for number in range(308, 363)),
     tuple('abcdefghi') + tuple(f'YJ-{number:03d}' for number in range(363, 416)),
     tuple('abcdefghi') + tuple(f'YJ-{number:03d}' for number in range(416, 469)),
-    'abcdefghi', 'abcdef',
+    tuple('abcdefghi') + tuple(f'YJ-{number:03d}' for number in range(469, 522)),
+    tuple('abcdef') + tuple(f'YJ-{number:03d}' for number in range(522, 578)),
     tuple('abcdef') + tuple(f'YJ-{number:03d}' for number in range(578, 634)),
     tuple('abcdefg') + tuple(f'YJ-{number:03d}' for number in range(634, 689)),
     tuple('abcdef') + tuple(f'YJ-{number:03d}' for number in range(689, 745)),
 )
-DAILY_MONTHS = frozenset({1, 2, 3, 4, 5, 6, 7, 10, 11, 12})
+DAILY_MONTHS = frozenset(range(1, 13))
 
 # First catalog ID and first seven-scene brief group for each winter month.
 _WINTER_GROUPS = {1: (85, 1), 2: (141, 9), 12: (689, 89)}
 _SPRING_GROUPS = {3: (196, 17), 4: (252, 25), 5: (308, 33)}
-_SUMMER_GROUPS = {6: (363, 41), 7: (416, 49)}
+_SUMMER_GROUPS = {6: (363, 41), 7: (416, 49), 8: (469, 57), 9: (522, 65)}
 
 
 def _digest(value):
@@ -190,7 +191,15 @@ def variant_for(year, month, day=1):
 
 def illustration_for(year, month, day=1):
     variant = variant_for(year, month, day)
-    # New catalog IDs stay recognizable across source briefs and release files.
-    name = variant if variant.startswith('YJ-') else f'm{month:02d}-{variant}'
+    # Keep the published selection tokens and their hashes unchanged while all
+    # asset filenames use the canonical YJ IDs, including the first 84 scenes.
+    name = image_name_for_variant(month, variant)
     preview = ASSETS.parent / 'calendar-preview' / f'{name}.webp'
     return preview if preview.is_file() else ASSETS / f'{name}.webp'
+
+
+def image_name_for_variant(month, variant):
+    if variant.startswith('YJ-'):
+        return variant
+    first_ids = (1, 7, 14, 20, 26, 33, 42, 51, 60, 66, 72, 79)
+    return f'YJ-{first_ids[month - 1] + ord(variant) - ord("a"):03d}'

@@ -5,6 +5,7 @@ Schema reference: ankitects/anki rslib/src/storage/card/data.rs and
 proto/anki/notetypes.proto. No Anki code, plugin or scheduling writes are used.
 Only decks actually studied today are eligible. No scheduling writes are made.
 """
+from yun_jin_i18n import tr
 from datetime import datetime, time as daytime, timedelta
 from html.parser import HTMLParser
 import html
@@ -45,7 +46,7 @@ def copy_bounded(source,destination,deadline):
         while chunk:=reader.read(1024*1024):
             size+=len(chunk)
             if size>512*1024*1024 or time.monotonic()>deadline:
-                raise CollectionBusy('La collezione richiede più tempo. Riprova con Anki chiuso.')
+                raise CollectionBusy(tr('La collezione richiede più tempo. Riprova con Anki chiuso.'))
             writer.write(chunk)
 
 
@@ -62,20 +63,20 @@ def snapshot_collection(collection,folder,deadline):
         if before[0] is None:raise FileNotFoundError(collection)
         # A hot rollback journal cannot be replayed safely from a live file copy.
         if before[2] and before[2][2]>0:
-            raise CollectionBusy('Anki sta aggiornando la collezione. Riprova tra poco.')
+            raise CollectionBusy(tr('Anki sta aggiornando la collezione. Riprova tra poco.'))
         target=Path(folder)/str(attempt);target.mkdir()
         try:
             for path,stamp in zip(sources[:2],before[:2]):
                 if stamp:
                     if stamp[2]>512*1024*1024:
-                        raise CollectionBusy('Collezione molto grande. Riprova con Anki chiuso.')
+                        raise CollectionBusy(tr('Collezione molto grande. Riprova con Anki chiuso.'))
                     copy_bounded(path,target/path.name,deadline)
             after=[file_stamp(path) for path in sources]
             if before==after:
                 return target/collection.name
         except FileNotFoundError:pass  # Anki checkpointed/replaced the WAL mid-copy.
         if time.monotonic()>deadline:break
-    raise CollectionBusy('Anki sta aggiornando la collezione. Riprova tra poco.')
+    raise CollectionBusy(tr('Anki sta aggiornando la collezione. Riprova tra poco.'))
 
 
 def protobuf_fields(data):
@@ -85,20 +86,20 @@ def protobuf_fields(data):
         nonlocal position
         value=0
         for shift in range(0,70,7):
-            if position>=len(data): raise ValueError('Configurazione Anki incompleta.')
+            if position>=len(data): raise ValueError(tr('Configurazione Anki incompleta.'))
             byte=data[position]; position+=1; value|=(byte&127)<<shift
             if byte<128: return value
-        raise ValueError('Configurazione Anki non valida.')
+        raise ValueError(tr('Configurazione Anki non valida.'))
     while position<len(data):
         tag=varint(); field,wire=tag>>3,tag&7
         if wire==0: value=varint()
         elif wire==2:
             size=varint()
-            if size>len(data)-position: raise ValueError('Configurazione Anki incompleta.')
+            if size>len(data)-position: raise ValueError(tr('Configurazione Anki incompleta.'))
             value=data[position:position+size]; position+=size
         elif wire in (1,5):
             size=8 if wire==1 else 4; value=data[position:position+size];position+=size
-        else: raise ValueError('Configurazione Anki non supportata.')
+        else: raise ValueError(tr('Configurazione Anki non supportata.'))
         result[field]=value
     return result
 
@@ -163,7 +164,7 @@ def render_template(template, fields, ordinal, answer=False, front=''):
     from yun_jin_srs import CLOZE
     static=StaticTemplate();static.feed(template);static.close();template=''.join(static.parts)
     if re.search(r'<\s*(?:iframe|object)\b|\{\{(?:tts|type):',template,re.I):
-        raise ValueError('Modello Anki avanzato non supportato.')
+        raise ValueError(tr('Modello Anki avanzato non supportato.'))
     for _ in range(8):
         updated=re.sub(r'\{\{([#^])([^{}]+)\}\}(.*?)\{\{/\2\}\}',
             lambda m:m[3] if bool(fields.get(m[2],''))==(m[1]=='#') else '',template,flags=re.S)
@@ -173,13 +174,13 @@ def render_template(template, fields, ordinal, answer=False, front=''):
         expr=match[1]
         if expr=='FrontSide': return front
         pieces=expr.split(':'); key=pieces[-1]
-        if key not in fields: raise ValueError('Campo del modello Anki non supportato.')
+        if key not in fields: raise ValueError(tr('Campo del modello Anki non supportato.'))
         value=fields[key]
         for modifier in reversed(pieces[:-1]):
             if modifier=='cloze':
                 value=CLOZE.sub(lambda m: (m[2] if answer or int(m[1])!=ordinal+1 else '['+(m[3] or '…')+']'),value)
             elif modifier=='text': value=html.escape(simplify(value)[0])
-            else: raise ValueError('Filtro del modello Anki non supportato.')
+            else: raise ValueError(tr('Filtro del modello Anki non supportato.'))
         return value
     return re.sub(r'\{\{([^{}]+)\}\}',replacement,template)
 
@@ -188,11 +189,11 @@ def anki_models(db, model_id, ordinal, legacy):
     tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     if 'notetypes' in tables:
         row=db.execute('SELECT config FROM notetypes WHERE id=?',(model_id,)).fetchone()
-        if row is None: raise ValueError('Modello Anki mancante.')
+        if row is None: raise ValueError(tr('Modello Anki mancante.'))
         is_cloze=protobuf_fields(row[0]).get(1,0)==1
         names=[r['name'] for r in db.execute('SELECT name FROM fields WHERE ntid=? ORDER BY ord',(model_id,))]
         template=db.execute('SELECT config FROM templates WHERE ntid=? AND ord=?',(model_id,0 if is_cloze else ordinal)).fetchone()
-        if template is None: raise ValueError('Modello Anki mancante.')
+        if template is None: raise ValueError(tr('Modello Anki mancante.'))
         fields=protobuf_fields(template[0])
         return names, fields.get(1,b'').decode(), fields.get(2,b'').decode()
     model=legacy.get(str(model_id),{})
@@ -222,7 +223,7 @@ def read_candidates(collection, now=None, limit=36, scratch=None, include_suspen
     now=time.time() if now is None else now
     limit=max(1,min(120,int(limit)))
     collection=Path(collection).expanduser().resolve(strict=True)
-    if collection.name!='collection.anki2': raise ValueError('Seleziona collection.anki2 del tuo profilo Anki.')
+    if collection.name!='collection.anki2': raise ValueError(tr('Seleziona collection.anki2 del tuo profilo Anki.'))
     options=dict(include_suspended=include_suspended,exclude_notes=exclude_notes,seen_day=seen_day,restart=restart,
                  rotation=rotation,cooldown_notes=cooldown_notes,visits=visits)
     try:return _read_candidates(collection,collection,now,limit,**options)
@@ -277,7 +278,7 @@ def _read_candidates(database,collection,now,limit,validate=False,include_suspen
         if validate:
             # quick_check does not compare text through Anki's custom collation.
             if db.execute('PRAGMA quick_check(1)').fetchone()[0]!='ok':
-                raise CollectionBusy('Anki sta aggiornando la collezione. Riprova tra poco.')
+                raise CollectionBusy(tr('Anki sta aggiornando la collezione. Riprova tra poco.'))
         start,end=study_window(db,now)
         legacy_row=db.execute('SELECT models,decks FROM col LIMIT 1').fetchone()
         legacy=json.loads(legacy_row['models'] or '{}');decks=json.loads(legacy_row['decks'] or '{}')
@@ -335,7 +336,7 @@ def _read_candidates(database,collection,now,limit,validate=False,include_suspen
         for row in selected:
             try:
                 content=db.execute('SELECT c.ord,n.mid,n.flds FROM cards c JOIN notes n ON n.id=c.nid WHERE c.id=?',(row['id'],)).fetchone()
-                if len(content['flds'])>200000:raise ValueError('Testo della carta troppo lungo.')
+                if len(content['flds'])>200000:raise ValueError(tr('Testo della carta troppo lungo.'))
                 key=(content['mid'],content['ord'])
                 if key not in models:models[key]=anki_models(db,*key,legacy)
                 names,qfmt,afmt=models[key]
@@ -345,12 +346,12 @@ def _read_candidates(database,collection,now,limit,validate=False,include_suspen
                 front,fmedia=simplify(question);back,bmedia=simplify(answer)
                 front_paths=[p for n in fmedia if (p:=safe_media(media_root,n))]
                 back_paths=[p for n in bmedia if (p:=safe_media(media_root,n))]
-                if not (front or front_paths) or not (back or back_paths):raise ValueError('Il modello non contiene un fronte e un retro leggibili senza script.')
+                if not (front or front_paths) or not (back or back_paths):raise ValueError(tr('Il modello non contiene un fronte e un retro leggibili senza script.'))
                 card=dict(id=row['id'],note_id=row['note_id'],deck=decks.get(str(row['deck_id']),{}).get('name','Anki'),
                     front=front,back=back,front_paths=front_paths[:12],back_paths=back_paths[:12],
                     difficulty=row['difficulty'],lapses=row['lapses'],leech=row['leech'],last_review=row['last_review'])
                 size=len(json.dumps(card,ensure_ascii=True))
-                if size>2*1024*1024:raise ValueError('Testo della carta troppo lungo.')
+                if size>2*1024*1024:raise ValueError(tr('Testo della carta troppo lungo.'))
                 if payload_size+size>2*1024*1024:break
                 payload_size+=size;result.append(card);consumed+=1
                 if len(result)>=limit: break
@@ -360,7 +361,7 @@ def _read_candidates(database,collection,now,limit,validate=False,include_suspen
             unsupported=unsupported,issues=sorted(issues)[:3],checked=now,study_start=start,study_end=end)
     except sqlite3.OperationalError as exc:
         if timed_out and getattr(exc,'sqlite_errorcode',0)&255==sqlite3.SQLITE_INTERRUPT:
-            raise CollectionBusy('Lettura Anki troppo lenta. Riprova.') from exc
+            raise CollectionBusy(tr('Lettura Anki troppo lenta. Riprova.')) from exc
         raise
     finally:
         db.close()

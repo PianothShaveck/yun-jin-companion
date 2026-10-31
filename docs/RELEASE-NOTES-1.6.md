@@ -1,0 +1,3 @@
+- Add English and Simplified Chinese interfaces and guides, with English as the default.
+- Sync calendar events with Google Calendar, including offline changes and conflicts.
+- Add daily artwork for August and September, refresh calendar illustrations and load smaller originals in the background.
