@@ -1,12 +1,15 @@
 """Language choice, catalog contracts, real widgets and preservation of user text."""
 import ast,json,os,sys,tempfile,unittest,subprocess
+import gc
+from unittest.mock import patch
 from pathlib import Path
 from string import Formatter
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'app'))
-from PyQt6.QtCore import QTimer, Qt
+from PyQt6 import sip
+from PyQt6.QtCore import QTimer, Qt, QCoreApplication, QEvent
 from PyQt6.QtTest import QTest
-from PyQt6.QtWidgets import QApplication,QPushButton,QComboBox
+from PyQt6.QtWidgets import QApplication,QPushButton,QComboBox,QDialog
 from yun_jin_i18n import tr,set_language,choose_language,language
 from yun_jin_data import Store
 from tests.test_google_ui import Pet
@@ -45,7 +48,7 @@ class LocalizationTests(unittest.TestCase):
             self.assertEqual(store.preference('tts_language',''), 'zh-CN')
             store.close()
     def test_catalogs_complete_with_matching_placeholders(self):
-        catalogs=[json.loads((ROOT/'app/locales'/name).read_text()) for name in ('en.json','zh-CN.json')]
+        catalogs=[json.loads((ROOT/'app/locales'/name).read_text(encoding='utf-8')) for name in ('en.json','zh-CN.json')]
         self.assertEqual(set(catalogs[0]),set(catalogs[1]))
         self.assertGreater(len(catalogs[0]),890)
         def fields(text):return sorted((field,spec,conv) for _,field,spec,conv in Formatter().parse(text) if field is not None)
@@ -55,11 +58,42 @@ class LocalizationTests(unittest.TestCase):
                 self.assertEqual(fields(key),fields(value),key)
         missing=[]
         for path in (ROOT/'app').glob('*.py'):
-            for node in ast.walk(ast.parse(path.read_text())):
+            for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))):
                 if isinstance(node,ast.Call) and isinstance(node.func,ast.Name) and node.func.id=='tr' and node.args and isinstance(node.args[0],ast.Constant):
                     key=node.args[0].value
                     if key not in catalogs[0]:missing.append((path.name,key))
         self.assertEqual(missing,[])
+    def test_editors_survive_destruction_of_an_unrelated_closed_active_window(self):
+        import yun_jin_calendar_ui as calendar_ui
+        import yun_jin_alarms_ui as alarms_ui
+        with tempfile.TemporaryDirectory() as directory:
+            store=Store(directory);pet=Pet(store)
+            try:
+                for module,factory in ((calendar_ui,calendar_ui.EventDialog),
+                                       (alarms_ui,alarms_ui.AlarmDialog)):
+                    with self.subTest(editor=factory.__name__):
+                        retired=QDialog();retired.hide();dialog=None
+                        original=module.scroll_page
+                        def collect_old_window(content):
+                            # Reproduce collection during editor construction,
+                            # independently of Python's current GC thresholds.
+                            sip.delete(retired);gc.collect()
+                            return original(content)
+                        try:
+                            with patch('yun_jin_dialogs.QApplication.activeWindow',return_value=retired), \
+                                 patch.object(module,'scroll_page',new=collect_old_window):
+                                dialog=factory(pet)
+                            self.assertFalse(sip.isdeleted(dialog))
+                            dialog.title.setText('中文 — unchanged')
+                            self.assertEqual(dialog.title.text(),'中文 — unchanged')
+                            self.assertIsNone(dialog.parentWidget())
+                        finally:
+                            if dialog is not None and not sip.isdeleted(dialog):
+                                dialog.close();dialog.deleteLater()
+                            if not sip.isdeleted(retired):retired.deleteLater()
+                            QCoreApplication.sendPostedEvents(None,QEvent.Type.DeferredDelete)
+            finally:
+                pet.deleteLater();QCoreApplication.sendPostedEvents(None,QEvent.Type.DeferredDelete);store.close()
     def test_first_run_choice_persisted_without_touching_existing_speech(self):
         with tempfile.TemporaryDirectory() as directory:
             store=Store(directory);store.set_preference('tts_language','en')

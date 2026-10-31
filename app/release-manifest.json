@@ -868,7 +868,7 @@
     "app/yun_jin_context.py": "6faeefec9dbfb9b1998842bd2d9e6dded68812ba0b94d11556bd889e29fcb7b0",
     "app/yun_jin_core.py": "42182b5b473ebe808bce394df90ba3ca5339a83f0fd031fbafa2a5f7834ab667",
     "app/yun_jin_data.py": "ff2d4ac8771c37305a28bd8b2c8a4812d9489eebd11e6d756b8a8877539f4648",
-    "app/yun_jin_dialogs.py": "c6625b4a2eea6c15cc5b8f33063b94f5785ccfd19e95dafd0df75c04780cb530",
+    "app/yun_jin_dialogs.py": "36c3515be68964796539d8584b6960d10d9e60eec5b95ba8b6d8853510511b03",
     "app/yun_jin_forecast.py": "a1cc25b2c5a526a479e71db714415b502d63eeea344f30e5bc357b7d9bb84260",
     "app/yun_jin_forecast_service.py": "a7756c1db41ebdf3de0bbabcf3fe0597e5e870ad446d26fff27de809e3b503de",
     "app/yun_jin_forecast_ui.py": "f0b3a830757e2af49916915f8ed25f577bdd3c670fb4643e3e63e2dd35017b28",

@@ -32,7 +32,12 @@ def owner_window(owner):
         if pet is not None and (getattr(pet,'character_hidden',False) or getattr(pet,'fullscreen_hidden',False)):
             return None
         if owner is None:
-            return QApplication.activeWindow()
+            active = QApplication.activeWindow()
+            # Qt can retain the last active window after exec() has hidden it.
+            # Its Python cycle may then be collected while a new child is being
+            # constructed, deleting that child and all of its layouts as well.
+            return active if (active is not None and not sip.isdeleted(active)
+                              and active.isVisible()) else None
     return owner.window() if owner is not None else None
 
 
